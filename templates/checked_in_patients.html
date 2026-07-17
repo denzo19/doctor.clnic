@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page checked-in-patients-page">
+
+    <div class="page-header">
+        <h1>
+            <i class="fas fa-user-clock"></i>
+            Checked-in Patients
+        </h1>
+    </div>
+
+    <div class="details-card checked-in-toolbar-card">
+        <form method="GET" action="{{ url_for('checked_in_patients') }}" class="toolbar-form">
+            <div class="searchable-select"
+                 data-searchable-select
+                 data-required-message="Please choose a doctor from the list.">
+                <input type="text"
+                       class="toolbar-search-input searchable-select-input"
+                       placeholder="Choose doctor"
+                       autocomplete="off"
+                       required
+                       value="{% for doctor in doctors %}{% if doctor_id|string == doctor.id|string %}{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}{% endif %}{% endfor %}">
+                <input type="hidden"
+                       name="doctor_id"
+                       class="searchable-select-value"
+                       value="{{ doctor_id or '' }}">
+                <div class="searchable-select-options">
+                    {% for doctor in doctors %}
+                        {% set doctor_label %}
+                            {{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}
+                        {% endset %}
+                        <button type="button"
+                                class="searchable-select-option"
+                                data-value="{{ doctor.id }}"
+                                data-label="{{ doctor_label|trim }}">
+                            {{ doctor_label|trim }}
+                        </button>
+                    {% endfor %}
+                    <div class="searchable-select-empty">
+                        No doctors found.
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="toolbar-btn search-btn" title="Show">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <a href="{{ url_for('checked_in_patients') }}"
+               class="toolbar-btn clear-btn"
+               title="Clear">
+                <i class="fas fa-times"></i>
+            </a>
+        </form>
+    </div>
+
+    <div class="table-container">
+        <table class="app-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Code</th>
+                    <th>Patient</th>
+                    <th>DOB</th>
+                    <th>Gender</th>
+                    <th>Phone</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Open</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for patient in patients %}
+                <tr>
+                    <td>{{ patient.check_in_time }}</td>
+                    <td>{{ patient.patient_code }}</td>
+                    <td>
+                        {{ patient.first_name }}
+                        {{ patient.middle_name or '' }}
+                        {{ patient.last_name }}
+                    </td>
+                    <td>{{ patient.date_of_birth }}</td>
+                    <td>{{ patient.gender }}</td>
+                    <td>{{ patient.phone_number }}</td>
+                    <td>{{ patient.check_in_type }}</td>
+                    <td>
+                        <span class="status-badge status-{{ patient.check_in_status }}">
+                            {{ patient.check_in_status }}
+                        </span>
+                    </td>
+                    <td>
+                        <a class="table-action view-action"
+                           href="{{ url_for('open_checked_in_patient', check_in_item_id=patient.check_in_item_id) }}"
+                           title="Open Patient">
+                            <i class="fas fa-folder-open"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="empty-row">
+                        No checked-in patients for this doctor today.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<script>
+document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
+    const input = selectBox.querySelector(".searchable-select-input");
+    const valueInput = selectBox.querySelector(".searchable-select-value");
+    const options = Array.from(selectBox.querySelectorAll(".searchable-select-option"));
+    const emptyState = selectBox.querySelector(".searchable-select-empty");
+    const form = selectBox.closest("form");
+
+    function openOptions(){
+        selectBox.classList.add("is-open");
+    }
+
+    function closeOptions(){
+        selectBox.classList.remove("is-open");
+    }
+
+    function filterOptions(){
+        const searchText = input.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        options.forEach(function(option){
+            const label = option.dataset.label.toLowerCase();
+            const isVisible = label.includes(searchText);
+
+            option.hidden = !isVisible;
+
+            if(isVisible){
+                visibleCount += 1;
+            }
+        });
+
+        emptyState.hidden = visibleCount !== 0;
+    }
+
+    input.addEventListener("focus", function(){
+        openOptions();
+        filterOptions();
+    });
+
+    input.addEventListener("input", function(){
+        valueInput.value = "";
+        input.setCustomValidity("");
+        openOptions();
+        filterOptions();
+    });
+
+    options.forEach(function(option){
+        option.addEventListener("click", function(){
+            input.value = option.dataset.label;
+            valueInput.value = option.dataset.value;
+            input.setCustomValidity("");
+            closeOptions();
+        });
+    });
+
+    document.addEventListener("click", function(event){
+        if(!selectBox.contains(event.target)){
+            closeOptions();
+        }
+    });
+
+    if(form){
+        form.addEventListener("submit", function(event){
+            if(input.required && !valueInput.value){
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                input.setCustomValidity(selectBox.dataset.requiredMessage);
+                input.reportValidity();
+                openOptions();
+                filterOptions();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1><i class="fas fa-notes-medical"></i> Unchecked Patient</h1>
+    </div>
+
+    <div class="details-card">
+        <form class="toolbar-form patient-history-form" onsubmit="openSelectedPatientHistory(event)">
+            <div class="searchable-select"
+                 data-searchable-select
+                 data-required-message="Please choose a patient from the list.">
+                <input type="text"
+                       class="toolbar-search-input searchable-select-input"
+                       placeholder="Choose patient"
+                       autocomplete="off"
+                       required>
+                <input type="hidden"
+                       id="history_patient_id"
+                       class="searchable-select-value">
+                <div class="searchable-select-options">
+                    {% for patient in patients %}
+                        <button type="button"
+                                class="searchable-select-option"
+                                data-value="{{ patient.id }}"
+                                data-label="{{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}{% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}">
+                            {{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}
+                            {% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}
+                        </button>
+                    {% endfor %}
+                    <div class="searchable-select-empty">
+                        No patients found.
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="standard-btn primary-btn">
+                <i class="fas fa-folder-open"></i> Open
+            </button>
+        </form>
+    </div>
+
+</section>
+
+<script>
+document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
+    const input = selectBox.querySelector(".searchable-select-input");
+    const valueInput = selectBox.querySelector(".searchable-select-value");
+    const options = Array.from(selectBox.querySelectorAll(".searchable-select-option"));
+    const emptyState = selectBox.querySelector(".searchable-select-empty");
+    const form = selectBox.closest("form");
+
+    function openOptions(){
+        selectBox.classList.add("is-open");
+    }
+
+    function closeOptions(){
+        selectBox.classList.remove("is-open");
+    }
+
+    function filterOptions(){
+        const searchText = input.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        options.forEach(function(option){
+            const isVisible = option.dataset.label.toLowerCase().includes(searchText);
+            option.hidden = !isVisible;
+
+            if (isVisible) {
+                visibleCount += 1;
+            }
+        });
+
+        emptyState.hidden = visibleCount !== 0;
+    }
+
+    input.addEventListener("focus", function(){
+        openOptions();
+        filterOptions();
+    });
+
+    input.addEventListener("input", function(){
+        valueInput.value = "";
+        input.setCustomValidity("");
+        openOptions();
+        filterOptions();
+    });
+
+    options.forEach(function(option){
+        option.addEventListener("click", function(){
+            input.value = option.dataset.label;
+            valueInput.value = option.dataset.value;
+            input.setCustomValidity("");
+            closeOptions();
+        });
+    });
+
+    document.addEventListener("click", function(event){
+        if (!selectBox.contains(event.target)) {
+            closeOptions();
+        }
+    });
+
+    if (form) {
+        form.addEventListener("submit", function(event){
+            if (!valueInput.value) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                input.setCustomValidity(selectBox.dataset.requiredMessage);
+                input.reportValidity();
+                openOptions();
+                filterOptions();
+            }
+        });
+    }
+});
+
+function openSelectedPatientHistory(event) {
+    event.preventDefault();
+
+    const patientId = document.getElementById("history_patient_id").value;
+
+    if (patientId) {
+        window.location.href = "/patients/history/" + patientId;
+    }
+}
+</script>
+
+{% endblock %}

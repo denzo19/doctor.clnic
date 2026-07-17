@@ -1,0 +1,10 @@
+Flask
+gunicorn
+mysql-connector-python
+Flask-Login
+Flask-Bcrypt
+Pillow
+pytesseract
+zxing-cpp
+pdf417decoder
+openai

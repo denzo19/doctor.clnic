@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page diagnosis-icd-setup-page">
+
+    <div class="page-header">
+        <h1>
+            <i class="fas fa-list-check"></i>
+            Diagnosis ICD Fine Tuning
+        </h1>
+    </div>
+
+    <div class="details-card diagnosis-icd-stage-title">
+        <form method="GET"
+              action="{{ url_for('diagnosis_icd_fine_tuning') }}"
+              class="toolbar-form">
+            <label class="toolbar-filter-label" for="specialtyFilter">Specialty</label>
+            <select id="specialtyFilter"
+                    name="specialty"
+                    class="toolbar-search-input"
+                    required>
+                {% for item in specialties %}
+                    <option value="{{ item.specialty }}"
+                            {% if selected_specialty == item.specialty %}selected{% endif %}>
+                        {{ item.specialty }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            {% if fine_block_options %}
+                <label class="toolbar-filter-label" for="fineBlockFilter">Block</label>
+                <select id="fineBlockFilter"
+                        name="fine_block_id"
+                        class="toolbar-search-input">
+                    {% for block in fine_block_options %}
+                        <option value="{{ block.id }}"
+                                {% if selected_fine_block_id == block.id %}selected{% endif %}>
+                            {{ block.block_code_range }} - {{ block.title }}
+                        </option>
+                    {% endfor %}
+                </select>
+            {% endif %}
+
+            <button type="submit" class="toolbar-btn search-btn" title="Load">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <a href="{{ url_for('diagnosis_icd_setup', specialty=selected_specialty) }}"
+               class="standard-btn form-cancel-btn">
+                <i class="fas fa-arrow-left"></i>
+                Back
+            </a>
+        </form>
+    </div>
+
+    {% if not active_version %}
+        <div class="details-card">
+            <p class="empty-row">Import an ICD-10-CM version before fine tuning categories and codes.</p>
+        </div>
+    {% elif not fine_block_options %}
+        <div class="details-card">
+            <p class="empty-row">Select and save at least one chapter or block before fine tuning categories and codes.</p>
+        </div>
+    {% elif selected_fine_block %}
+        <form method="POST"
+              action="{{ url_for('diagnosis_icd_fine_tuning') }}"
+              class="diagnosis-icd-detail-form">
+            <input type="hidden" name="specialty" value="{{ selected_specialty }}">
+            <input type="hidden" name="fine_block_id" value="{{ selected_fine_block.id }}">
+
+            <div class="details-card diagnosis-icd-actions">
+                <div>
+                    <strong>{{ selected_fine_block.block_code_range }}</strong>
+                    <span class="diagnosis-icd-muted">{{ selected_fine_block.title }}</span>
+                </div>
+                <button type="submit"
+                        name="action"
+                        value="save_detail"
+                        class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i>
+                    Save Fine Tuning
+                </button>
+                <button type="submit"
+                        name="action"
+                        value="clear_detail"
+                        class="standard-btn form-cancel-btn"
+                        onclick="return confirm('Clear category/code tuning for this block?');">
+                    <i class="fas fa-times"></i>
+                    Clear Fine Tuning
+                </button>
+            </div>
+
+            {% for category in fine_categories %}
+                <div class="details-section diagnosis-icd-category">
+                    <label class="diagnosis-icd-category-label">
+                        <input type="checkbox"
+                               name="category_ids"
+                               value="{{ category.id }}"
+                               data-category-toggle="{{ category.id }}"
+                               {% if category.id in enabled_category_ids %}checked{% endif %}>
+                        <span>
+                            {{ category.category_code }}
+                            {{ category.title }}
+                            <em>{{ category.billable_code_count }} billable codes</em>
+                        </span>
+                    </label>
+
+                    <div class="diagnosis-icd-code-grid">
+                        {% for code in fine_codes_by_category.get(category.id, []) %}
+                            <label class="diagnosis-icd-code-option">
+                                <input type="checkbox"
+                                       name="code_ids"
+                                       value="{{ code.id }}"
+                                       data-parent-category="{{ category.id }}"
+                                       {% if code.id in enabled_detail_code_ids %}checked{% endif %}>
+                                <span>
+                                    <strong>{{ code.code }}</strong>
+                                    {{ code.description }}
+                                </span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            <div class="details-card diagnosis-icd-actions">
+                <button type="submit"
+                        name="action"
+                        value="save_detail"
+                        class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i>
+                    Save Fine Tuning
+                </button>
+                <button type="submit"
+                        name="action"
+                        value="clear_detail"
+                        class="standard-btn form-cancel-btn"
+                        onclick="return confirm('Clear category/code tuning for this block?');">
+                    <i class="fas fa-times"></i>
+                    Clear Fine Tuning
+                </button>
+            </div>
+        </form>
+    {% endif %}
+
+</section>
+
+<script>
+document.querySelectorAll("[data-category-toggle]").forEach(function(categoryCheckbox){
+    categoryCheckbox.addEventListener("change", function(){
+        const categoryId = categoryCheckbox.dataset.categoryToggle;
+        document.querySelectorAll("[data-parent-category='" + categoryId + "']").forEach(function(codeCheckbox){
+            codeCheckbox.checked = categoryCheckbox.checked;
+        });
+    });
+});
+</script>
+
+{% endblock %}

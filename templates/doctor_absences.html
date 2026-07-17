@@ -1,0 +1,543 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1><i class="fas fa-user-clock"></i> Manage Doctor Absences</h1>
+    </div>
+    <div class="details-card">
+        <form method="GET"
+              action="{{ url_for('manage_doctor_absences') }}"
+              class="toolbar-form">
+
+            <input type="text"
+                   id="doctorAbsenceSearch"
+                   name="search"
+                   value="{{ search or '' }}"
+                   class="toolbar-search-input"
+                   placeholder="Search absence">
+
+            <button type="submit" class="toolbar-btn search-btn" title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <a href="{{ url_for('manage_doctor_absences') }}"
+               class="toolbar-btn clear-btn"
+               title="Clear">
+                <i class="fas fa-times"></i>
+            </a>
+
+            <button type="button"
+                    class="toolbar-btn add-btn"
+                    title="Add Absence"
+                    onclick="openAddAbsenceModal()">
+                <i class="fas fa-plus"></i>
+            </button>
+
+            <button type="button"
+                    id="doctorAbsenceReportBtn"
+                    class="toolbar-btn search-btn"
+                    title="Doctor Absences Report">
+                <i class="fas fa-file-pdf"></i>
+            </button>
+
+        </form>
+    </div>
+
+    <div class="table-container limited-height-table">
+        <table class="app-table">
+            <thead>
+                <tr>
+                    <th>Doctor</th>
+                    <th>Center</th>
+                    <th>Type</th>
+                    <th>From Date</th>
+                    <th>To Date</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Reason</th>
+                    <th>Active</th>
+                    <th class="actions-header">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for a in absences %}
+                <tr class="clickable-row"
+                    onclick="openAbsenceModal(
+                        '{{ a.id }}',
+                        '{{ a.doctor_id }}',
+                        '{{ a.center_id or '' }}',
+                        '{{ a.absence_type or 'hours' }}',
+                        '{{ a.absence_date }}',
+                        '{{ a.end_date or a.absence_date }}',
+                        '{{ a.start_time or '' }}',
+                        '{{ a.end_time or '' }}',
+                        '{{ a.reason or '' }}',
+                        '{{ 1 if a.is_active else 0 }}'
+                    )">
+
+                    <td>{{ a.doctor_name }}</td>
+                    <td>{{ a.center_name or 'All centers' }}</td>
+                    <td>
+                        {% if a.absence_type == 'date_range' %}Date range
+                        {% elif a.absence_type == 'full_day' %}Full day
+                        {% else %}Hours
+                        {% endif %}
+                    </td>
+                    <td>{{ a.absence_date }}</td>
+                    <td>{{ a.end_date or a.absence_date }}</td>
+                    <td>{% if a.absence_type == 'hours' %}{{ a.start_time }}{% else %}Full day{% endif %}</td>
+                    <td>{% if a.absence_type == 'hours' %}{{ a.end_time }}{% else %}Full day{% endif %}</td>
+                    <td>{{ a.reason or '' }}</td>
+                    <td>{{ 'Yes' if a.is_active else 'No' }}</td>
+
+                    <td class="action-cell" onclick="event.stopPropagation();">
+
+                        <button type="button"
+                                class="table-action edit-action"
+                                title="Edit"
+                                onclick="openAbsenceModal(
+                                    '{{ a.id }}',
+                                    '{{ a.doctor_id }}',
+                                    '{{ a.center_id or '' }}',
+                                    '{{ a.absence_type or 'hours' }}',
+                                    '{{ a.absence_date }}',
+                                    '{{ a.end_date or a.absence_date }}',
+                                    '{{ a.start_time or '' }}',
+                                    '{{ a.end_time or '' }}',
+                                    '{{ a.reason or '' }}',
+                                    '{{ 1 if a.is_active else 0 }}'
+                                )">
+                            <i class="fas fa-pen"></i>
+                        </button>
+
+                        {% if a.is_active %}
+                            <form method="POST"
+                                  action="{{ url_for('stop_doctor_absence', absence_id=a.id) }}"
+                                  class="inline-delete-form"
+                                  onsubmit="return confirm('Stop this doctor absence?');">
+                                <button type="submit"
+                                        class="table-action delete-action"
+                                        title="Stop Absence">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="locked-label" title="Inactive absence">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                        {% endif %}
+
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="10" class="empty-row">
+                        No doctor absences found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<div id="absenceEditModal" class="modal">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h2><i class="fas fa-pen"></i> Doctor Absence Information</h2>
+            <button type="button" class="modal-close-btn" onclick="closeAbsenceModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="absenceEditForm" method="POST" class="modal-form">
+
+            <div class="form-grid two-column-grid">
+
+                <div class="form-group">
+                    <label>Doctor</label>
+                    <select id="modal_doctor_id" name="doctor_id" required>
+                        <option value="">Choose doctor</option>
+                        {% for doctor in doctors %}
+                            <option value="{{ doctor.id }}">
+                                {{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Medical Center</label>
+                    <select id="modal_center_id" name="center_id">
+                        <option value="">All centers</option>
+                        {% for center in centers %}
+                            <option value="{{ center.id }}">{{ center.center_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Absence Type</label>
+                    <select id="modal_absence_type"
+                            name="absence_type"
+                            data-absence-type
+                            required>
+                        <option value="full_day">Full day</option>
+                        <option value="date_range">Number of days</option>
+                        <option value="hours">Hours during a day</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Absence Date</label>
+                    <input type="date" id="modal_absence_date" name="absence_date" required>
+                </div>
+
+                <div class="form-group absence-end-date-field">
+                    <label>End Date</label>
+                    <input type="date" id="modal_end_date" name="end_date">
+                </div>
+
+                <div class="form-group absence-time-field">
+                    <label>Start Time</label>
+                    <input type="time"
+                           id="modal_start_time"
+                           name="start_time"
+                           value="00:00">
+                </div>
+
+                <div class="form-group absence-time-field">
+                    <label>End Time</label>
+                    <input type="time"
+                           id="modal_end_time"
+                           name="end_time"
+                           value="23:59">
+                </div>
+
+                <div class="form-group">
+                    <label>Active</label>
+                    <select id="modal_is_active" name="is_active">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+
+                <div class="form-group form-group-wide">
+                    <label>Reason</label>
+                    <input type="text" id="modal_reason" name="reason">
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i> Save
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-cancel-btn"
+                        onclick="closeAbsenceModal()">
+                    <i class="fas fa-ban"></i> Cancel
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<div id="addAbsenceModal" class="modal">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h2><i class="fas fa-plus"></i> Add Doctor Absence</h2>
+            <button type="button" class="modal-close-btn" onclick="closeAddAbsenceModal(true)">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="addAbsenceForm"
+              method="POST"
+              action="{{ url_for('manage_doctor_absences') }}"
+              class="modal-form">
+
+            <div class="form-grid two-column-grid">
+
+                <div class="form-group">
+                    <label>Doctor</label>
+                    <select name="doctor_id" required>
+                        <option value="">Choose doctor</option>
+                        {% for doctor in doctors %}
+                            <option value="{{ doctor.id }}">
+                                {{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Medical Center</label>
+                    <select name="center_id">
+                        <option value="">All centers</option>
+                        {% for center in centers %}
+                            <option value="{{ center.id }}">{{ center.center_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Absence Type</label>
+                    <select name="absence_type"
+                            data-absence-type
+                            required>
+                        <option value="full_day">Full day</option>
+                        <option value="date_range">Number of days</option>
+                        <option value="hours">Hours during a day</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Absence Date</label>
+                    <input type="date" name="absence_date" required>
+                </div>
+
+                <div class="form-group absence-end-date-field">
+                    <label>End Date</label>
+                    <input type="date" name="end_date">
+                </div>
+
+                <div class="form-group absence-time-field">
+                    <label>Start Time</label>
+                    <input type="time"
+                           name="start_time"
+                           value="00:00">
+                </div>
+
+                <div class="form-group absence-time-field">
+                    <label>End Time</label>
+                    <input type="time"
+                           name="end_time"
+                           value="23:59">
+                </div>
+
+                <div class="form-group form-group-wide">
+                    <label>Reason</label>
+                    <input type="text" name="reason">
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i> Save
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-save-btn"
+                        onclick="saveAbsenceAndNext()">
+                    <i class="fas fa-forward"></i> Next
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-cancel-btn"
+                        onclick="closeAddAbsenceModal(true)">
+                    <i class="fas fa-ban"></i> Cancel
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+const DEFAULT_ABSENCE_START_TIME = "00:00";
+const DEFAULT_ABSENCE_END_TIME = "23:59";
+
+function normalizeAbsenceTimeValue(timeValue, fallbackValue) {
+    if (!timeValue) {
+        return fallbackValue;
+    }
+
+    const parts = String(timeValue).split(":");
+
+    if (parts.length < 2) {
+        return fallbackValue;
+    }
+
+    return `${parts[0].padStart(2, "0")}:${parts[1].padStart(2, "0")}`;
+}
+
+function applyAbsenceTypeFields(form) {
+    const typeSelect = form.querySelector("[data-absence-type]");
+    const absenceType = typeSelect.value;
+    const absenceDateInput = form.querySelector("input[name='absence_date']");
+    const endDateInput = form.querySelector("input[name='end_date']");
+    const startTimeInput = form.querySelector("input[name='start_time']");
+    const endTimeInput = form.querySelector("input[name='end_time']");
+    const showEndDate = absenceType === "date_range";
+    const showTimes = absenceType === "hours";
+
+    form.querySelectorAll(".absence-end-date-field").forEach(function(field){
+        field.hidden = !showEndDate;
+    });
+
+    form.querySelectorAll(".absence-time-field").forEach(function(field){
+        field.hidden = !showTimes;
+    });
+
+    if (!showEndDate) {
+        endDateInput.value = absenceDateInput.value;
+    }
+
+    endDateInput.required = showEndDate;
+
+    if (!showTimes) {
+        startTimeInput.value = DEFAULT_ABSENCE_START_TIME;
+        endTimeInput.value = DEFAULT_ABSENCE_END_TIME;
+    }
+}
+
+function initializeAbsenceTypeControls(form) {
+    const typeSelect = form.querySelector("[data-absence-type]");
+    const absenceDateInput = form.querySelector("input[name='absence_date']");
+
+    typeSelect.addEventListener("change", function(){
+        applyAbsenceTypeFields(form);
+    });
+
+    absenceDateInput.addEventListener("change", function(){
+        applyAbsenceTypeFields(form);
+    });
+
+    form.addEventListener("submit", function(){
+        applyAbsenceTypeFields(form);
+    });
+}
+
+function openAbsenceModal(id, doctorId, centerId, absenceType, absenceDate, endDate, startTime, endTime, reason, active) {
+    const form = document.getElementById("absenceEditForm");
+
+    form.action = "/admin/doctor_absences/update/" + id;
+
+    document.getElementById("modal_doctor_id").value = doctorId;
+    document.getElementById("modal_center_id").value = centerId;
+    document.getElementById("modal_absence_type").value = absenceType || "hours";
+    document.getElementById("modal_absence_date").value = absenceDate;
+    document.getElementById("modal_end_date").value = endDate || absenceDate;
+    document.getElementById("modal_start_time").value =
+        normalizeAbsenceTimeValue(startTime, DEFAULT_ABSENCE_START_TIME);
+    document.getElementById("modal_end_time").value =
+        normalizeAbsenceTimeValue(endTime, DEFAULT_ABSENCE_END_TIME);
+    document.getElementById("modal_reason").value = reason;
+    document.getElementById("modal_is_active").value = active;
+
+    applyAbsenceTypeFields(form);
+    document.getElementById("absenceEditModal").style.display = "block";
+}
+
+function closeAbsenceModal() {
+    document.getElementById("absenceEditModal").style.display = "none";
+}
+
+function openAddAbsenceModal() {
+    const form = document.getElementById("addAbsenceForm");
+
+    form.reset();
+    form.querySelector("[data-absence-type]").value = "full_day";
+    form.querySelector("input[name='start_time']").value = DEFAULT_ABSENCE_START_TIME;
+    form.querySelector("input[name='end_time']").value = DEFAULT_ABSENCE_END_TIME;
+    applyAbsenceTypeFields(form);
+    document.getElementById("addAbsenceModal").style.display = "block";
+}
+
+function closeAddAbsenceModal(refresh=false) {
+    document.getElementById("addAbsenceModal").style.display = "none";
+
+    if (refresh) {
+        window.location.reload();
+    }
+}
+
+function saveAbsenceAndNext() {
+    const form = document.getElementById("addAbsenceForm");
+
+    if (!form.reportValidity()) {
+        return;
+    }
+
+    const formData = new FormData(form);
+
+    fetch("{{ url_for('add_doctor_absence_ajax') }}", {
+        method: "POST",
+        body: formData
+    })
+    .then(response =>
+        response.json().then(data => ({
+            ok: response.ok,
+            data: data
+        }))
+    )
+    .then(result => {
+        const data = result.data;
+
+        if (!result.ok || !data.success) {
+            alert(data.message || "Error saving absence.");
+            return;
+        }
+
+        form.reset();
+        form.querySelector("[data-absence-type]").value = "full_day";
+        form.querySelector("input[name='start_time']").value = DEFAULT_ABSENCE_START_TIME;
+        form.querySelector("input[name='end_time']").value = DEFAULT_ABSENCE_END_TIME;
+        applyAbsenceTypeFields(form);
+        form.querySelector("select[name='doctor_id']").focus();
+    })
+    .catch(error => {
+        alert("Error saving absence.");
+        console.error(error);
+    });
+}
+
+window.onclick = function(event) {
+    const editModal = document.getElementById("absenceEditModal");
+    const addModal = document.getElementById("addAbsenceModal");
+
+    if (event.target === editModal) {
+        closeAbsenceModal();
+    }
+
+    if (event.target === addModal) {
+        closeAddAbsenceModal(true);
+    }
+};
+
+document.addEventListener("DOMContentLoaded", function(){
+    const doctorAbsenceSearch = document.getElementById("doctorAbsenceSearch");
+    const doctorAbsenceReportBtn = document.getElementById("doctorAbsenceReportBtn");
+
+    if(doctorAbsenceSearch && doctorAbsenceReportBtn){
+        doctorAbsenceReportBtn.addEventListener("click", function(){
+            const reportUrl = new URL("{{ url_for('doctor_absences_report') }}", window.location.origin);
+            const searchText = doctorAbsenceSearch.value.trim();
+
+            if(searchText){
+                reportUrl.searchParams.set("search", searchText);
+            }
+
+            window.open(reportUrl.toString(), "_blank");
+        });
+    }
+
+    initializeAbsenceTypeControls(document.getElementById("absenceEditForm"));
+    initializeAbsenceTypeControls(document.getElementById("addAbsenceForm"));
+    applyAbsenceTypeFields(document.getElementById("absenceEditForm"));
+    applyAbsenceTypeFields(document.getElementById("addAbsenceForm"));
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1>
+            <i class="fas fa-calendar-check"></i>
+            Appointments Query & Check-in
+        </h1>
+    </div>
+
+    <div class="details-card">
+        <form method="GET"
+              action="{{ url_for('appointment_checkin') }}"
+              class="toolbar-form">
+            {% set selected_patient = namespace(label='') %}
+            {% if selected_patient_id %}
+                {% for patient in appointment_patients %}
+                    {% set patient_label %}
+                        {{ patient.patient_code }} -
+                        {{ patient.patient_name }}
+                        {% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}
+                    {% endset %}
+                    {% if selected_patient_id|string == patient.id|string %}
+                        {% set selected_patient.label = patient_label|trim %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            <div class="searchable-select"
+                 data-searchable-select
+                 data-required-message="Please choose a patient from the list.">
+                <input type="text"
+                       class="toolbar-search-input searchable-select-input"
+                       placeholder="Choose patient"
+                       autocomplete="off"
+                       value="{{ selected_patient.label }}">
+                <input type="hidden"
+                       name="patient_id"
+                       class="searchable-select-value"
+                       value="{{ selected_patient_id or '' }}">
+                <div class="searchable-select-options">
+                    {% for patient in appointment_patients %}
+                        {% set patient_label %}
+                            {{ patient.patient_code }} -
+                            {{ patient.patient_name }}
+                            {% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}
+                        {% endset %}
+                        <button type="button"
+                                class="searchable-select-option"
+                                data-value="{{ patient.id }}"
+                                data-label="{{ patient_label|trim }}">
+                            {{ patient_label|trim }}
+                        </button>
+                    {% endfor %}
+                    <div class="searchable-select-empty">
+                        No patients found.
+                    </div>
+                </div>
+            </div>
+
+            <input type="date"
+                   name="appointment_date"
+                   class="toolbar-search-input"
+                   value="{{ selected_date or today_date }}">
+
+            <button type="submit" class="toolbar-btn search-btn" title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <a href="{{ url_for('appointment_checkin') }}"
+               class="toolbar-btn clear-btn"
+               title="Clear">
+                <i class="fas fa-times"></i>
+            </a>
+        </form>
+    </div>
+
+    <div class="table-container limited-height-table">
+        <table class="app-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Patient Code</th>
+                    <th>Patient Name</th>
+                    <th>DOB</th>
+                    <th>Phone</th>
+                    <th>Doctor</th>
+                    <th>Medical Center</th>
+                    <th>Status</th>
+                    <th class="actions-header">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for appt in appointments %}
+                <tr>
+                    <td>{{ appt.start_time }} - {{ appt.end_time }}</td>
+                    <td>{{ appt.patient_code }}</td>
+                    <td>{{ appt.first_name }} {{ appt.middle_name or '' }} {{ appt.last_name }}</td>
+                    <td>{{ appt.date_of_birth or '' }}</td>
+                    <td>{{ appt.phone_number or '' }}</td>
+                    <td>
+                        {{ appt.doctor_name }}
+                        {% if appt.doctor_specialty %} - {{ appt.doctor_specialty }}{% endif %}
+                    </td>
+                    <td>{{ appt.center_name }}</td>
+                    <td>
+                        {% if appt.check_in_item_id %}
+                            <span class="status-badge status-{{ appt.check_in_status }}">
+                                {{ appt.check_in_status }}
+                            </span>
+                        {% else %}
+                            <span class="status-badge status-booked">booked</span>
+                        {% endif %}
+                    </td>
+                    <td class="action-cell">
+                        {% if appt.check_in_item_id %}
+                            <span class="locked-label" title="Already checked in">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                        {% elif not can_check_in %}
+                            <button type="button"
+                                    class="table-action edit-action"
+                                    title="Check-in is available only for today's appointments"
+                                    disabled>
+                                <i class="fas fa-user-check"></i>
+                            </button>
+                        {% else %}
+                            <form method="POST"
+                                  action="{{ url_for('checkin_appointment_patient', appointment_id=appt.appointment_id) }}"
+                                  class="inline-delete-form">
+                                <input type="hidden" name="search" value="{{ search or '' }}">
+                                <input type="hidden" name="patient_id" value="{{ selected_patient_id or '' }}">
+                                <input type="hidden" name="appointment_date" value="{{ selected_date }}">
+                                <button type="submit"
+                                        class="table-action edit-action"
+                                        title="Check-in Patient">
+                                    <i class="fas fa-user-check"></i>
+                                </button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="empty-row">
+                        No appointments found for the selected date.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<script>
+document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
+    const input = selectBox.querySelector(".searchable-select-input");
+    const valueInput = selectBox.querySelector(".searchable-select-value");
+    const options = Array.from(selectBox.querySelectorAll(".searchable-select-option"));
+    const emptyState = selectBox.querySelector(".searchable-select-empty");
+
+    function openOptions(){
+        selectBox.classList.add("is-open");
+    }
+
+    function closeOptions(){
+        selectBox.classList.remove("is-open");
+    }
+
+    function filterOptions(){
+        const searchText = input.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        options.forEach(function(option){
+            const label = option.dataset.label.toLowerCase();
+            const value = option.dataset.value.toLowerCase();
+            const isVisible = label.includes(searchText) || value.includes(searchText);
+
+            option.hidden = !isVisible;
+
+            if(isVisible){
+                visibleCount += 1;
+            }
+        });
+
+        emptyState.hidden = visibleCount !== 0;
+    }
+
+    input.addEventListener("focus", function(){
+        openOptions();
+        filterOptions();
+    });
+
+    input.addEventListener("input", function(){
+        valueInput.value = "";
+        openOptions();
+        filterOptions();
+    });
+
+    options.forEach(function(option){
+        option.addEventListener("click", function(){
+            input.value = option.dataset.label;
+            valueInput.value = option.dataset.value;
+            closeOptions();
+        });
+    });
+
+    document.addEventListener("click", function(event){
+        if(!selectBox.contains(event.target)){
+            closeOptions();
+        }
+    });
+});
+</script>
+
+{% endblock %}

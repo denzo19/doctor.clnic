@@ -1,0 +1,455 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1><i class="fas fa-vial"></i> Lab Order</h1>
+    </div>
+
+    <div class="details-card">
+        <form method="POST"
+              action="{{ form_action }}"
+              id="labOrderForm"
+              class="modal-form">
+            {% if return_to_patient %}
+                <input type="hidden" name="return_to_patient" value="1">
+            {% endif %}
+
+            <div class="lab-order-header-grid">
+                <div class="form-group">
+                    <label>Patient</label>
+                    <div class="searchable-select"
+                         data-searchable-select
+                         data-required-message="Please choose a patient from the list.">
+                        <input type="text"
+                               class="searchable-select-input"
+                               placeholder="Choose patient"
+                               autocomplete="off"
+                               required
+                               value="{% for patient in patients %}{% if order and order.patient_id == patient.id %}{{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}{% endif %}{% endfor %}">
+                        <input type="hidden"
+                               id="order_patient_id"
+                               name="patient_id"
+                               class="searchable-select-value"
+                               value="{% if order %}{{ order.patient_id or '' }}{% endif %}">
+                        <div class="searchable-select-options">
+                            {% for patient in patients %}
+                                <button type="button"
+                                        class="searchable-select-option"
+                                        data-value="{{ patient.id }}"
+                                        data-label="{{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}">
+                                    {{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}
+                                </button>
+                            {% endfor %}
+                            <div class="searchable-select-empty">
+                                No patients found.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Doctor</label>
+                    <div class="searchable-select"
+                         data-searchable-select
+                         data-required-message="Please choose a doctor from the list.">
+                        <input type="text"
+                               class="searchable-select-input"
+                               placeholder="Choose doctor"
+                               autocomplete="off"
+                               required
+                               value="{% for doctor in doctors %}{% if selected_doctor_id and selected_doctor_id == doctor.id %}{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}{% endif %}{% endfor %}">
+                        <input type="hidden"
+                               id="order_doctor_id"
+                               name="doctor_id"
+                               class="searchable-select-value"
+                               value="{{ selected_doctor_id or '' }}">
+                        <div class="searchable-select-options">
+                            {% for doctor in doctors %}
+                                <button type="button"
+                                        class="searchable-select-option"
+                                        data-value="{{ doctor.id }}"
+                                        data-label="{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}">
+                                    {{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}
+                                </button>
+                            {% endfor %}
+                            <div class="searchable-select-empty">
+                                No doctors found.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Order Date</label>
+                    <input type="date"
+                           id="order_result_date"
+                           name="result_date"
+                           value="{% if order and order.result_date %}{{ order.result_date }}{% else %}{{ default_order_date }}{% endif %}"
+                           required>
+                </div>
+
+                <div class="form-group lab-order-notes-field">
+                    <label>Notes</label>
+                    <textarea id="order_notes" name="notes">{% if order %}{{ order.notes or '' }}{% endif %}</textarea>
+                </div>
+
+                <div class="lab-order-header-actions">
+                    <button type="button"
+                            class="standard-btn form-save-btn"
+                            onclick="openTestModal()">
+                        <i class="fas fa-plus"></i> Add Test
+                    </button>
+
+                    <a href="{% if return_to_patient and order and order.patient_id %}{{ url_for('patient_details', patient_id=order.patient_id, doctor_id=selected_doctor_id) }}{% else %}{{ url_for('lab_order') }}{% endif %}"
+                       class="standard-btn form-cancel-btn">
+                        <i class="fas fa-ban"></i> Cancel
+                    </a>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="app-table">
+                    <thead>
+                        <tr>
+                            <th>Test</th>
+                            <th>Category</th>
+                            <th>Unit</th>
+                            <th class="actions-header">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="temporaryTestsBody">
+                        <tr id="emptyTemporaryTestsRow">
+                            <td colspan="4" class="empty-row">No tests added.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit"
+                        name="save_type"
+                        value="draft"
+                        class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i> Save Draft
+                </button>
+
+                <button type="submit"
+                        name="save_type"
+                        value="final"
+                        class="standard-btn primary-btn">
+                    <i class="fas fa-lock"></i> Final Save
+                </button>
+
+                {% if show_final_print_button %}
+                    <button type="submit"
+                            name="save_type"
+                            value="final_print"
+                            formtarget="_blank"
+                            class="standard-btn primary-btn">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+</section>
+
+<div id="testModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-vial"></i> Choose Lab Test</h2>
+            <button type="button" class="modal-close-btn" onclick="closeTestModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-form">
+            <div class="form-grid">
+                <div class="form-group form-group-wide">
+                    <label>Lab Test</label>
+                    <select id="modal_test_id" required>
+                        <option value="">Choose test</option>
+                        {% for test in lab_tests %}
+                            <option value="{{ test.id }}">
+                                {{ test.test_name }}{% if test.category %} - {{ test.category }}{% endif %}{% if test.unit %} - {{ test.unit }}{% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button"
+                        class="standard-btn form-save-btn"
+                        onclick="saveTemporaryTest()">
+                    <i class="fas fa-forward"></i> Next
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-cancel-btn"
+                        onclick="closeTestModal()">
+                    <i class="fas fa-ban"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.lab-order-header-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.2fr) minmax(220px, 1.2fr) minmax(160px, 0.8fr);
+    gap: 14px;
+    align-items: end;
+}
+
+.lab-order-notes-field {
+    grid-column: 1 / 3;
+}
+
+.lab-order-notes-field textarea {
+    min-height: 38px;
+    height: 38px;
+    resize: vertical;
+}
+
+.lab-order-header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: end;
+    justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+    .lab-order-header-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lab-order-notes-field {
+        grid-column: auto;
+    }
+
+    .lab-order-header-actions {
+        justify-content: flex-start;
+    }
+}
+</style>
+
+<script>
+const labTests = {{ lab_tests|tojson }};
+const initialTemporaryTests = {{ order.test_ids|tojson if order else '[]' }};
+const testLookup = {};
+let temporaryTests = initialTemporaryTests.map(function(testId){
+    return String(testId);
+});
+let editingTestIndex = null;
+
+labTests.forEach(function(test){
+    testLookup[String(test.id)] = test;
+});
+
+document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
+    const input = selectBox.querySelector(".searchable-select-input");
+    const valueInput = selectBox.querySelector(".searchable-select-value");
+    const options = Array.from(selectBox.querySelectorAll(".searchable-select-option"));
+    const emptyState = selectBox.querySelector(".searchable-select-empty");
+    const form = selectBox.closest("form");
+
+    function openOptions(){
+        selectBox.classList.add("is-open");
+    }
+
+    function closeOptions(){
+        selectBox.classList.remove("is-open");
+    }
+
+    function filterOptions(){
+        const searchText = input.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        options.forEach(function(option){
+            const label = option.dataset.label.toLowerCase();
+            const isVisible = label.includes(searchText);
+
+            option.hidden = !isVisible;
+
+            if(isVisible){
+                visibleCount += 1;
+            }
+        });
+
+        emptyState.hidden = visibleCount !== 0;
+    }
+
+    input.addEventListener("focus", function(){
+        openOptions();
+        filterOptions();
+    });
+
+    input.addEventListener("input", function(){
+        valueInput.value = "";
+        input.setCustomValidity("");
+        openOptions();
+        filterOptions();
+    });
+
+    options.forEach(function(option){
+        option.addEventListener("click", function(){
+            input.value = option.dataset.label;
+            valueInput.value = option.dataset.value;
+            input.setCustomValidity("");
+            closeOptions();
+        });
+    });
+
+    document.addEventListener("click", function(event){
+        if(!selectBox.contains(event.target)){
+            closeOptions();
+        }
+    });
+
+    if(form){
+        form.addEventListener("submit", function(event){
+            if(!valueInput.value){
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                input.setCustomValidity(selectBox.dataset.requiredMessage);
+                input.reportValidity();
+                openOptions();
+                filterOptions();
+            }
+        });
+    }
+});
+
+function renderTemporaryTests() {
+    const body = document.getElementById("temporaryTestsBody");
+    body.innerHTML = "";
+
+    if (temporaryTests.length === 0) {
+        body.innerHTML = '<tr id="emptyTemporaryTestsRow"><td colspan="4" class="empty-row">No tests added.</td></tr>';
+        return;
+    }
+
+    temporaryTests.forEach(function(testId, index){
+        const test = testLookup[String(testId)] || {};
+        const row = document.createElement("tr");
+        const testCell = document.createElement("td");
+        const hiddenInput = document.createElement("input");
+        const categoryCell = document.createElement("td");
+        const unitCell = document.createElement("td");
+        const actionCell = document.createElement("td");
+        const editButton = document.createElement("button");
+        const deleteButton = document.createElement("button");
+
+        hiddenInput.type = "hidden";
+        hiddenInput.name = "test_ids";
+        hiddenInput.value = testId;
+
+        testCell.appendChild(hiddenInput);
+        testCell.appendChild(document.createTextNode(test.test_name || ""));
+        categoryCell.textContent = test.category || "";
+        unitCell.textContent = test.unit || "";
+        actionCell.className = "action-cell";
+
+        editButton.type = "button";
+        editButton.className = "table-action edit-action";
+        editButton.title = "Edit";
+        editButton.innerHTML = '<i class="fas fa-pen"></i>';
+        editButton.addEventListener("click", function(){
+            editTemporaryTest(index);
+        });
+
+        deleteButton.type = "button";
+        deleteButton.className = "table-action delete-action";
+        deleteButton.title = "Delete";
+        deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteButton.addEventListener("click", function(){
+            deleteTemporaryTest(index);
+        });
+
+        actionCell.appendChild(editButton);
+        actionCell.appendChild(deleteButton);
+        row.appendChild(testCell);
+        row.appendChild(categoryCell);
+        row.appendChild(unitCell);
+        row.appendChild(actionCell);
+
+        body.appendChild(row);
+    });
+}
+
+function openTestModal(testIndex=null) {
+    editingTestIndex = testIndex;
+    document.getElementById("modal_test_id").value =
+        testIndex === null ? "" : String(temporaryTests[testIndex] || "");
+    document.getElementById("testModal").style.display = "block";
+}
+
+function closeTestModal() {
+    document.getElementById("testModal").style.display = "none";
+    editingTestIndex = null;
+}
+
+function saveTemporaryTest() {
+    const select = document.getElementById("modal_test_id");
+    const testId = select.value;
+
+    if (!testId) {
+        select.reportValidity();
+        return;
+    }
+
+    const duplicateIndex = temporaryTests.findIndex(function(existingTestId, index){
+        return existingTestId === testId && index !== editingTestIndex;
+    });
+
+    if (duplicateIndex !== -1) {
+        alert("This test is already added.");
+        return;
+    }
+
+    if (editingTestIndex !== null) {
+        temporaryTests[editingTestIndex] = testId;
+    } else {
+        temporaryTests.push(testId);
+    }
+
+    renderTemporaryTests();
+    select.value = "";
+    editingTestIndex = null;
+    select.focus();
+}
+
+function editTemporaryTest(index) {
+    openTestModal(index);
+}
+
+function deleteTemporaryTest(index) {
+    temporaryTests.splice(index, 1);
+    renderTemporaryTests();
+}
+
+document.getElementById("labOrderForm").addEventListener("submit", function(event){
+    if (temporaryTests.length === 0) {
+        event.preventDefault();
+        alert("Add at least one lab test.");
+    }
+});
+
+window.addEventListener("click", function(event) {
+    const testModal = document.getElementById("testModal");
+
+    if (event.target === testModal) {
+        closeTestModal();
+    }
+});
+
+renderTemporaryTests();
+</script>
+
+{% endblock %}

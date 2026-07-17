@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="visit-page">
+
+    <div class="modal-content visit-content">
+
+        <div class="modal-header">
+            <h2>
+                <i class="fas fa-stethoscope"></i>
+                New Visit
+            </h2>
+
+            <a href="{{ url_for('patient_details', patient_id=patient.id, doctor_id=doctor_id) }}"
+               class="modal-close-btn">
+                <i class="fas fa-times"></i>
+            </a>
+        </div>
+
+        <form method="POST" class="modal-form visit-form">
+            <input type="hidden" name="check_in_item_id" value="{{ check_in_item_id }}">
+            <input type="hidden" name="doctor_id" value="{{ doctor_id }}">
+            <div class="visit-patient-title">
+                <i class="fas fa-user-injured"></i>
+                {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}
+            </div>
+
+            <div class="form-grid visit-grid">
+
+                <div class="form-group form-group-wide">
+                    <label>Chief Complaint</label>
+                    <textarea name="chief_complaint" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Chapter / Block</label>
+                    <div class="searchable-select" data-visit-block-select>
+                        <input type="text"
+                               class="searchable-select-input"
+                               placeholder="Choose chapter/block"
+                               autocomplete="off"
+                               {% if not diagnosis_blocks %}disabled{% endif %}>
+                        <input type="hidden"
+                               name="diagnosis_block_id"
+                               class="searchable-select-value">
+                        <div class="searchable-select-options">
+                            {% for block in diagnosis_blocks %}
+                                {% set block_label = block.display_title %}
+                                <button type="button"
+                                        class="searchable-select-option"
+                                        data-value="{{ block.id }}"
+                                        data-label="{{ block_label }}">
+                                    {{ block_label }}
+                                </button>
+                            {% endfor %}
+                            <div class="searchable-select-empty">
+                                No ICD blocks found for this doctor speciality.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Diagnosis Name</label>
+                    <div class="searchable-select" data-visit-diagnosis-select>
+                        <input type="text"
+                               class="searchable-select-input"
+                               placeholder="Choose diagnosis"
+                               autocomplete="off"
+                               disabled>
+                        <input type="hidden"
+                               name="diagnosis_item_value"
+                               class="searchable-select-value">
+                        <div class="searchable-select-options">
+                            <div class="searchable-select-empty">
+                                Choose chapter/block first.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group form-group-wide">
+                    <label>Treatment Plan</label>
+                    <textarea name="treatment_plan"></textarea>
+                </div>
+
+                <div class="form-group form-group-wide">
+                    <label>Doctor Notes</label>
+                    <textarea name="doctor_notes"></textarea>
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+
+                <button type="submit"
+                        name="save_type"
+                        value="draft"
+                        class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i>
+                    Save Draft
+                </button>
+
+                <button type="submit"
+                        name="save_type"
+                        value="final"
+                        class="standard-btn primary-btn">
+                    <i class="fas fa-lock"></i>
+                    Final Save
+                </button>
+
+                <a href="{{ url_for('patient_details', patient_id=patient.id, doctor_id=doctor_id) }}"
+                class="standard-btn form-cancel-btn">
+                    <i class="fas fa-ban"></i>
+                    Back to Patients
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</section>
+
+<script>
+const diagnosisOptionsByBlock = {{ diagnosis_options_by_block|tojson }};
+
+function setupVisitSearchableSelect(selectBox, onSelect) {
+    const input = selectBox.querySelector(".searchable-select-input");
+    const valueInput = selectBox.querySelector(".searchable-select-value");
+    const emptyState = selectBox.querySelector(".searchable-select-empty");
+
+    function getOptions() {
+        return Array.from(selectBox.querySelectorAll(".searchable-select-option"));
+    }
+
+    function filterOptions() {
+        const searchText = input.value.toLowerCase();
+        let visibleCount = 0;
+
+        getOptions().forEach(function(option){
+            const label = option.dataset.label.toLowerCase();
+            const isVisible = label.includes(searchText);
+            option.style.display = isVisible ? "block" : "none";
+            if (isVisible) {
+                visibleCount += 1;
+            }
+        });
+
+        if (emptyState) {
+            emptyState.style.display = visibleCount ? "none" : "block";
+        }
+    }
+
+    input.addEventListener("focus", function(){
+        selectBox.classList.add("is-open");
+        filterOptions();
+    });
+
+    input.addEventListener("input", function(){
+        valueInput.value = "";
+        selectBox.classList.add("is-open");
+        filterOptions();
+    });
+
+    selectBox.addEventListener("click", function(event){
+        const option = event.target.closest(".searchable-select-option");
+        if (!option) {
+            return;
+        }
+
+        input.value = option.dataset.label;
+        valueInput.value = option.dataset.value;
+        selectBox.classList.remove("is-open");
+
+        if (onSelect) {
+            onSelect(option.dataset.value);
+        }
+    });
+
+    document.addEventListener("click", function(event){
+        if (!selectBox.contains(event.target)) {
+            selectBox.classList.remove("is-open");
+        }
+    });
+}
+
+function renderDiagnosisOptions(blockId) {
+    const diagnosisBox = document.querySelector("[data-visit-diagnosis-select]");
+    const input = diagnosisBox.querySelector(".searchable-select-input");
+    const valueInput = diagnosisBox.querySelector(".searchable-select-value");
+    const optionsWrap = diagnosisBox.querySelector(".searchable-select-options");
+    const options = diagnosisOptionsByBlock[blockId] || [];
+
+    input.value = "";
+    valueInput.value = "";
+    optionsWrap.innerHTML = "";
+
+    if (!options.length) {
+        input.disabled = true;
+        optionsWrap.innerHTML = '<div class="searchable-select-empty">No diagnoses found for this block.</div>';
+        return;
+    }
+
+    input.disabled = false;
+
+    options.forEach(function(option){
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "searchable-select-option";
+        button.dataset.value = option.value;
+        button.dataset.label = option.label;
+        button.textContent = option.label;
+        optionsWrap.appendChild(button);
+    });
+
+    const empty = document.createElement("div");
+    empty.className = "searchable-select-empty";
+    empty.textContent = "No diagnoses found.";
+    optionsWrap.appendChild(empty);
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+    const blockBox = document.querySelector("[data-visit-block-select]");
+    const diagnosisBox = document.querySelector("[data-visit-diagnosis-select]");
+
+    if (blockBox) {
+        setupVisitSearchableSelect(blockBox, renderDiagnosisOptions);
+    }
+
+    if (diagnosisBox) {
+        setupVisitSearchableSelect(diagnosisBox);
+    }
+});
+</script>
+
+{% endblock %}

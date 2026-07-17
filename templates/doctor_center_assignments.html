@@ -1,0 +1,530 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1><i class="fas fa-user-md"></i> Manage Doctor-Center Assignments</h1>
+    </div>
+    <div class="details-card">
+        <form method="GET"
+              action="{{ url_for('manage_doctor_center_assignments') }}"
+              class="toolbar-form">
+
+            <input type="text"
+                   id="doctorCenterAssignmentSearch"
+                   name="search"
+                   value="{{ search or '' }}"
+                   class="toolbar-search-input"
+                   placeholder="Search assignment">
+
+            <button type="submit" class="toolbar-btn search-btn" title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <a href="{{ url_for('manage_doctor_center_assignments') }}"
+               class="toolbar-btn clear-btn"
+               title="Clear">
+                <i class="fas fa-times"></i>
+            </a>
+
+            <button type="button"
+                    class="toolbar-btn add-btn"
+                    title="Add Assignment"
+                    onclick="openAddAssignmentModal()">
+                <i class="fas fa-plus"></i>
+            </button>
+
+            <button type="button"
+                    id="doctorCenterAssignmentReportBtn"
+                    class="toolbar-btn search-btn"
+                    title="Doctor-Center Assignments Report">
+                <i class="fas fa-file-pdf"></i>
+            </button>
+
+        </form>
+    </div>
+
+    <div class="table-container limited-height-table">
+        <table class="app-table">
+            <thead>
+                <tr>
+                    <th>Doctor</th>
+                    <th>Specialty</th>
+                    <th>Medical Center</th>
+                    <th>Active</th>
+                    <th class="actions-header">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in assignments %}
+                <tr class="clickable-row"
+                    onclick="openAssignmentModal(
+                        '{{ item.id }}',
+                        '{{ item.doctor_id }}',
+                        '{{ item.center_id }}',
+                        '{{ 1 if item.is_active else 0 }}'
+                    )">
+
+                    <td>{{ item.doctor_name }}</td>
+                    <td>{{ item.specialty or '' }}</td>
+                    <td>{{ item.center_name }}</td>
+                    <td>{{ 'Yes' if item.is_active else 'No' }}</td>
+
+                    <td class="action-cell" onclick="event.stopPropagation();">
+
+                        <button type="button"
+                                class="table-action edit-action"
+                                title="Edit"
+                                onclick="openAssignmentModal(
+                                    '{{ item.id }}',
+                                    '{{ item.doctor_id }}',
+                                    '{{ item.center_id }}',
+                                    '{{ 1 if item.is_active else 0 }}'
+                                )">
+                            <i class="fas fa-pen"></i>
+                        </button>
+
+                        {% if item.is_active %}
+                            <form method="POST"
+                                  action="{{ url_for('stop_doctor_center_assignment', assignment_id=item.id) }}"
+                                  class="inline-delete-form"
+                                  onsubmit="return confirm('Stop this doctor-center assignment?');">
+                                <button type="submit"
+                                        class="table-action delete-action"
+                                        title="Stop Assignment">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="locked-label" title="Inactive assignment">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                        {% endif %}
+
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="empty-row">
+                        No doctor-center assignments found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+
+</section>
+
+<div id="assignmentEditModal" class="modal">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h2><i class="fas fa-pen"></i> Doctor-Center Assignment</h2>
+            <button type="button" class="modal-close-btn" onclick="closeAssignmentModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="assignmentEditForm" method="POST" class="modal-form">
+
+            <div class="form-grid two-column-grid">
+
+                <div class="form-group">
+                    <label>Doctor</label>
+                    <div class="searchable-select"
+                         data-searchable-select
+                         data-required-message="Please choose a doctor from the list.">
+                        <input type="text"
+                               id="modal_doctor_search"
+                               class="searchable-select-input"
+                               placeholder="Choose doctor"
+                               autocomplete="off"
+                               required>
+                        <input type="hidden"
+                               id="modal_doctor_id"
+                               name="doctor_id"
+                               class="searchable-select-value">
+                        <div class="searchable-select-options">
+                            {% for doctor in doctors %}
+                                <button type="button"
+                                        class="searchable-select-option"
+                                        data-value="{{ doctor.id }}"
+                                        data-label="{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}">
+                                    {{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}
+                                </button>
+                            {% endfor %}
+                            <div class="searchable-select-empty">
+                                No doctors found.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Medical Center</label>
+                    <div class="searchable-select"
+                         data-searchable-select
+                         data-required-message="Please choose a medical center from the list.">
+                        <input type="text"
+                               id="modal_center_search"
+                               class="searchable-select-input"
+                               placeholder="Choose center"
+                               autocomplete="off"
+                               required>
+                        <input type="hidden"
+                               id="modal_center_id"
+                               name="center_id"
+                               class="searchable-select-value">
+                        <div class="searchable-select-options">
+                            {% for center in centers %}
+                                <button type="button"
+                                        class="searchable-select-option"
+                                        data-value="{{ center.id }}"
+                                        data-label="{{ center.center_name }}">
+                                    {{ center.center_name }}
+                                </button>
+                            {% endfor %}
+                            <div class="searchable-select-empty">
+                                No medical centers found.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Active</label>
+                    <select id="modal_is_active" name="is_active">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i> Save
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-cancel-btn"
+                        onclick="closeAssignmentModal()">
+                    <i class="fas fa-ban"></i> Cancel
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<div id="addAssignmentModal" class="modal">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h2><i class="fas fa-plus"></i> Add Assignment</h2>
+            <button type="button" class="modal-close-btn" onclick="closeAddAssignmentModal(true)">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="addAssignmentForm"
+              method="POST"
+              action="{{ url_for('manage_doctor_center_assignments') }}"
+              class="modal-form">
+
+            <div class="form-grid two-column-grid">
+
+                <div class="form-group">
+                    <label>Doctor</label>
+                    <div class="searchable-select"
+                         data-searchable-select
+                         data-required-message="Please choose a doctor from the list.">
+                        <input type="text"
+                               class="searchable-select-input"
+                               placeholder="Choose doctor"
+                               autocomplete="off"
+                               required>
+                        <input type="hidden"
+                               name="doctor_id"
+                               class="searchable-select-value">
+                        <div class="searchable-select-options">
+                            {% for doctor in doctors %}
+                                <button type="button"
+                                        class="searchable-select-option"
+                                        data-value="{{ doctor.id }}"
+                                        data-label="{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}">
+                                    {{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}
+                                </button>
+                            {% endfor %}
+                            <div class="searchable-select-empty">
+                                No doctors found.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Medical Center</label>
+                    <div class="searchable-select"
+                         data-searchable-select
+                         data-required-message="Please choose a medical center from the list.">
+                        <input type="text"
+                               class="searchable-select-input"
+                               placeholder="Choose center"
+                               autocomplete="off"
+                               required>
+                        <input type="hidden"
+                               name="center_id"
+                               class="searchable-select-value">
+                        <div class="searchable-select-options">
+                            {% for center in centers %}
+                                <button type="button"
+                                        class="searchable-select-option"
+                                        data-value="{{ center.id }}"
+                                        data-label="{{ center.center_name }}">
+                                    {{ center.center_name }}
+                                </button>
+                            {% endfor %}
+                            <div class="searchable-select-empty">
+                                No medical centers found.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i> Save
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-save-btn"
+                        onclick="saveAssignmentAndNext()">
+                    <i class="fas fa-forward"></i> Next
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-cancel-btn"
+                        onclick="closeAddAssignmentModal(true)">
+                    <i class="fas fa-ban"></i> Cancel
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    const assignmentSearch = document.getElementById("doctorCenterAssignmentSearch");
+    const assignmentReportBtn = document.getElementById("doctorCenterAssignmentReportBtn");
+
+    if(assignmentSearch && assignmentReportBtn){
+        assignmentReportBtn.addEventListener("click", function(){
+            const reportUrl = new URL("{{ url_for('doctor_center_assignments_report') }}", window.location.origin);
+            const searchText = assignmentSearch.value.trim();
+
+            if(searchText){
+                reportUrl.searchParams.set("search", searchText);
+            }
+
+            window.open(reportUrl.toString(), "_blank");
+        });
+    }
+});
+
+function setSearchableSelectValue(valueInputId, value) {
+    const valueInput = document.getElementById(valueInputId);
+    const selectBox = valueInput.closest("[data-searchable-select]");
+    const textInput = selectBox.querySelector(".searchable-select-input");
+    const option = selectBox.querySelector(
+        `.searchable-select-option[data-value="${value}"]`
+    );
+
+    valueInput.value = value || "";
+    textInput.value = option ? option.dataset.label : "";
+    textInput.setCustomValidity("");
+}
+
+function resetSearchableSelects(form) {
+    form.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
+        const textInput = selectBox.querySelector(".searchable-select-input");
+        const valueInput = selectBox.querySelector(".searchable-select-value");
+
+        textInput.value = "";
+        textInput.setCustomValidity("");
+        valueInput.value = "";
+        selectBox.classList.remove("is-open");
+    });
+}
+
+function initializeSearchableSelects() {
+    document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
+        const input = selectBox.querySelector(".searchable-select-input");
+        const valueInput = selectBox.querySelector(".searchable-select-value");
+        const options = Array.from(selectBox.querySelectorAll(".searchable-select-option"));
+        const emptyState = selectBox.querySelector(".searchable-select-empty");
+        const form = selectBox.closest("form");
+
+        function openOptions(){
+            selectBox.classList.add("is-open");
+        }
+
+        function closeOptions(){
+            selectBox.classList.remove("is-open");
+        }
+
+        function filterOptions(){
+            const searchText = input.value.trim().toLowerCase();
+            let visibleCount = 0;
+
+            options.forEach(function(option){
+                const label = option.dataset.label.toLowerCase();
+                const isVisible = label.includes(searchText);
+
+                option.hidden = !isVisible;
+
+                if(isVisible){
+                    visibleCount += 1;
+                }
+            });
+
+            emptyState.hidden = visibleCount !== 0;
+        }
+
+        input.addEventListener("focus", function(){
+            openOptions();
+            filterOptions();
+        });
+
+        input.addEventListener("input", function(){
+            valueInput.value = "";
+            input.setCustomValidity("");
+            openOptions();
+            filterOptions();
+        });
+
+        options.forEach(function(option){
+            option.addEventListener("click", function(){
+                input.value = option.dataset.label;
+                valueInput.value = option.dataset.value;
+                input.setCustomValidity("");
+                closeOptions();
+            });
+        });
+
+        document.addEventListener("click", function(event){
+            if(!selectBox.contains(event.target)){
+                closeOptions();
+            }
+        });
+
+        if(form){
+            form.addEventListener("submit", function(event){
+                if(!valueInput.value){
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    input.setCustomValidity(selectBox.dataset.requiredMessage);
+                    input.reportValidity();
+                    openOptions();
+                    filterOptions();
+                }
+            });
+        }
+    });
+}
+
+function openAssignmentModal(id, doctorId, centerId, active) {
+    const form = document.getElementById("assignmentEditForm");
+
+    form.action = "/admin/doctor_center_assignments/update/" + id;
+
+    setSearchableSelectValue("modal_doctor_id", doctorId);
+    setSearchableSelectValue("modal_center_id", centerId);
+    document.getElementById("modal_is_active").value = active;
+
+    document.getElementById("assignmentEditModal").style.display = "block";
+}
+
+function closeAssignmentModal() {
+    document.getElementById("assignmentEditModal").style.display = "none";
+}
+
+function openAddAssignmentModal() {
+    const form = document.getElementById("addAssignmentForm");
+
+    form.reset();
+    resetSearchableSelects(form);
+    document.getElementById("addAssignmentModal").style.display = "block";
+}
+
+function closeAddAssignmentModal(refresh=false) {
+    document.getElementById("addAssignmentModal").style.display = "none";
+
+    if (refresh) {
+        window.location.reload();
+    }
+}
+
+function saveAssignmentAndNext() {
+    const form = document.getElementById("addAssignmentForm");
+
+    if (!form.reportValidity()) {
+        return;
+    }
+
+    const formData = new FormData(form);
+
+    fetch("{{ url_for('add_doctor_center_assignment_ajax') }}", {
+        method: "POST",
+        body: formData
+    })
+    .then(response =>
+        response.json().then(data => ({
+            ok: response.ok,
+            data: data
+        }))
+    )
+    .then(result => {
+        const data = result.data;
+
+        if (!result.ok || !data.success) {
+            alert(data.message || "Error saving assignment.");
+            return;
+        }
+
+        form.reset();
+        resetSearchableSelects(form);
+        form.querySelector(".searchable-select-input").focus();
+    })
+    .catch(error => {
+        alert("Error saving assignment.");
+        console.error(error);
+    });
+}
+
+window.onclick = function(event) {
+    const editModal = document.getElementById("assignmentEditModal");
+    const addModal = document.getElementById("addAssignmentModal");
+
+    if (event.target === editModal) {
+        closeAssignmentModal();
+    }
+
+    if (event.target === addModal) {
+        closeAddAssignmentModal(true);
+    }
+};
+
+document.addEventListener("DOMContentLoaded", initializeSearchableSelects);
+</script>
+
+{% endblock %}

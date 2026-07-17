@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page diagnosis-icd-setup-page">
+
+    <div class="page-header">
+        <h1>
+            <i class="fas fa-stethoscope"></i>
+            Diagnosis ICD Setup
+        </h1>
+    </div>
+
+    <div class="details-card">
+        <form method="GET"
+              action="{{ url_for('diagnosis_icd_setup') }}"
+              class="toolbar-form">
+            <label class="toolbar-filter-label" for="specialtyFilter">Specialty</label>
+            <select id="specialtyFilter"
+                    name="specialty"
+                    class="toolbar-search-input"
+                    required>
+                {% for item in specialties %}
+                    <option value="{{ item.specialty }}"
+                            {% if selected_specialty == item.specialty %}selected{% endif %}>
+                        {{ item.specialty }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="toolbar-btn search-btn" title="Load">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </div>
+
+    <div class="details-card diagnosis-icd-summary">
+        <div class="patient-profile-grid">
+            <div class="patient-profile-item">
+                <span>Active Version</span>
+                <strong>
+                    {% if active_version %}
+                        {{ active_version.version_year }}
+                    {% else %}
+                        Not imported
+                    {% endif %}
+                </strong>
+            </div>
+            <div class="patient-profile-item">
+                <span>Chapters</span>
+                <strong>{{ counts.chapters }}</strong>
+            </div>
+            <div class="patient-profile-item">
+                <span>Blocks</span>
+                <strong>{{ counts.blocks }}</strong>
+            </div>
+            <div class="patient-profile-item">
+                <span>Codes</span>
+                <strong>{{ counts.codes }}</strong>
+            </div>
+            <div class="patient-profile-item">
+                <span>Selected Codes</span>
+                <strong>{{ enabled_code_count }}</strong>
+            </div>
+        </div>
+    </div>
+
+    {% if not active_version %}
+        <div class="details-card">
+            <p class="empty-row">Import an ICD-10-CM version before selecting specialty diagnosis groups.</p>
+        </div>
+    {% elif not specialties %}
+        <div class="details-card">
+            <p class="empty-row">No doctor specialties found.</p>
+        </div>
+    {% else %}
+        <form method="POST"
+              action="{{ url_for('diagnosis_icd_setup') }}"
+              class="diagnosis-icd-form">
+            <input type="hidden" name="specialty" value="{{ selected_specialty }}">
+
+            <div class="details-card diagnosis-icd-actions">
+                <div>
+                    <strong>{{ selected_specialty }}</strong>
+                    <span class="diagnosis-icd-muted">chapter and block selection</span>
+                </div>
+                <button type="submit" class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i>
+                    Save Selection
+                </button>
+                <a href="{{ url_for('diagnosis_icd_fine_tuning', specialty=selected_specialty) }}"
+                   class="standard-btn primary-btn">
+                    <i class="fas fa-list-check"></i>
+                    Fine Tuning
+                </a>
+                <button type="submit"
+                        name="action"
+                        value="clear"
+                        class="standard-btn form-cancel-btn"
+                        onclick="return confirm('Clear all ICD selections for this specialty?');">
+                    <i class="fas fa-times"></i>
+                    Clear
+                </button>
+            </div>
+
+            {% for chapter in chapters %}
+                <div class="details-section diagnosis-icd-chapter">
+                    <label class="diagnosis-icd-chapter-label">
+                        <input type="checkbox"
+                               name="chapter_ids"
+                               value="{{ chapter.id }}"
+                               data-chapter-toggle="{{ chapter.id }}"
+                               {% if chapter.id in enabled_chapter_ids %}checked{% endif %}>
+                        <span>
+                            {{ chapter.code_range }}
+                            {{ chapter.title }}
+                        </span>
+                    </label>
+
+                    <div class="diagnosis-icd-block-grid">
+                        {% for block in chapter.blocks %}
+                            <label class="diagnosis-icd-block-option">
+                                <input type="checkbox"
+                                       name="block_ids"
+                                       value="{{ block.id }}"
+                                       data-parent-chapter="{{ chapter.id }}"
+                                       {% if block.id in enabled_block_ids %}checked{% endif %}>
+                                <span>
+                                    <strong>{{ block.block_code_range }}</strong>
+                                    {{ block.title }}
+                                    <em>{{ block.code_count }} codes</em>
+                                </span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            <div class="details-card diagnosis-icd-actions">
+                <button type="submit" class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i>
+                    Save Selection
+                </button>
+                <a href="{{ url_for('diagnosis_icd_fine_tuning', specialty=selected_specialty) }}"
+                   class="standard-btn primary-btn">
+                    <i class="fas fa-list-check"></i>
+                    Fine Tuning
+                </a>
+                <button type="submit"
+                        name="action"
+                        value="clear"
+                        class="standard-btn form-cancel-btn"
+                        onclick="return confirm('Clear all ICD selections for this specialty?');">
+                    <i class="fas fa-times"></i>
+                    Clear
+                </button>
+            </div>
+        </form>
+
+    {% endif %}
+
+</section>
+
+<script>
+document.querySelectorAll("[data-chapter-toggle]").forEach(function(chapterCheckbox){
+    chapterCheckbox.addEventListener("change", function(){
+        const chapterId = chapterCheckbox.dataset.chapterToggle;
+        document.querySelectorAll("[data-parent-chapter='" + chapterId + "']").forEach(function(blockCheckbox){
+            blockCheckbox.checked = chapterCheckbox.checked;
+        });
+    });
+});
+
+</script>
+
+{% endblock %}

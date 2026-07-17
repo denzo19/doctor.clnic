@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1><i class="fas fa-key"></i> Manage Permissions</h1>
+    </div>
+
+    <div class="details-card">
+        <form method="POST" class="toolbar-form">
+
+            <div class="searchable-select"
+                 data-searchable-select
+                 data-required-message="Please choose a group from the list.">
+                <input type="text"
+                       class="toolbar-search-input searchable-select-input"
+                       placeholder="Choose group"
+                       autocomplete="off"
+                       required>
+                <input type="hidden"
+                       name="group_id"
+                       class="searchable-select-value">
+                <div class="searchable-select-options">
+                    {% for group in groups %}
+                        <button type="button"
+                                class="searchable-select-option"
+                                data-value="{{ group.id }}"
+                                data-label="{{ group.group_name }}">
+                            {{ group.group_name }}
+                        </button>
+                    {% endfor %}
+                    <div class="searchable-select-empty">
+                        No groups found.
+                    </div>
+                </div>
+            </div>
+
+            <div class="searchable-select"
+                 data-searchable-select
+                 data-required-message="Please choose a menu option from the list.">
+                <input type="text"
+                       class="toolbar-search-input searchable-select-input"
+                       placeholder="Choose menu option"
+                       autocomplete="off"
+                       required>
+                <input type="hidden"
+                       name="menu_option_id"
+                       class="searchable-select-value">
+                <div class="searchable-select-options">
+                    {% for option in menu_options %}
+                        <button type="button"
+                                class="searchable-select-option"
+                                data-value="{{ option.id }}"
+                                data-label="{{ option.option_name }} - {{ option.endpoint_name }}">
+                            {{ option.option_name }} - {{ option.endpoint_name }}
+                        </button>
+                    {% endfor %}
+                    <div class="searchable-select-empty">
+                        No menu options found.
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit"
+                    class="toolbar-btn add-btn"
+                    title="Add Permission">
+                <i class="fas fa-plus"></i>
+            </button>
+
+        </form>
+    </div>
+
+    <div class="manage-permissions-toolbar-separator"></div>
+
+    <div class="details-card table-search-card">
+        <div class="toolbar-form table-search-form">
+            <input type="text"
+                   id="permissionTableSearch"
+                   class="toolbar-search-input table-search-input"
+                   placeholder="Search permissions table"
+                   autocomplete="off">
+
+            <button type="button"
+                    id="permissionTableSearchBtn"
+                    class="toolbar-btn search-btn"
+                    title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <button type="button"
+                    id="permissionTableClearBtn"
+                    class="toolbar-btn clear-btn"
+                    title="Clear">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <button type="button"
+                    id="permissionTableReportBtn"
+                    class="toolbar-btn search-btn"
+                    title="Permissions Report">
+                <i class="fas fa-file-pdf"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="table-container limited-height-table">
+        <table class="app-table">
+            <thead>
+                <tr>
+                    <th>Group</th>
+                    <th>Option</th>
+                    <th>Endpoint</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in permissions %}
+                <tr data-permission-row
+                    data-search-text="{{ p.group_name }} {{ p.option_name }} {{ p.endpoint_name }}">
+                    <td>{{ p.group_name }}</td>
+                    <td>{{ p.option_name }}</td>
+                    <td>{{ p.endpoint_name }}</td>
+                    <td class="action-cell">
+                        <form method="POST"
+                              action="{{ url_for('delete_permission', permission_id=p.id) }}"
+                              class="inline-delete-form"
+                              onsubmit="return confirm('Delete this permission?');">
+                            <button class="table-action delete-action" type="submit">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="empty-row">No permissions found.</td>
+                </tr>
+                {% endfor %}
+                <tr id="permissionTableNoMatches" hidden>
+                    <td colspan="4" class="empty-row">No matching permissions found.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<style>
+.manage-permissions-toolbar-separator {
+    height: 1px;
+    background: #1f4e79;
+    margin: 12px 0;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    const permissionTableSearch = document.getElementById("permissionTableSearch");
+    const permissionTableSearchBtn = document.getElementById("permissionTableSearchBtn");
+    const permissionTableClearBtn = document.getElementById("permissionTableClearBtn");
+    const permissionTableReportBtn = document.getElementById("permissionTableReportBtn");
+    const permissionRows = Array.from(document.querySelectorAll("[data-permission-row]"));
+    const noMatchesRow = document.getElementById("permissionTableNoMatches");
+
+    function filterPermissionTable(){
+        const searchText = permissionTableSearch.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        permissionRows.forEach(function(row){
+            const rowText = row.dataset.searchText.toLowerCase();
+            const isVisible = rowText.includes(searchText);
+
+            row.hidden = !isVisible;
+
+            if(isVisible){
+                visibleCount += 1;
+            }
+        });
+
+        if(noMatchesRow){
+            noMatchesRow.hidden = !searchText || visibleCount !== 0;
+        }
+    }
+
+    if(permissionTableSearch && permissionTableSearchBtn && permissionTableClearBtn){
+        permissionTableSearchBtn.addEventListener("click", filterPermissionTable);
+
+        permissionTableSearch.addEventListener("keydown", function(event){
+            if(event.key === "Enter"){
+                event.preventDefault();
+                filterPermissionTable();
+            }
+        });
+
+        permissionTableClearBtn.addEventListener("click", function(){
+            permissionTableSearch.value = "";
+            filterPermissionTable();
+            permissionTableSearch.focus();
+        });
+    }
+
+    if(permissionTableReportBtn && permissionTableSearch){
+        permissionTableReportBtn.addEventListener("click", function(){
+            const reportUrl = new URL("{{ url_for('permissions_report') }}", window.location.origin);
+            const searchText = permissionTableSearch.value.trim();
+
+            if(searchText){
+                reportUrl.searchParams.set("q", searchText);
+            }
+
+            window.open(reportUrl.toString(), "_blank");
+        });
+    }
+
+    document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
+        const input = selectBox.querySelector(".searchable-select-input");
+        const valueInput = selectBox.querySelector(".searchable-select-value");
+        const options = Array.from(selectBox.querySelectorAll(".searchable-select-option"));
+        const emptyState = selectBox.querySelector(".searchable-select-empty");
+        const form = selectBox.closest("form");
+
+        function openOptions(){
+            selectBox.classList.add("is-open");
+        }
+
+        function closeOptions(){
+            selectBox.classList.remove("is-open");
+        }
+
+        function filterOptions(){
+            const searchText = input.value.trim().toLowerCase();
+            let visibleCount = 0;
+
+            options.forEach(function(option){
+                const label = option.dataset.label.toLowerCase();
+                const isVisible = label.includes(searchText);
+
+                option.hidden = !isVisible;
+
+                if(isVisible){
+                    visibleCount += 1;
+                }
+            });
+
+            emptyState.hidden = visibleCount !== 0;
+        }
+
+        input.addEventListener("focus", function(){
+            openOptions();
+            filterOptions();
+        });
+
+        input.addEventListener("input", function(){
+            valueInput.value = "";
+            input.setCustomValidity("");
+            openOptions();
+            filterOptions();
+        });
+
+        options.forEach(function(option){
+            option.addEventListener("click", function(){
+                input.value = option.dataset.label;
+                valueInput.value = option.dataset.value;
+                input.setCustomValidity("");
+                closeOptions();
+            });
+        });
+
+        document.addEventListener("click", function(event){
+            if(!selectBox.contains(event.target)){
+                closeOptions();
+            }
+        });
+
+        if(form){
+            form.addEventListener("submit", function(event){
+                if(!valueInput.value){
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    input.setCustomValidity(selectBox.dataset.requiredMessage);
+                    input.reportValidity();
+                    openOptions();
+                    filterOptions();
+                }
+            });
+        }
+    });
+});
+</script>
+
+{% endblock %}

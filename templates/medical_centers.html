@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1><i class="fas fa-hospital"></i> Manage Medical Centers</h1>
+    </div>
+    <div class="details-card">
+        <form method="GET"
+              action="{{ url_for('manage_medical_centers') }}"
+              class="toolbar-form">
+
+            <input type="text"
+                   id="medicalCenterSearch"
+                   name="search"
+                   value="{{ search or '' }}"
+                   class="toolbar-search-input"
+                   placeholder="Search medical center">
+
+            <button type="submit" class="toolbar-btn search-btn" title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <a href="{{ url_for('manage_medical_centers') }}"
+               class="toolbar-btn clear-btn"
+               title="Clear">
+                <i class="fas fa-times"></i>
+            </a>
+
+            <button type="button"
+                    class="toolbar-btn add-btn"
+                    title="Add Medical Center"
+                    onclick="openAddCenterModal()">
+                <i class="fas fa-plus"></i>
+            </button>
+
+            <button type="button"
+                    id="medicalCenterReportBtn"
+                    class="toolbar-btn search-btn"
+                    title="Medical Centers Report">
+                <i class="fas fa-file-pdf"></i>
+            </button>
+
+        </form>
+    </div>
+
+    <div class="table-container limited-height-table">
+        <table class="app-table">
+            <thead>
+                <tr>
+                    <th>Center Name</th>
+                    <th>Phone</th>
+                    <th>Active</th>
+                    <th class="actions-header">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for center in medical_centers %}
+                <tr class="clickable-row"
+                    onclick="openCenterModal(
+                        '{{ center.id }}',
+                        '{{ center.center_name }}',
+                        '{{ center.address or '' }}',
+                        '{{ center.phone_number or '' }}',
+                        '{{ 1 if center.is_active else 0 }}'
+                    )">
+
+                    <td>{{ center.center_name }}</td>
+                    <td>{{ center.phone_number or '' }}</td>
+                    <td>{{ 'Yes' if center.is_active else 'No' }}</td>
+
+                    <td class="action-cell" onclick="event.stopPropagation();">
+
+                        <button type="button"
+                                class="table-action edit-action"
+                                title="Edit"
+                                onclick="openCenterModal(
+                                    '{{ center.id }}',
+                                    '{{ center.center_name }}',
+                                    '{{ center.address or '' }}',
+                                    '{{ center.phone_number or '' }}',
+                                    '{{ 1 if center.is_active else 0 }}'
+                                )">
+                            <i class="fas fa-pen"></i>
+                        </button>
+
+                        {% if center.is_active %}
+                            <form method="POST"
+                                  action="{{ url_for('stop_medical_center', center_id=center.id) }}"
+                                  class="inline-delete-form"
+                                  onsubmit="return confirm('Stop this medical center?');">
+                                <button type="submit"
+                                        class="table-action delete-action"
+                                        title="Stop Medical Center">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="locked-label" title="Inactive medical center">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                        {% endif %}
+
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="empty-row">No medical centers found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+</section>
+
+<div id="centerEditModal" class="modal">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h2><i class="fas fa-pen"></i> Medical Center Information</h2>
+            <button type="button" class="modal-close-btn" onclick="closeCenterModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="centerEditForm" method="POST" class="modal-form">
+
+            <div class="form-grid two-column-grid">
+
+                <div class="form-group">
+                    <label>Center Name</label>
+                    <input type="text" id="modal_center_name" name="center_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" id="modal_phone_number" name="phone_number" required>
+                </div>
+
+                <div class="form-group form-group-wide">
+                    <label>Address</label>
+                    <input type="text" id="modal_address" name="address" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Active</label>
+                    <select id="modal_is_active" name="is_active">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i> Save
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-cancel-btn"
+                        onclick="closeCenterModal()">
+                    <i class="fas fa-ban"></i> Cancel
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<div id="addCenterModal" class="modal">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h2><i class="fas fa-plus"></i> Add Medical Center</h2>
+            <button type="button" class="modal-close-btn" onclick="closeAddCenterModal(true)">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="addCenterForm"
+              method="POST"
+              action="{{ url_for('manage_medical_centers') }}"
+              class="modal-form">
+
+            <div class="form-grid two-column-grid">
+
+                <div class="form-group">
+                    <label>Center Name</label>
+                    <input type="text" name="center_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" name="phone_number" required>
+                </div>
+
+                <div class="form-group form-group-wide">
+                    <label>Address</label>
+                    <input type="text" name="address" required>
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i> Save
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-save-btn"
+                        onclick="saveCenterAndNext()">
+                    <i class="fas fa-forward"></i> Next
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-cancel-btn"
+                        onclick="closeAddCenterModal(true)">
+                    <i class="fas fa-ban"></i> Cancel
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    const medicalCenterSearch = document.getElementById("medicalCenterSearch");
+    const medicalCenterReportBtn = document.getElementById("medicalCenterReportBtn");
+
+    if(medicalCenterSearch && medicalCenterReportBtn){
+        medicalCenterReportBtn.addEventListener("click", function(){
+            const reportUrl = new URL("{{ url_for('medical_centers_report') }}", window.location.origin);
+            const searchText = medicalCenterSearch.value.trim();
+
+            if(searchText){
+                reportUrl.searchParams.set("search", searchText);
+            }
+
+            window.open(reportUrl.toString(), "_blank");
+        });
+    }
+});
+
+function openCenterModal(id, centerName, address, phone, active) {
+    const form = document.getElementById("centerEditForm");
+
+    form.action = "/admin/medical_centers/update/" + id;
+
+    document.getElementById("modal_center_name").value = centerName;
+    document.getElementById("modal_address").value = address;
+    document.getElementById("modal_phone_number").value = phone;
+    document.getElementById("modal_is_active").value = active;
+
+    document.getElementById("centerEditModal").style.display = "block";
+}
+
+function closeCenterModal() {
+    document.getElementById("centerEditModal").style.display = "none";
+}
+
+function openAddCenterModal() {
+    document.getElementById("addCenterForm").reset();
+    document.getElementById("addCenterModal").style.display = "block";
+}
+
+function closeAddCenterModal(refresh=false) {
+    document.getElementById("addCenterModal").style.display = "none";
+
+    if (refresh) {
+        window.location.reload();
+    }
+}
+
+function saveCenterAndNext() {
+    const form = document.getElementById("addCenterForm");
+
+    if (!form.reportValidity()) {
+        return;
+    }
+
+    const formData = new FormData(form);
+
+    fetch("{{ url_for('add_medical_center_ajax') }}", {
+        method: "POST",
+        body: formData
+    })
+    .then(response =>
+        response.json().then(data => ({
+            ok: response.ok,
+            data: data
+        }))
+    )
+    .then(result => {
+        const data = result.data;
+
+        if (!result.ok || !data.success) {
+            alert(data.message || "Error saving medical center.");
+            return;
+        }
+
+        form.reset();
+        form.querySelector("input[name='center_name']").focus();
+    })
+    .catch(error => {
+        alert("Error saving medical center.");
+        console.error(error);
+    });
+}
+
+window.onclick = function(event) {
+    const editModal = document.getElementById("centerEditModal");
+    const addModal = document.getElementById("addCenterModal");
+
+    if (event.target === editModal) {
+        closeCenterModal();
+    }
+
+    if (event.target === addModal) {
+        closeAddCenterModal(true);
+    }
+};
+</script>
+
+{% endblock %}

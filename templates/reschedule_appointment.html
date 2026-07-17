@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1>
+            <i class="fas fa-calendar-check"></i>
+            Update Appointment
+        </h1>
+    </div>
+
+    <div class="details-card">
+        <div class="search-toolbar">
+            <div class="toolbar-field">
+                <label>Patient</label>
+                <input type="text"
+                       value="{{ appointment.patient_code }} - {{ appointment.first_name }} {{ appointment.middle_name or '' }} {{ appointment.last_name }}"
+                       readonly>
+            </div>
+
+            <div class="toolbar-field">
+                <label>Current Appointment</label>
+                <input type="text"
+                       value="{{ appointment.slot_date }} {{ appointment.start_time }} - {{ appointment.doctor_name }} - {{ appointment.center_name }}"
+                       readonly>
+            </div>
+
+            <div class="toolbar-button">
+                <label>&nbsp;</label>
+                <a href="{{ url_for('manage_appointments', patient_id=appointment.patient_id) }}"
+                   class="standard-btn form-cancel-btn">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="details-card">
+
+        <form method="GET"
+              action="{{ url_for('edit_managed_appointment', appointment_id=appointment.id) }}"
+              class="modal-form">
+
+            <div class="search-toolbar">
+
+                <div class="toolbar-field">
+
+                    <label>Doctor</label>
+
+                    <div class="searchable-select"
+                         data-searchable-select
+                         data-required-message="Please choose a doctor from the list.">
+                        <input type="text"
+                               id="doctorSearch"
+                               class="searchable-select-input"
+                               placeholder="Choose doctor"
+                               autocomplete="off"
+                               required
+                               value="{% for doctor in doctors %}{% if selected_doctor|string == doctor.id|string %}{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}{% endif %}{% endfor %}">
+                        <input type="hidden"
+                               name="doctor_id"
+                               class="searchable-select-value"
+                               value="{{ selected_doctor or '' }}">
+                        <div class="searchable-select-options">
+                            {% for doctor in doctors %}
+                                <button type="button"
+                                        class="searchable-select-option"
+                                        data-value="{{ doctor.id }}"
+                                        data-label="{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}">
+                                    {{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}
+                                </button>
+                            {% endfor %}
+                            <div class="searchable-select-empty">
+                                No doctors found.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="toolbar-field">
+
+                    <label>Medical Center</label>
+
+                    <div class="searchable-select"
+                         data-searchable-select
+                         data-required-message="Please choose a medical center from the list.">
+                        <input type="text"
+                               id="centerSearch"
+                               class="searchable-select-input"
+                               placeholder="Choose medical center"
+                               autocomplete="off"
+                               required
+                               value="{% if selected_center == 'all' %}All{% else %}{% for center in medical_centers %}{% if selected_center|string == center.id|string %}{{ center.center_name }}{% endif %}{% endfor %}{% endif %}">
+                        <input type="hidden"
+                               name="center_id"
+                               class="searchable-select-value"
+                               value="{{ selected_center or 'all' }}">
+                        <div class="searchable-select-options">
+                            <button type="button"
+                                    class="searchable-select-option"
+                                    data-value="all"
+                                    data-label="All">
+                                All
+                            </button>
+                            {% for center in medical_centers %}
+                                <button type="button"
+                                        class="searchable-select-option"
+                                        data-value="{{ center.id }}"
+                                        data-label="{{ center.center_name }}">
+                                    {{ center.center_name }}
+                                </button>
+                            {% endfor %}
+                            <div class="searchable-select-empty">
+                                No medical centers found.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="toolbar-field">
+
+                    <label>Notes</label>
+
+                    <input type="text"
+                           id="appointmentNotes"
+                           name="notes"
+                           value="{{ selected_notes or '' }}"
+                           placeholder="Appointment notes">
+
+                </div>
+
+                <div class="toolbar-field">
+
+                    <label>Search Mode</label>
+
+                    <select name="search_mode"
+                            onchange="toggleDateField(this.value)">
+
+                        <option value="earliest"
+                            {% if search_mode == 'earliest' %}
+                                selected
+                            {% endif %}
+                        >
+                            Earliest
+                        </option>
+
+                        <option value="date"
+                            {% if search_mode == 'date' %}
+                                selected
+                            {% endif %}
+                        >
+                            Specific Date
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="toolbar-field"
+                    id="date_field_container"
+
+                    {% if search_mode != 'date' %}
+                        style="display:none;"
+                    {% endif %}
+                >
+
+                    <label>Date</label>
+
+                    <input type="date"
+                        name="slot_date"
+                        value="{{ selected_date or '' }}">
+
+                </div>
+
+                <div class="toolbar-button">
+
+                    <label>&nbsp;</label>
+
+                    <button type="submit"
+                            class="standard-btn search-main-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+
+                </div>
+
+                <div class="toolbar-button">
+
+                    <label>&nbsp;</label>
+
+                    <a href="{{ url_for('edit_managed_appointment', appointment_id=appointment.id) }}"
+                       class="standard-btn clear-btn">
+                        <i class="fas fa-times"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <div class="details-section">
+        <h2>
+            <i class="fas fa-clock"></i>
+            Available Times
+        </h2>
+
+        <div class="table-container">
+
+            <table class="app-table">
+
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Doctor</th>
+                        <th>Medical Center</th>
+                        <th>Book</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for slot in slots %}
+                    <tr>
+                        <td>{{ slot.slot_date }}</td>
+                        <td>{{ slot.start_time }}</td>
+                        <td>{{ slot.end_time }}</td>
+                        <td>{{ slot.doctor_name }}</td>
+                        <td>{{ slot.center_name }}</td>
+                        <td>
+                            <form method="POST"
+                                  action="{{ url_for('rebook_managed_appointment', appointment_id=appointment.id, slot_id=slot.id) }}"
+                                  class="rebook-form"
+                                  onsubmit="return confirm('Replace this appointment with the selected time?');">
+                                <input type="hidden"
+                                       name="notes"
+                                       class="rebook-notes-input"
+                                       value="{{ selected_notes or '' }}">
+                                <button type="submit"
+                                        class="table-action book-green-btn">
+                                    <i class="fas fa-calendar-check"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="empty-row">
+                            No available slots found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+</section>
+
+<script>
+document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
+    const input = selectBox.querySelector(".searchable-select-input");
+    const valueInput = selectBox.querySelector(".searchable-select-value");
+    const options = Array.from(selectBox.querySelectorAll(".searchable-select-option"));
+    const emptyState = selectBox.querySelector(".searchable-select-empty");
+    const form = selectBox.closest("form");
+
+    function openOptions(){
+        selectBox.classList.add("is-open");
+    }
+
+    function closeOptions(){
+        selectBox.classList.remove("is-open");
+    }
+
+    function filterOptions(){
+        const searchText = input.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        options.forEach(function(option){
+            const label = option.dataset.label.toLowerCase();
+            const isVisible = label.includes(searchText);
+
+            option.hidden = !isVisible;
+
+            if(isVisible){
+                visibleCount += 1;
+            }
+        });
+
+        emptyState.hidden = visibleCount !== 0;
+    }
+
+    input.addEventListener("focus", function(){
+        openOptions();
+        filterOptions();
+    });
+
+    input.addEventListener("input", function(){
+        valueInput.value = "";
+        input.setCustomValidity("");
+        openOptions();
+        filterOptions();
+    });
+
+    options.forEach(function(option){
+        option.addEventListener("click", function(){
+            input.value = option.dataset.label;
+            valueInput.value = option.dataset.value;
+            input.setCustomValidity("");
+            closeOptions();
+        });
+    });
+
+    document.addEventListener("click", function(event){
+        if(!selectBox.contains(event.target)){
+            closeOptions();
+        }
+    });
+
+    if(form){
+        form.addEventListener("submit", function(event){
+            if(!valueInput.value){
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                input.setCustomValidity(selectBox.dataset.requiredMessage);
+                input.reportValidity();
+                openOptions();
+                filterOptions();
+            }
+        });
+    }
+});
+
+function toggleDateField(mode) {
+
+    const container =
+        document.getElementById("date_field_container");
+
+    if (mode === "date") {
+        container.style.display = "flex";
+    }
+    else {
+        container.style.display = "none";
+    }
+}
+
+document.querySelectorAll(".rebook-form").forEach(function(form){
+    form.addEventListener("submit", function(){
+        const notesInput = document.getElementById("appointmentNotes");
+        const hiddenNotes = form.querySelector(".rebook-notes-input");
+
+        hiddenNotes.value = notesInput.value;
+    });
+});
+</script>
+
+{% endblock %}

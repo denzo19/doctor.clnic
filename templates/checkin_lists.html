@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1>
+            <i class="fas fa-clipboard-list"></i>
+            Doctor Check-in Lists
+        </h1>
+    </div>
+
+    <div class="details-section">
+        <h2>
+            <i class="fas fa-list"></i>
+            Today’s Check-in Lists
+        </h2>
+
+        <div class="table-container">
+            <table class="app-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Doctor</th>
+                        <th>Specialty</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th class="actions-header">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in lists %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.doctor_name }}</td>
+                        <td>{{ item.specialty }}</td>
+                        <td>{{ item.list_date }}</td>
+                        <td>
+                            <span class="status-badge status-{{ item.status }}">
+                                {{ item.status }}
+                            </span>
+                        </td>
+                        <td>{{ item.created_at }}</td>
+                        <td class="action-cell">
+                            <button type="button"
+                                    class="table-action view-action"
+                                    title="View Checked-in Patients"
+                                    onclick="openCheckinListModal({{ item.id }})">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="empty-row">
+                            No check-in lists started today.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
+
+<div id="checkinListModal" class="modal">
+    <div class="modal-content checkin-list-modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-eye"></i> Checked-in Patients</h2>
+            <button type="button" class="modal-close-btn" onclick="closeCheckinListModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="details-card checkin-list-summary">
+            <strong id="checkinListDoctor"></strong>
+            <span id="checkinListMeta"></span>
+        </div>
+
+        <div class="table-container limited-height-table">
+            <table class="app-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Patient</th>
+                        <th>DOB</th>
+                        <th>Phone</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Check-in Time</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="checkinListPatientsBody">
+                    <tr>
+                        <td colspan="8" class="empty-row">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.checkin-list-modal-content {
+    max-width: 1100px;
+    width: 92%;
+}
+
+.checkin-list-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+</style>
+
+<script>
+function emptyCheckinValue(value) {
+    return value === null || value === undefined ? "" : value;
+}
+
+function setCheckinListEmpty(message) {
+    const body = document.getElementById("checkinListPatientsBody");
+    body.innerHTML = "";
+
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 8;
+    cell.className = "empty-row";
+    cell.textContent = message;
+    row.appendChild(cell);
+    body.appendChild(row);
+}
+
+function appendCheckinListPatient(patient) {
+    const body = document.getElementById("checkinListPatientsBody");
+    const row = document.createElement("tr");
+    const values = [
+        patient.patient_code,
+        [
+            patient.first_name,
+            patient.middle_name,
+            patient.last_name
+        ].filter(Boolean).join(" "),
+        patient.date_of_birth,
+        patient.phone_number,
+        patient.check_in_type,
+        patient.status,
+        patient.check_in_time,
+        patient.notes
+    ];
+
+    values.forEach(function(value, index) {
+        const cell = document.createElement("td");
+
+        if (index === 5) {
+            const badge = document.createElement("span");
+            badge.className = "status-badge status-" + emptyCheckinValue(value);
+            badge.textContent = emptyCheckinValue(value);
+            cell.appendChild(badge);
+        } else {
+            cell.textContent = emptyCheckinValue(value);
+        }
+
+        row.appendChild(cell);
+    });
+
+    body.appendChild(row);
+}
+
+function openCheckinListModal(listId) {
+    const modal = document.getElementById("checkinListModal");
+    const body = document.getElementById("checkinListPatientsBody");
+
+    modal.style.display = "block";
+    document.getElementById("checkinListDoctor").textContent = "";
+    document.getElementById("checkinListMeta").textContent = "";
+    setCheckinListEmpty("Loading...");
+
+    fetch("/secretary/checkin_lists/" + listId + "/patients")
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            if (!data.success) {
+                setCheckinListEmpty(data.message || "Unable to load checked-in patients.");
+                return;
+            }
+
+            document.getElementById("checkinListDoctor").textContent =
+                emptyCheckinValue(data.list.doctor_name) +
+                (data.list.specialty ? " - " + data.list.specialty : "");
+            document.getElementById("checkinListMeta").textContent =
+                "Date: " + emptyCheckinValue(data.list.list_date) +
+                " | Status: " + emptyCheckinValue(data.list.status);
+
+            body.innerHTML = "";
+
+            if (!data.patients.length) {
+                setCheckinListEmpty("No patients checked in for this list.");
+                return;
+            }
+
+            data.patients.forEach(appendCheckinListPatient);
+        })
+        .catch(function() {
+            setCheckinListEmpty("Unable to load checked-in patients.");
+        });
+}
+
+function closeCheckinListModal() {
+    document.getElementById("checkinListModal").style.display = "none";
+}
+
+window.addEventListener("click", function(event) {
+    const modal = document.getElementById("checkinListModal");
+
+    if (event.target === modal) {
+        closeCheckinListModal();
+    }
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1>
+            <i class="fas fa-users"></i>
+            Manage Users
+        </h1>
+    </div>
+    <div class="details-card">
+        <form method="POST" class="toolbar-form" id="addUserForm">
+
+            <div class="searchable-select"
+                 data-searchable-select>
+                <input type="text"
+                       class="toolbar-search-input searchable-select-input"
+                       placeholder="Choose employee"
+                       autocomplete="off"
+                       required>
+                <input type="hidden"
+                       name="employee_id"
+                       class="searchable-select-value">
+                <div class="searchable-select-options">
+                    {% for emp in employees %}
+                        <button type="button"
+                                class="searchable-select-option"
+                                data-value="{{ emp.id }}"
+                                data-label="{{ emp.full_name }} - {{ emp.job_title }} - {{ emp.group_name }}">
+                            {{ emp.full_name }} - {{ emp.job_title }} - {{ emp.group_name }}
+                        </button>
+                    {% endfor %}
+                    <div class="searchable-select-empty">
+                        No employees found.
+                    </div>
+                </div>
+            </div>
+
+            <input type="text"
+                   name="username"
+                   class="toolbar-search-input"
+                   placeholder="Username"
+                   required>
+
+            <input type="text"
+                   name="password"
+                   class="toolbar-search-input"
+                   placeholder="Password"
+                   required>
+
+            <button type="submit"
+                    class="toolbar-btn add-btn"
+                    title="Add User">
+                <i class="fas fa-plus"></i>
+            </button>
+
+            <button type="button"
+                    class="toolbar-btn clear-btn"
+                    id="clearAddUserForm"
+                    title="Clear">
+                <i class="fas fa-times"></i>
+            </button>
+
+        </form>
+    </div>
+
+    <div class="manage-users-toolbar-separator"></div>
+
+    <div class="details-card table-search-card">
+        <div class="toolbar-form table-search-form">
+            <input type="text"
+                   id="userTableSearch"
+                   class="toolbar-search-input table-search-input"
+                   placeholder="Search users table"
+                   autocomplete="off">
+
+            <button type="button"
+                    id="userTableSearchBtn"
+                    class="toolbar-btn search-btn"
+                    title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <button type="button"
+                    id="userTableClearBtn"
+                    class="toolbar-btn clear-btn"
+                    title="Clear">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <button type="button"
+                    id="userTableReportBtn"
+                    class="toolbar-btn search-btn"
+                    title="Users Report">
+                <i class="fas fa-file-pdf"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="table-container limited-height-table">
+        <table class="app-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Employee</th>
+                    <th>Job Title</th>
+                    <th>Group</th>
+                    <th>Active</th>
+                    <th class="actions-header">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for user in users %}
+                <tr data-user-row
+                    data-search-text="{{ user.username }} {{ user.full_name or '' }} {{ user.job_title or '' }} {{ user.group_name or '' }} {% if user.is_active %}Yes Active{% else %}No Inactive{% endif %}">
+                    <form method="POST"
+                          action="{{ url_for('update_user', user_id=user.id) }}">
+
+                        <td>
+                            <input type="text"
+                                   name="username"
+                                   value="{{ user.username }}"
+                                   class="table-input"
+                                   required>
+                        </td>
+
+                        <td>
+                            {{ user.full_name or '' }}
+                        </td>
+
+                        <td>{{ user.job_title }}</td>
+                        <td>{{ user.group_name }}</td>
+
+                        <td>
+                            <select name="is_active" class="table-input">
+                                <option value="1" {% if user.is_active %}selected{% endif %}>Yes</option>
+                                <option value="0" {% if not user.is_active %}selected{% endif %}>No</option>
+                            </select>
+                        </td>
+
+                        <td class="action-cell">
+                            <button type="submit"
+                                    class="table-action edit-action"
+                                    title="Update">
+                                <i class="fas fa-save"></i>
+                            </button>
+                    </form>
+
+                            {% if user.is_active %}
+                                <form method="POST"
+                                      action="{{ url_for('stop_user', user_id=user.id) }}"
+                                      class="inline-delete-form"
+                                      onsubmit="return confirm('Stop this user?');">
+                                    <button type="submit"
+                                            class="table-action delete-action"
+                                            title="Stop User">
+                                        <i class="fas fa-ban"></i>
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="locked-label" title="Inactive user">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            {% endif %}
+
+                            {% if user.can_delete %}
+                                <form method="POST"
+                                      action="{{ url_for('delete_user', user_id=user.id) }}"
+                                      class="inline-delete-form"
+                                      onsubmit="return confirm('Delete this user permanently?');">
+                                    <button type="submit"
+                                            class="table-action delete-action"
+                                            title="Delete User">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            {% else %}
+                                <button type="button"
+                                        class="table-action delete-action"
+                                        title="{{ user.delete_block_reason }}"
+                                        disabled>
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            {% endif %}
+                        </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="empty-row">
+                        No users found.
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr id="userTableNoMatches" hidden>
+                    <td colspan="6" class="empty-row">
+                        No matching users found.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<style>
+.manage-users-toolbar-separator {
+    height: 1px;
+    background: #1f4e79;
+    margin: 12px 0;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    const userTableSearch = document.getElementById("userTableSearch");
+    const userTableSearchBtn = document.getElementById("userTableSearchBtn");
+    const userTableClearBtn = document.getElementById("userTableClearBtn");
+    const userTableReportBtn = document.getElementById("userTableReportBtn");
+    const userRows = Array.from(document.querySelectorAll("[data-user-row]"));
+    const noMatchesRow = document.getElementById("userTableNoMatches");
+
+    function filterUserTable(){
+        const searchText = userTableSearch.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        userRows.forEach(function(row){
+            const rowText = row.dataset.searchText.toLowerCase();
+            const isVisible = rowText.includes(searchText);
+
+            row.hidden = !isVisible;
+
+            if(isVisible){
+                visibleCount += 1;
+            }
+        });
+
+        if(noMatchesRow){
+            noMatchesRow.hidden = !searchText || visibleCount !== 0;
+        }
+    }
+
+    if(userTableSearch && userTableSearchBtn && userTableClearBtn){
+        userTableSearchBtn.addEventListener("click", filterUserTable);
+
+        userTableSearch.addEventListener("keydown", function(event){
+            if(event.key === "Enter"){
+                event.preventDefault();
+                filterUserTable();
+            }
+        });
+
+        userTableClearBtn.addEventListener("click", function(){
+            userTableSearch.value = "";
+            filterUserTable();
+            userTableSearch.focus();
+        });
+    }
+
+    if(userTableReportBtn && userTableSearch){
+        userTableReportBtn.addEventListener("click", function(){
+            const reportUrl = new URL("{{ url_for('users_report') }}", window.location.origin);
+            const searchText = userTableSearch.value.trim();
+
+            if(searchText){
+                reportUrl.searchParams.set("q", searchText);
+            }
+
+            window.open(reportUrl.toString(), "_blank");
+        });
+    }
+
+    const addUserForm = document.getElementById("addUserForm");
+    const clearAddUserForm = document.getElementById("clearAddUserForm");
+
+    if(addUserForm && clearAddUserForm){
+        clearAddUserForm.addEventListener("click", function(){
+            addUserForm.reset();
+            addUserForm.querySelectorAll(".searchable-select-input").forEach(function(input){
+                input.value = "";
+                input.setCustomValidity("");
+            });
+            addUserForm.querySelectorAll(".searchable-select-value").forEach(function(input){
+                input.value = "";
+            });
+            addUserForm.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
+                selectBox.classList.remove("is-open");
+            });
+            const firstInput = addUserForm.querySelector(".searchable-select-input, input");
+            if(firstInput){
+                firstInput.focus();
+            }
+        });
+    }
+
+    document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
+        const input = selectBox.querySelector(".searchable-select-input");
+        const valueInput = selectBox.querySelector(".searchable-select-value");
+        const options = Array.from(selectBox.querySelectorAll(".searchable-select-option"));
+        const emptyState = selectBox.querySelector(".searchable-select-empty");
+        const form = selectBox.closest("form");
+
+        function openOptions(){
+            selectBox.classList.add("is-open");
+        }
+
+        function closeOptions(){
+            selectBox.classList.remove("is-open");
+        }
+
+        function filterOptions(){
+            const searchText = input.value.trim().toLowerCase();
+            let visibleCount = 0;
+
+            options.forEach(function(option){
+                const label = option.dataset.label.toLowerCase();
+                const isVisible = label.includes(searchText);
+
+                option.hidden = !isVisible;
+
+                if(isVisible){
+                    visibleCount += 1;
+                }
+            });
+
+            emptyState.hidden = visibleCount !== 0;
+        }
+
+        input.addEventListener("focus", function(){
+            openOptions();
+            filterOptions();
+        });
+
+        input.addEventListener("input", function(){
+            valueInput.value = "";
+            input.setCustomValidity("");
+            openOptions();
+            filterOptions();
+        });
+
+        options.forEach(function(option){
+            option.addEventListener("click", function(){
+                input.value = option.dataset.label;
+                valueInput.value = option.dataset.value;
+                input.setCustomValidity("");
+                closeOptions();
+            });
+        });
+
+        document.addEventListener("click", function(event){
+            if(!selectBox.contains(event.target)){
+                closeOptions();
+            }
+        });
+
+        if(form){
+            form.addEventListener("submit", function(event){
+                if(!valueInput.value){
+                    event.preventDefault();
+                    input.setCustomValidity("Please choose an employee from the list.");
+                    input.reportValidity();
+                    openOptions();
+                    filterOptions();
+                }
+            });
+        }
+    });
+});
+</script>
+
+{% endblock %}

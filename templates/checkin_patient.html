@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1>
+            <i class="fas fa-user-check"></i>
+            Check-in Walk-in
+        </h1>
+    </div>
+    <div class="details-card">
+
+        <form method="POST" class="modal-form checkin-inline-form">
+
+            <div class="form-grid checkin-form-grid">
+
+                <div class="form-group">
+
+                    <label>Doctor</label>
+
+                    <div class="searchable-select"
+                         data-searchable-select
+                         data-reload-on-select="true"
+                         data-required-message="Please choose a doctor from the list.">
+                        <input type="text"
+                               id="doctorSearch"
+                               class="searchable-select-input"
+                               placeholder="Choose doctor"
+                               autocomplete="off"
+                               required
+                               value="{% for doctor in doctors %}{% if selected_doctor_id|string == doctor.id|string %}{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}{% endif %}{% endfor %}">
+                        <input type="hidden"
+                               id="doctorSelect"
+                               name="doctor_id"
+                               class="searchable-select-value"
+                               value="{{ selected_doctor_id or '' }}">
+                        <div class="searchable-select-options">
+                            {% for doctor in doctors %}
+                                <button type="button"
+                                        class="searchable-select-option"
+                                        data-value="{{ doctor.id }}"
+                                        data-label="{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}">
+                                    {{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}
+                                </button>
+                            {% endfor %}
+                            <div class="searchable-select-empty">
+                                No doctors found.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="form-group">
+
+                    <label>Patient</label>
+
+                    <div class="searchable-select"
+                         data-searchable-select
+                         data-required-message="Please choose a patient from the list.">
+                        <input type="text"
+                               id="patientSearch"
+                               class="searchable-select-input"
+                               placeholder="Choose patient"
+                               autocomplete="off"
+                               required>
+                        <input type="hidden"
+                               id="patientSelect"
+                               name="patient_id"
+                               class="searchable-select-value">
+                        <div class="searchable-select-options">
+                            {% for patient in patients %}
+                                {% set patient_label %}
+                                    {% if patient.start_time %}{{ patient.start_time }} - {% endif %}
+                                    {{ patient.patient_code }} -
+                                    {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}
+                                    {% if patient.center_name %} - {{ patient.center_name }}{% endif %}
+                                {% endset %}
+                                <button type="button"
+                                        class="searchable-select-option"
+                                        data-value="{{ patient.id }}"
+                                        data-label="{{ patient_label|trim }}">
+                                    {{ patient_label|trim }}
+                                </button>
+                            {% endfor %}
+                            <div class="searchable-select-empty">
+                                No patients found.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="form-group checkin-notes-field">
+                    <label>Notes</label>
+                    <textarea name="notes" rows="1"></textarea>
+                </div>
+
+                <div class="checkin-actions">
+                    <button type="submit" class="standard-btn form-save-btn">
+                        <i class="fas fa-user-check"></i>
+                        Check-in Walk-in
+                    </button>
+
+                    <button type="button"
+                            class="standard-btn form-cancel-btn"
+                            onclick="clearCheckinFields()">
+                        <i class="fas fa-times"></i>
+                        Clear
+                    </button>
+
+                    <a href="{{ url_for('checkin_lists') }}"
+                       class="standard-btn form-cancel-btn">
+                        <i class="fas fa-ban"></i>
+                        Cancel
+                    </a>
+                </div>
+
+            </div>
+
+        </form>
+    </div>
+
+    <div class="details-section">
+        <h2>
+            <i class="fas fa-list"></i>
+            Today's Checked-in Patients
+        </h2>
+
+        <div class="table-container">
+            <table class="app-table">
+                <thead>
+                    <tr>
+                        <th>Doctor</th>
+                        <th>Patient Code</th>
+                        <th>Patient Name</th>
+                        <th>Date of Birth</th>
+                        <th>Phone</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Check-in Time</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in checked_in %}
+                    <tr>
+                        <td>{{ item.doctor_name }}</td>
+                        <td>{{ item.patient_code }}</td>
+                        <td>
+                            {{ item.first_name }}
+                            {{ item.middle_name or '' }}
+                            {{ item.last_name }}
+                        </td>
+                        <td>{{ item.date_of_birth }}</td>
+                        <td>{{ item.phone_number }}</td>
+                        <td>{{ item.check_in_type }}</td>
+                        <td>
+                            <span class="status-badge status-{{ item.status }}">
+                                {{ item.status }}
+                            </span>
+                        </td>
+                        <td>{{ item.check_in_time }}</td>
+                        <td>{{ item.notes }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="empty-row">
+                            No patients checked in today.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
+
+<script>
+
+document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
+    const input = selectBox.querySelector(".searchable-select-input");
+    const valueInput = selectBox.querySelector(".searchable-select-value");
+    const options = Array.from(selectBox.querySelectorAll(".searchable-select-option"));
+    const emptyState = selectBox.querySelector(".searchable-select-empty");
+    const form = selectBox.closest("form");
+
+    function openOptions(){
+        selectBox.classList.add("is-open");
+    }
+
+    function closeOptions(){
+        selectBox.classList.remove("is-open");
+    }
+
+    function filterOptions(){
+        const searchText = input.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        options.forEach(function(option){
+            const label = option.dataset.label.toLowerCase();
+            const isVisible = label.includes(searchText);
+
+            option.hidden = !isVisible;
+
+            if(isVisible){
+                visibleCount += 1;
+            }
+        });
+
+        emptyState.hidden = visibleCount !== 0;
+    }
+
+    input.addEventListener("focus", function(){
+        openOptions();
+        filterOptions();
+    });
+
+    input.addEventListener("input", function(){
+        valueInput.value = "";
+        input.setCustomValidity("");
+        openOptions();
+        filterOptions();
+    });
+
+    options.forEach(function(option){
+        option.addEventListener("click", function(){
+            input.value = option.dataset.label;
+            valueInput.value = option.dataset.value;
+            input.setCustomValidity("");
+            closeOptions();
+
+            if(selectBox.dataset.reloadOnSelect === "true"){
+                reloadPatientsByDoctor(valueInput.value);
+            }
+        });
+    });
+
+    document.addEventListener("click", function(event){
+        if(!selectBox.contains(event.target)){
+            closeOptions();
+        }
+    });
+
+    if(form){
+        form.addEventListener("submit", function(event){
+            if(!valueInput.value){
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                input.setCustomValidity(selectBox.dataset.requiredMessage);
+                input.reportValidity();
+                openOptions();
+                filterOptions();
+            }
+        });
+    }
+});
+
+function reloadPatientsByDoctor(doctorId) {
+
+    doctorId = doctorId || document.getElementById("doctorSelect").value;
+
+    if (!doctorId) {
+        return;
+    }
+
+    window.location =
+        "/secretary/checkin?doctor_id=" + doctorId;
+}
+
+function clearCheckinFields() {
+    document.getElementById("doctorSearch").value = "";
+    document.getElementById("doctorSelect").value = "";
+    document.getElementById("patientSearch").value = "";
+    document.getElementById("patientSelect").value = "";
+}
+
+</script>
+{% endblock %}

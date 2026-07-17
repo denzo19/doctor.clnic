@@ -1,0 +1,418 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1><i class="fas fa-id-badge"></i> Manage Employees</h1>
+    </div>
+    <div class="details-card">
+        <form method="GET" action="{{ url_for('manage_employees') }}" class="toolbar-form">
+
+            <input type="text"
+                   id="employeeSearch"
+                   name="search"
+                   value="{{ search or '' }}"
+                   class="toolbar-search-input"
+                   placeholder="Search employee">
+
+            <button type="submit" class="toolbar-btn search-btn" title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <a href="{{ url_for('manage_employees') }}" class="toolbar-btn clear-btn" title="Clear">
+                <i class="fas fa-times"></i>
+            </a>
+
+            <button type="button"
+                    class="toolbar-btn add-btn"
+                    title="Add Employee"
+                    onclick="openAddEmployeeModal()">
+                <i class="fas fa-plus"></i>
+            </button>
+
+            <button type="button"
+                    id="employeeReportBtn"
+                    class="toolbar-btn search-btn"
+                    title="Employees Report">
+                <i class="fas fa-file-pdf"></i>
+            </button>
+
+        </form>
+    </div>
+
+    <div class="table-container limited-height-table">
+        <table class="app-table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Full Name</th>
+                    <th>Job Title</th>
+                    <th>Specialty</th>
+                    <th>Phone</th>
+                    <th>Group</th>
+                    <th>Active</th>
+                    <th class="actions-header">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for emp in employees %}
+                <tr class="clickable-row"
+                    onclick="openEmployeeModal(
+                        '{{ emp.id }}',
+                        '{{ emp.employee_code }}',
+                        '{{ emp.full_name }}',
+                        '{{ emp.email or '' }}',
+                        '{{ emp.phone_number or '' }}',
+                        '{{ emp.job_title or '' }}',
+                        '{{ emp.specialty or '' }}',
+                        '{{ emp.group_id }}',
+                        '{{ 1 if emp.is_active else 0 }}'
+                    )">
+
+                    <td>{{ emp.employee_code }}</td>
+                    <td>{{ emp.full_name }}</td>
+                    <td>{{ emp.job_title or '' }}</td>
+                    <td>{{ emp.specialty or '' }}</td>
+                    <td>{{ emp.phone_number or '' }}</td>
+                    <td>{{ emp.group_name }}</td>
+                    <td>{{ 'Yes' if emp.is_active else 'No' }}</td>
+
+                    <td class="action-cell" onclick="event.stopPropagation();">
+
+                        <button type="button"
+                                class="table-action edit-action"
+                                title="Edit"
+                                onclick="openEmployeeModal(
+                                    '{{ emp.id }}',
+                                    '{{ emp.employee_code }}',
+                                    '{{ emp.full_name }}',
+                                    '{{ emp.email or '' }}',
+                                    '{{ emp.phone_number or '' }}',
+                                    '{{ emp.job_title or '' }}',
+                                    '{{ emp.specialty or '' }}',
+                                    '{{ emp.group_id }}',
+                                    '{{ 1 if emp.is_active else 0 }}'
+                                )">
+                            <i class="fas fa-pen"></i>
+                        </button>
+
+                        {% if emp.is_active %}
+                            <form method="POST"
+                                  action="{{ url_for('stop_employee', employee_id=emp.id) }}"
+                                  class="inline-delete-form"
+                                  onsubmit="return confirm('Stop this employee and related user account?');">
+                                <button type="submit"
+                                        class="table-action delete-action"
+                                        title="Stop Employee">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="locked-label" title="Inactive employee">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                        {% endif %}
+
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="empty-row">No employees found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+
+</section>
+
+<div id="employeeEditModal" class="modal">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h2><i class="fas fa-pen"></i> Employee Information</h2>
+            <button type="button" class="modal-close-btn" onclick="closeEmployeeModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="employeeEditForm" method="POST" class="modal-form">
+
+            <div class="form-grid two-column-grid">
+
+                <div class="form-group">
+                    <label>Employee Code</label>
+                    <input type="text" id="modal_employee_code" name="employee_code" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="modal_full_name" name="full_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="modal_email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" id="modal_phone_number" name="phone_number" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Job Title</label>
+                    <input type="text" id="modal_job_title" name="job_title" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Specialty</label>
+                    <select id="modal_specialty" name="specialty">
+                        <option value="">Choose speciality</option>
+                        {% for specialty in doctor_specialties %}
+                            <option value="{{ specialty.specialty_name }}">
+                                {{ specialty.specialty_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Group</label>
+                    <select id="modal_group_id" name="group_id" required>
+                        <option value="">Choose group</option>
+                        {% for group in groups %}
+                            <option value="{{ group.id }}">{{ group.group_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Active</label>
+                    <select id="modal_is_active" name="is_active">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i> Save
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-cancel-btn"
+                        onclick="closeEmployeeModal()">
+                    <i class="fas fa-ban"></i> Cancel
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<div id="addEmployeeModal" class="modal">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h2><i class="fas fa-plus"></i> Add Employee</h2>
+            <button type="button" class="modal-close-btn" onclick="closeAddEmployeeModal(true)">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="addEmployeeForm" method="POST" action="{{ url_for('manage_employees') }}" class="modal-form">
+
+            <div class="form-grid two-column-grid">
+
+                <div class="form-group">
+                    <label>Employee Code</label>
+                    <input type="text" name="employee_code" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="full_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" name="phone_number" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Job Title</label>
+                    <input type="text" name="job_title" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Specialty</label>
+                    <select name="specialty">
+                        <option value="">Choose speciality</option>
+                        {% for specialty in doctor_specialties %}
+                            <option value="{{ specialty.specialty_name }}">
+                                {{ specialty.specialty_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Group</label>
+                    <select name="group_id" required>
+                        <option value="">Choose group</option>
+                        {% for group in groups %}
+                            <option value="{{ group.id }}">{{ group.group_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i> Save
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-save-btn"
+                        onclick="saveEmployeeAndNext()">
+                    <i class="fas fa-forward"></i> Next
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-cancel-btn"
+                        onclick="closeAddEmployeeModal(true)">
+                    <i class="fas fa-ban"></i> Cancel
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    const employeeSearch = document.getElementById("employeeSearch");
+    const employeeReportBtn = document.getElementById("employeeReportBtn");
+
+    if(employeeSearch && employeeReportBtn){
+        employeeReportBtn.addEventListener("click", function(){
+            const reportUrl = new URL("{{ url_for('employees_report') }}", window.location.origin);
+            const searchText = employeeSearch.value.trim();
+
+            if(searchText){
+                reportUrl.searchParams.set("search", searchText);
+            }
+
+            window.open(reportUrl.toString(), "_blank");
+        });
+    }
+});
+
+function selectEmployeeSpecialty(selectElement, specialty) {
+    const specialtyValue = specialty || "";
+
+    if (specialtyValue) {
+        const existingOption = Array.from(selectElement.options).find(function(option){
+            return option.value === specialtyValue;
+        });
+
+        if (!existingOption) {
+            const legacyOption = new Option(specialtyValue + " (current)", specialtyValue);
+            selectElement.add(legacyOption);
+        }
+    }
+
+    selectElement.value = specialtyValue;
+}
+
+function openEmployeeModal(id, code, fullName, email, phone, jobTitle, specialty, groupId, active) {
+    const form = document.getElementById("employeeEditForm");
+
+    form.action = "/admin/employees/update/" + id;
+
+    document.getElementById("modal_employee_code").value = code;
+    document.getElementById("modal_full_name").value = fullName;
+    document.getElementById("modal_email").value = email;
+    document.getElementById("modal_phone_number").value = phone;
+    document.getElementById("modal_job_title").value = jobTitle;
+    selectEmployeeSpecialty(document.getElementById("modal_specialty"), specialty);
+    document.getElementById("modal_group_id").value = groupId;
+    document.getElementById("modal_is_active").value = active;
+
+    document.getElementById("employeeEditModal").style.display = "block";
+}
+
+function closeEmployeeModal() {
+    document.getElementById("employeeEditModal").style.display = "none";
+}
+
+function openAddEmployeeModal() {
+    document.getElementById("addEmployeeForm").reset();
+    document.getElementById("addEmployeeModal").style.display = "block";
+}
+
+function closeAddEmployeeModal(refresh=false) {
+    document.getElementById("addEmployeeModal").style.display = "none";
+
+    if (refresh) {
+        window.location.reload();
+    }
+}
+
+function saveEmployeeAndNext() {
+    const form = document.getElementById("addEmployeeForm");
+
+    if (!form.reportValidity()) {
+        return;
+    }
+
+    const formData = new FormData(form);
+
+    fetch("{{ url_for('add_employee_ajax') }}", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            form.reset();
+            form.querySelector("input[name='employee_code']").focus();
+        } else {
+            alert(data.message || "Error saving employee.");
+        }
+    })
+    .catch(error => {
+        alert("Error saving employee.");
+        console.error(error);
+    });
+}
+
+window.onclick = function(event) {
+    const editModal = document.getElementById("employeeEditModal");
+    const addModal = document.getElementById("addEmployeeModal");
+
+    if (event.target === editModal) {
+        closeEmployeeModal();
+    }
+
+    if (event.target === addModal) {
+        closeAddEmployeeModal(true);
+    }
+};
+</script>
+
+{% endblock %}

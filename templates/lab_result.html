@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1><i class="fas fa-clipboard-check"></i> Lab Result</h1>
+    </div>
+
+    <div class="details-card">
+        <form method="GET" action="{{ url_for('lab_result') }}" class="toolbar-form">
+            <div class="searchable-select" data-searchable-select>
+                <input type="text"
+                       class="toolbar-search-input searchable-select-input"
+                       placeholder="All doctors"
+                       autocomplete="off"
+                       value="{% for doctor in doctors %}{% if selected_doctor_id == doctor.id %}{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}{% endif %}{% endfor %}">
+                <input type="hidden"
+                       name="doctor_id"
+                       class="searchable-select-value"
+                       value="{{ selected_doctor_id or '' }}">
+                <div class="searchable-select-options">
+                    {% for doctor in doctors %}
+                        <button type="button"
+                                class="searchable-select-option"
+                                data-value="{{ doctor.id }}"
+                                data-label="{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}">
+                            {{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}
+                        </button>
+                    {% endfor %}
+                    <div class="searchable-select-empty">
+                        No doctors found.
+                    </div>
+                </div>
+            </div>
+
+            <div class="searchable-select" data-searchable-select>
+                <input type="text"
+                       class="toolbar-search-input searchable-select-input"
+                       placeholder="Search ordered lab order"
+                       autocomplete="off"
+                       value="{% for order in orders %}{% if selected_order_key == order.order_key|string %}#{{ order.first_order_id }} - {{ order.result_date }} - {{ order.patient_code }} - {{ order.patient_name }}{% endif %}{% endfor %}">
+                <input type="hidden"
+                       name="order_key"
+                       class="searchable-select-value"
+                       value="{{ selected_order_key or '' }}">
+                <div class="searchable-select-options">
+                    {% for order in orders %}
+                        <button type="button"
+                                class="searchable-select-option"
+                                data-value="{{ order.order_key }}"
+                                data-label="#{{ order.first_order_id }} - {{ order.result_date }} - {{ order.patient_code }} - {{ order.patient_name }} - {{ order.test_count }} tests">
+                            #{{ order.first_order_id }} - {{ order.result_date }} -
+                            {{ order.patient_code }} - {{ order.patient_name }}
+                            <strong>{{ order.test_count }}</strong>
+                        </button>
+                    {% endfor %}
+                    <div class="searchable-select-empty">
+                        No lab orders found.
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="toolbar-btn search-btn" title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <a href="{{ url_for('lab_result') }}" class="toolbar-btn clear-btn" title="Clear">
+                <i class="fas fa-times"></i>
+            </a>
+
+            <button type="submit"
+                    form="finalSaveLabResultForm"
+                    class="standard-btn primary-btn lab-final-save-btn"
+                    {% if not selected_order %}disabled{% endif %}>
+                <i class="fas fa-lock"></i> Final Save
+            </button>
+        </form>
+
+        {% if selected_order %}
+        <form id="finalSaveLabResultForm"
+              method="POST"
+              action="{{ url_for('final_save_lab_result_order', first_order_id=selected_order.first_order_id) }}">
+            <input type="hidden" name="selected_doctor_id" value="{{ selected_doctor_id or '' }}">
+            <input type="hidden" name="selected_order_key" value="{{ selected_order_key or '' }}">
+        </form>
+        {% endif %}
+    </div>
+
+    {% if selected_order %}
+    <div class="details-card selected-lab-order-card">
+        <div>
+            <strong>Selected Order #{{ selected_order.first_order_id }}</strong>
+            <span>
+                {{ selected_order.result_date }} -
+                {{ selected_order.patient_code }} - {{ selected_order.patient_name }}
+                {% if selected_order.doctor_name %}
+                    - {{ selected_order.doctor_name }}{% if selected_order.doctor_specialty %} ({{ selected_order.doctor_specialty }}){% endif %}
+                {% endif %}
+            </span>
+        </div>
+        <span class="status-badge status-{{ selected_order.order_status }}">
+            {{ selected_order.order_status }}
+        </span>
+    </div>
+    {% endif %}
+
+    <div class="table-container limited-height-table">
+        <table class="app-table">
+            <thead>
+                <tr>
+                    <th>Test</th>
+                    <th>LOINC Code</th>
+                    <th>Result</th>
+                    <th>Unit</th>
+                    <th>Normal Range</th>
+                    <th>Status</th>
+                    <th>Note</th>
+                    <th class="actions-header">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% if selected_order_key %}
+                    {% for result in results %}
+                <tr>
+                    <td>{{ result.test_name }}</td>
+                    <td>{{ result.loinc_code or '' }}</td>
+                    <td onclick="event.stopPropagation();">
+                        {% if result.order_status == 'ordered' %}
+                            <form method="POST"
+                                  id="inlineResultForm{{ result.id }}"
+                                  action="{{ url_for('update_lab_result', result_id=result.id) }}"
+                                  class="inline-result-form">
+                                <input type="hidden" name="selected_doctor_id" value="{{ selected_doctor_id or '' }}">
+                                <input type="hidden" name="selected_order_key" value="{{ selected_order_key or '' }}">
+                                <input type="hidden" name="result_date" value="{{ result.result_date or '' }}">
+                                <input type="text"
+                                       name="result_value"
+                                       value="{{ result.result_value or '' }}"
+                                       class="inline-result-input"
+                                       autocomplete="off"
+                                       required>
+                            </form>
+                        {% else %}
+                            {{ result.result_value or '' }}
+                        {% endif %}
+                    </td>
+                    <td>{{ result.unit or '' }}</td>
+                    <td>{{ result.normal_range or '' }}</td>
+                    <td>
+                        <span class="status-badge status-{{ result.order_status }}">
+                            {{ result.order_status }}
+                        </span>
+                    </td>
+                    <td>{{ result.notes or '' }}</td>
+                    <td class="action-cell" onclick="event.stopPropagation();">
+                        {% if result.order_status == 'ordered' %}
+                            <button type="submit"
+                                    form="inlineResultForm{{ result.id }}"
+                                    name="save_type"
+                                    value="draft"
+                                    class="table-action edit-action"
+                                    title="Save Result">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                        {% else %}
+                            <span class="locked-label">Locked</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="empty-row">No active lab tests found for result entry.</td>
+                </tr>
+                    {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="8" class="empty-row">
+                        Choose a lab order first to enter results for its tests.
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<style>
+.selected-lab-order-card {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.selected-lab-order-card div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.inline-result-form {
+    align-items: center;
+    display: flex;
+    gap: 6px;
+    min-width: 180px;
+}
+
+.inline-result-input {
+    border: 1px solid #d5dce8;
+    border-radius: 6px;
+    min-width: 0;
+    padding: 7px 9px;
+    width: 100%;
+}
+
+.lab-final-save-btn {
+    height: 38px;
+    white-space: nowrap;
+}
+
+.lab-final-save-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+@media (max-width: 700px) {
+    .selected-lab-order-card {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+</style>
+
+<script>
+document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
+    const input = selectBox.querySelector(".searchable-select-input");
+    const valueInput = selectBox.querySelector(".searchable-select-value");
+    const options = Array.from(selectBox.querySelectorAll(".searchable-select-option"));
+    const emptyState = selectBox.querySelector(".searchable-select-empty");
+
+    function openOptions(){
+        selectBox.classList.add("is-open");
+    }
+
+    function closeOptions(){
+        selectBox.classList.remove("is-open");
+    }
+
+    function filterOptions(){
+        const searchText = input.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        options.forEach(function(option){
+            const label = option.dataset.label.toLowerCase();
+            const isVisible = label.includes(searchText);
+
+            option.hidden = !isVisible;
+
+            if(isVisible){
+                visibleCount += 1;
+            }
+        });
+
+        emptyState.hidden = visibleCount !== 0;
+    }
+
+    input.addEventListener("focus", function(){
+        openOptions();
+        filterOptions();
+    });
+
+    input.addEventListener("input", function(){
+        valueInput.value = "";
+        openOptions();
+        filterOptions();
+    });
+
+    options.forEach(function(option){
+        option.addEventListener("click", function(){
+            input.value = option.dataset.label;
+            valueInput.value = option.dataset.value;
+            closeOptions();
+        });
+    });
+
+    document.addEventListener("click", function(event){
+        if(!selectBox.contains(event.target)){
+            closeOptions();
+        }
+    });
+});
+</script>
+
+{% endblock %}

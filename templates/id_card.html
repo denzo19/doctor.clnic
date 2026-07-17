@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1><i class="fas fa-file-image"></i> Image Text Reader</h1>
+    </div>
+
+    <div class="details-card">
+        <form method="POST" enctype="multipart/form-data" class="toolbar-form id-card-upload-form">
+            <input type="file"
+                   name="id_card_image"
+                   class="toolbar-search-input"
+                   accept="image/*"
+                   required>
+
+            <button type="submit" class="standard-btn primary-btn">
+                <i class="fas fa-wand-magic-sparkles"></i> Read Text
+            </button>
+        </form>
+    </div>
+
+    <div class="details-card">
+        <h2><i class="fas fa-align-left"></i> Extracted Text</h2>
+
+        {% if image_path %}
+            <div class="id-card-preview">
+                <img src="{{ url_for('static', filename=image_path) }}" alt="Uploaded image">
+            </div>
+        {% endif %}
+
+        <div class="form-grid">
+            <div class="form-group form-group-wide">
+                <label>Displayed Text</label>
+                <textarea readonly rows="14">{{ extracted_text }}</textarea>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}

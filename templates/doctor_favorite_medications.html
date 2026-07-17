@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1><i class="fas fa-star"></i> Favorite Medications</h1>
+    </div>
+
+    <div class="details-card selected-lab-order-card">
+        <div>
+            <strong>{{ doctor.full_name }}</strong>
+            <span>{{ doctor.specialty or '' }}</span>
+        </div>
+    </div>
+
+    <div class="details-card">
+        <form method="GET"
+              action="{{ url_for('doctor_favorite_medications') }}"
+              class="toolbar-form">
+            <input type="hidden" name="doctor_id" value="{{ doctor_id }}">
+            <input type="text"
+                   name="favorite_search"
+                   value="{{ favorite_search or '' }}"
+                   class="toolbar-search-input"
+                   placeholder="Search favorites">
+
+            <button type="submit" class="toolbar-btn search-btn" title="Search Favorites">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <a href="{{ url_for('doctor_favorite_medications', doctor_id=doctor_id) }}"
+               class="toolbar-btn clear-btn"
+               title="Clear Favorites Search">
+                <i class="fas fa-times"></i>
+            </a>
+
+            <button type="button"
+                    class="toolbar-btn add-btn"
+                    title="Manage Favorites"
+                    onclick="openMedicationSelectionModal()">
+                <i class="fas fa-plus"></i>
+            </button>
+        </form>
+    </div>
+
+    <div class="table-container limited-height-table">
+        <table class="app-table">
+            <thead>
+                <tr>
+                    <th>Medication</th>
+                    <th>Strength</th>
+                    <th>Dosage Form</th>
+                    <th>Favorite Notes</th>
+                    <th class="actions-header">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for medication in favorite_medications %}
+                <tr>
+                    <td>{{ medication.medication_name }}</td>
+                    <td>{{ medication.strength or '' }}</td>
+                    <td>{{ medication.dosage_form or '' }}</td>
+                    <td>
+                        <form method="POST"
+                              id="favoriteNoteForm{{ medication.favorite_id }}"
+                              action="{{ url_for('update_doctor_favorite_medication', favorite_id=medication.favorite_id) }}"
+                              class="inline-favorite-note-form">
+                            <input type="hidden" name="doctor_id" value="{{ doctor_id }}">
+                            <input type="text"
+                                   name="notes"
+                                   value="{{ medication.favorite_notes or '' }}"
+                                   class="inline-result-input"
+                                   autocomplete="off">
+                        </form>
+                    </td>
+                    <td class="action-cell">
+                        <button type="submit"
+                                form="favoriteNoteForm{{ medication.favorite_id }}"
+                                class="table-action edit-action"
+                                title="Save Notes">
+                            <i class="fas fa-pen"></i>
+                        </button>
+
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="empty-row">No favorite medications found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<div id="medicationSelectionModal" class="modal">
+    <div class="modal-content medication-selection-modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-star"></i> Select Favorite Medications</h2>
+            <button type="button" class="modal-close-btn" onclick="closeMedicationSelectionModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-toolbar">
+            <input type="text"
+                   id="medicationSelectionSearch"
+                   class="toolbar-search-input"
+                   placeholder="Search medications"
+                   autocomplete="off">
+        </div>
+
+        <form method="POST"
+              action="{{ url_for('save_doctor_favorite_medication_selection') }}"
+              class="modal-form">
+            <input type="hidden" name="doctor_id" value="{{ doctor_id }}">
+
+            <div class="table-container medication-selection-table">
+                <table class="app-table">
+                    <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th>Medication</th>
+                            <th>Strength</th>
+                            <th>Dosage Form</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for medication in all_medications %}
+                        <tr data-medication-option
+                            data-label="{{ medication.medication_name }} {{ medication.strength or '' }} {{ medication.dosage_form or '' }} {{ medication.notes or '' }}">
+                            <td>
+                                <input type="checkbox"
+                                       name="medication_ids"
+                                       value="{{ medication.id }}"
+                                       {% if medication.is_favorite %}checked{% endif %}>
+                            </td>
+                            <td>{{ medication.medication_name }}</td>
+                            <td>{{ medication.strength or '' }}</td>
+                            <td>{{ medication.dosage_form or '' }}</td>
+                            <td>{{ medication.notes or '' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="empty-row">No medications available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i> Save Selection
+                </button>
+                <button type="button"
+                        class="standard-btn form-cancel-btn"
+                        onclick="closeMedicationSelectionModal()">
+                    <i class="fas fa-ban"></i> Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.selected-lab-order-card {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.selected-lab-order-card div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.inline-favorite-note-form {
+    min-width: 220px;
+}
+
+.medication-selection-modal-content {
+    max-width: 980px;
+    width: 92%;
+}
+
+.modal-toolbar {
+    margin-bottom: 12px;
+}
+
+.medication-selection-table {
+    max-height: 460px;
+    overflow-y: auto;
+}
+
+.medication-selection-table input[type="checkbox"] {
+    height: 18px;
+    width: 18px;
+}
+</style>
+
+<script>
+function openMedicationSelectionModal() {
+    document.getElementById("medicationSelectionModal").style.display = "block";
+    const searchInput = document.getElementById("medicationSelectionSearch");
+
+    if (searchInput) {
+        searchInput.value = "";
+        filterMedicationSelectionRows();
+        searchInput.focus();
+    }
+}
+
+function closeMedicationSelectionModal() {
+    document.getElementById("medicationSelectionModal").style.display = "none";
+}
+
+function filterMedicationSelectionRows() {
+    const searchInput = document.getElementById("medicationSelectionSearch");
+    const searchText = searchInput ? searchInput.value.trim().toLowerCase() : "";
+
+    document.querySelectorAll("[data-medication-option]").forEach(function(row){
+        const label = (row.dataset.label || "").toLowerCase();
+        row.hidden = searchText && !label.includes(searchText);
+    });
+}
+
+document.getElementById("medicationSelectionSearch").addEventListener("input", filterMedicationSelectionRows);
+
+window.addEventListener("click", function(event) {
+    const modal = document.getElementById("medicationSelectionModal");
+
+    if (event.target === modal) {
+        closeMedicationSelectionModal();
+    }
+});
+</script>
+
+{% endblock %}

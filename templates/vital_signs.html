@@ -1,0 +1,430 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1><i class="fas fa-heartbeat"></i> Vital Signs</h1>
+    </div>
+
+    <div class="details-card">
+        <form method="GET" action="{{ url_for('vital_signs') }}" class="toolbar-form vital-signs-search-form">
+            <div class="searchable-select"
+                 data-searchable-select
+                 data-required-message="Please choose a patient from the list.">
+                <input type="text"
+                       id="vital_search_patient_display"
+                       class="toolbar-search-input searchable-select-input"
+                       placeholder="Choose patient"
+                       autocomplete="off"
+                       required
+                       value="{% for patient in patients %}{% if selected_patient_id and selected_patient_id == patient.id %}{{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}{% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}{% endif %}{% endfor %}">
+                <input type="hidden"
+                       id="vital_search_patient_id"
+                       name="patient_id"
+                       class="searchable-select-value"
+                       value="{{ selected_patient_id or '' }}">
+                <div class="searchable-select-options">
+                    {% for patient in patients %}
+                        <button type="button"
+                                class="searchable-select-option"
+                                data-value="{{ patient.id }}"
+                                data-label="{{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}{% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}">
+                            {{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}
+                            {% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}
+                        </button>
+                    {% endfor %}
+                    <div class="searchable-select-empty">
+                        No patients found.
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="toolbar-btn search-btn" title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <a href="{{ url_for('vital_signs') }}" class="toolbar-btn clear-btn" title="Clear">
+                <i class="fas fa-times"></i>
+            </a>
+
+            <button type="button"
+                    class="toolbar-btn add-btn"
+                    title="Add Vital Signs"
+                    onclick="openVitalSignsModal()">
+                <i class="fas fa-plus"></i>
+            </button>
+        </form>
+    </div>
+
+    <div class="details-section">
+        <h2><i class="fas fa-list"></i> Patient Vital Signs</h2>
+
+        <div class="table-container patient-vital-signs-table-wrap">
+            <table class="app-table details-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Blood Pressure</th>
+                        <th>Heart Rate</th>
+                        <th>Respiratory</th>
+                        <th>Temperature</th>
+                        <th>Oxygen Saturation</th>
+                        <th>Weight</th>
+                        <th>Height</th>
+                        <th>Status</th>
+                        <th class="actions-header">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if selected_patient_id %}
+                        {% for vital in vital_records %}
+                        <tr>
+                            <td>{{ vital.mdate }}</td>
+                            <td>{{ vital.blood_pressure }}</td>
+                            <td>{{ vital.heart_rate }}</td>
+                            <td>{{ vital.respiratory_rate }}</td>
+                            <td>{{ vital.body_temperature }}</td>
+                            <td>{{ vital.oxygen_saturation }}</td>
+                            <td>{{ vital.weight }}</td>
+                            <td>{{ vital.height }}</td>
+                            <td>
+                                <span class="status-badge status-{{ vital.vital_status }}">
+                                    {{ vital.vital_status }}
+                                </span>
+                            </td>
+                            <td class="action-cell">
+                                {% if vital.vital_status == 'draft' %}
+                                    <button type="button"
+                                            class="table-action edit-action"
+                                            title="Edit"
+                                            data-edit-vital
+                                            data-id="{{ vital.id }}"
+                                            data-patient-id="{{ selected_patient_id }}"
+                                            data-date="{{ vital.mdate }}"
+                                            data-blood-pressure="{{ vital.blood_pressure or '' }}"
+                                            data-heart-rate="{{ vital.heart_rate or '' }}"
+                                            data-respiratory-rate="{{ vital.respiratory_rate or '' }}"
+                                            data-body-temperature="{{ vital.body_temperature or '' }}"
+                                            data-oxygen-saturation="{{ vital.oxygen_saturation or '' }}"
+                                            data-weight="{{ vital.weight or '' }}"
+                                            data-height="{{ vital.height or '' }}">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                {% else %}
+                                    <span class="locked-label">
+                                        <i class="fas fa-lock"></i> Final
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="10" class="empty-row">No vital signs recorded for this patient.</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="10" class="empty-row">Choose a patient to view vital signs.</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
+
+<div id="vitalSignsModal" class="modal">
+    <div class="modal-content large-modal">
+        <div class="modal-header">
+            <h2 id="vitalSignsModalTitle"><i class="fas fa-plus"></i> Add Vital Signs</h2>
+            <button type="button" class="modal-close-btn" onclick="closeVitalSignsModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form method="POST"
+              action="{{ url_for('vital_signs') }}"
+              class="modal-form"
+              id="vitalSignsForm"
+              data-create-action="{{ url_for('vital_signs') }}">
+            <div class="form-grid">
+                <div class="form-group form-group-wide">
+                    <label>Patient</label>
+                    <div class="searchable-select"
+                         data-required-message="Please choose a patient from the list.">
+                        <input type="text"
+                               id="vital_patient_display"
+                               class="searchable-select-input"
+                               placeholder="Choose patient"
+                               autocomplete="off"
+                               readonly
+                               required
+                               value="{% for patient in patients %}{% if selected_patient_id and selected_patient_id == patient.id %}{{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}{% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}{% endif %}{% endfor %}">
+                        <input type="hidden"
+                               id="vital_patient_id"
+                               name="patient_id"
+                               class="searchable-select-value"
+                               value="{{ selected_patient_id or '' }}">
+                        <div class="searchable-select-options">
+                            {% for patient in patients %}
+                                <button type="button"
+                                        class="searchable-select-option"
+                                        data-value="{{ patient.id }}"
+                                        data-label="{{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}{% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}">
+                                    {{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}
+                                    {% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}
+                                </button>
+                            {% endfor %}
+                            <div class="searchable-select-empty">
+                                No patients found.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="vital_mdate" name="mdate" value="{{ default_date }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Blood Pressure</label>
+                    <input type="text" id="vital_blood_pressure" name="blood_pressure" placeholder="120/80">
+                </div>
+
+                <div class="form-group">
+                    <label>Heart Rate</label>
+                    <input type="number" id="vital_heart_rate" name="heart_rate" min="0" step="1">
+                </div>
+
+                <div class="form-group">
+                    <label>Respiratory</label>
+                    <input type="number" id="vital_respiratory_rate" name="respiratory_rate" min="0" step="1">
+                </div>
+
+                <div class="form-group">
+                    <label>Temperature</label>
+                    <input type="number" id="vital_body_temperature" name="body_temperature" min="0" step="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label>Oxygen Saturation</label>
+                    <input type="number" id="vital_oxygen_saturation" name="oxygen_saturation" min="0" max="100" step="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label>Weight</label>
+                    <input type="number" id="vital_weight" name="weight" min="0" step="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label>Height</label>
+                    <input type="number" id="vital_height" name="height" min="0" step="0.01">
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit"
+                        name="save_type"
+                        value="draft"
+                        class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i> Save Draft
+                </button>
+
+                <button type="submit"
+                        name="save_type"
+                        value="final"
+                        class="standard-btn primary-btn">
+                    <i class="fas fa-lock"></i> Final Save
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-cancel-btn"
+                        onclick="closeVitalSignsModal()">
+                    <i class="fas fa-ban"></i> Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
+    const input = selectBox.querySelector(".searchable-select-input");
+    const valueInput = selectBox.querySelector(".searchable-select-value");
+    const options = Array.from(selectBox.querySelectorAll(".searchable-select-option"));
+    const emptyState = selectBox.querySelector(".searchable-select-empty");
+    const form = selectBox.closest("form");
+
+    function openOptions(){
+        selectBox.classList.add("is-open");
+    }
+
+    function closeOptions(){
+        selectBox.classList.remove("is-open");
+    }
+
+    function filterOptions(){
+        const searchText = input.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        options.forEach(function(option){
+            const isVisible = option.dataset.label.toLowerCase().includes(searchText);
+            option.hidden = !isVisible;
+
+            if (isVisible) {
+                visibleCount += 1;
+            }
+        });
+
+        emptyState.hidden = visibleCount !== 0;
+    }
+
+    input.addEventListener("focus", function(){
+        openOptions();
+        filterOptions();
+    });
+
+    input.addEventListener("input", function(){
+        valueInput.value = "";
+        input.setCustomValidity("");
+        openOptions();
+        filterOptions();
+    });
+
+    options.forEach(function(option){
+        option.addEventListener("click", function(){
+            input.value = option.dataset.label;
+            valueInput.value = option.dataset.value;
+            input.setCustomValidity("");
+            closeOptions();
+        });
+    });
+
+    document.addEventListener("click", function(event){
+        if (!selectBox.contains(event.target)) {
+            closeOptions();
+        }
+    });
+
+    if (form) {
+        form.addEventListener("submit", function(event){
+            if (!valueInput.value) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                input.setCustomValidity(selectBox.dataset.requiredMessage);
+                input.reportValidity();
+                openOptions();
+                filterOptions();
+            }
+        });
+    }
+});
+
+const defaultVitalPatientId = "{{ selected_patient_id or '' }}";
+const defaultVitalPatientLabel = `{% for patient in patients %}{% if selected_patient_id and selected_patient_id == patient.id %}{{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}{% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}{% endif %}{% endfor %}`;
+
+function setVitalInputValue(id, value) {
+    const input = document.getElementById(id);
+
+    if (input) {
+        input.value = value || "";
+    }
+}
+
+function setVitalModalMode(mode, action) {
+    const form = document.getElementById("vitalSignsForm");
+    const title = document.getElementById("vitalSignsModalTitle");
+
+    form.action = action || form.dataset.createAction;
+    title.innerHTML = mode === "edit"
+        ? '<i class="fas fa-pen"></i> Edit Vital Signs'
+        : '<i class="fas fa-plus"></i> Add Vital Signs';
+}
+
+function resetVitalSignsForm() {
+    const form = document.getElementById("vitalSignsForm");
+    const searchPatientId = document.getElementById("vital_search_patient_id");
+    const searchPatientDisplay = document.getElementById("vital_search_patient_display");
+    const selectedPatientId = searchPatientId ? searchPatientId.value : defaultVitalPatientId;
+    const selectedPatientLabel = searchPatientDisplay ? searchPatientDisplay.value : defaultVitalPatientLabel;
+
+    form.reset();
+    setVitalModalMode("add", form.dataset.createAction);
+    setVitalInputValue("vital_patient_id", selectedPatientId);
+    setVitalInputValue("vital_patient_display", selectedPatientLabel.trim());
+    setVitalInputValue("vital_mdate", "{{ default_date }}");
+}
+
+function openVitalSignsModal() {
+    const searchPatientId = document.getElementById("vital_search_patient_id");
+
+    if (!searchPatientId || !searchPatientId.value) {
+        alert("Please select a patient first.");
+        return;
+    }
+
+    resetVitalSignsForm();
+    document.getElementById("vitalSignsModal").style.display = "block";
+}
+
+function closeVitalSignsModal() {
+    document.getElementById("vitalSignsModal").style.display = "none";
+}
+
+function openEditVitalSignsModal(button) {
+    resetVitalSignsForm();
+    setVitalModalMode("edit", "/vital_signs/update/" + button.dataset.id);
+    setVitalInputValue("vital_patient_id", button.dataset.patientId);
+    setVitalInputValue("vital_mdate", button.dataset.date);
+    setVitalInputValue("vital_blood_pressure", button.dataset.bloodPressure);
+    setVitalInputValue("vital_heart_rate", button.dataset.heartRate);
+    setVitalInputValue("vital_respiratory_rate", button.dataset.respiratoryRate);
+    setVitalInputValue("vital_body_temperature", button.dataset.bodyTemperature);
+    setVitalInputValue("vital_oxygen_saturation", button.dataset.oxygenSaturation);
+    setVitalInputValue("vital_weight", button.dataset.weight);
+    setVitalInputValue("vital_height", button.dataset.height);
+    document.getElementById("vitalSignsModal").style.display = "block";
+}
+
+document.querySelectorAll("[data-edit-vital]").forEach(function(button){
+    button.addEventListener("click", function(){
+        openEditVitalSignsModal(button);
+    });
+});
+
+document.getElementById("vitalSignsForm").addEventListener("submit", function(event){
+    const form = event.currentTarget;
+    const valueNames = [
+        "blood_pressure",
+        "heart_rate",
+        "respiratory_rate",
+        "body_temperature",
+        "oxygen_saturation",
+        "weight",
+        "height"
+    ];
+    const hasValue = valueNames.some(function(name){
+        const input = form.querySelector("[name='" + name + "']");
+        return input && input.value.trim() !== "";
+    });
+
+    if (!hasValue) {
+        event.preventDefault();
+        alert("Enter at least one vital sign value.");
+    }
+});
+
+window.addEventListener("click", function(event) {
+    const modal = document.getElementById("vitalSignsModal");
+
+    if (event.target === modal) {
+        closeVitalSignsModal();
+    }
+});
+</script>
+
+{% endblock %}

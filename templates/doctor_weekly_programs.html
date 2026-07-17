@@ -1,0 +1,619 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1><i class="fas fa-calendar-alt"></i> Manage Doctor Weekly Programs</h1>
+    </div>
+    <div class="details-card">
+        <form method="GET"
+              action="{{ url_for('manage_doctor_weekly_programs') }}"
+              class="toolbar-form">
+
+            <div class="searchable-select"
+                 data-searchable-select>
+                <input type="text"
+                       id="doctorWeeklyProgramDoctorSearch"
+                       class="toolbar-search-input searchable-select-input"
+                       placeholder="Choose doctor"
+                       autocomplete="off"
+                       value="{% if selected_doctor_id %}{% for doctor in doctors %}{% if selected_doctor_id|string == doctor.id|string %}{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}{% endif %}{% endfor %}{% else %}All Doctors{% endif %}">
+                <input type="hidden"
+                       id="doctorWeeklyProgramDoctorId"
+                       name="doctor_id"
+                       class="searchable-select-value"
+                       value="{{ selected_doctor_id or '' }}">
+                <div class="searchable-select-options">
+                    <button type="button"
+                            class="searchable-select-option"
+                            data-value=""
+                            data-label="All Doctors">
+                        All Doctors
+                    </button>
+                    {% for doctor in doctors %}
+                        {% set doctor_label %}
+                            {{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}
+                        {% endset %}
+                        <button type="button"
+                                class="searchable-select-option"
+                                data-value="{{ doctor.id }}"
+                                data-label="{{ doctor_label|trim }}">
+                            {{ doctor_label|trim }}
+                        </button>
+                    {% endfor %}
+                    <div class="searchable-select-empty">
+                        No doctors found.
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="toolbar-btn search-btn" title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <a href="{{ url_for('manage_doctor_weekly_programs') }}"
+               class="toolbar-btn clear-btn"
+               title="Clear">
+                <i class="fas fa-times"></i>
+            </a>
+
+            <button type="button"
+                    class="toolbar-btn add-btn"
+                    title="Add Weekly Program"
+                    onclick="openAddProgramModal()">
+                <i class="fas fa-plus"></i>
+            </button>
+
+            <button type="button"
+                    id="doctorWeeklyProgramReportBtn"
+                    class="toolbar-btn search-btn"
+                    title="Doctor Weekly Programs Report">
+                <i class="fas fa-file-pdf"></i>
+            </button>
+
+        </form>
+    </div>
+
+    <div class="table-container limited-height-table">
+        <table class="app-table">
+            <thead>
+                <tr>
+                    <th>Doctor</th>
+                    <th>Center</th>
+                    <th>Day</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Slot</th>
+                    <th>Active</th>
+                    <th class="actions-header">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for p in programs %}
+                <tr class="clickable-row"
+                    onclick="openProgramModal(
+                        '{{ p.id }}',
+                        '{{ p.doctor_id }}',
+                        '{{ p.center_id }}',
+                        '{{ p.day_of_week }}',
+                        '{{ p.start_time }}',
+                        '{{ p.end_time }}',
+                        '{{ p.slot_duration_minutes }}',
+                        '{{ 1 if p.is_active else 0 }}'
+                    )">
+
+                    <td>{{ p.doctor_name }}</td>
+                    <td>{{ p.center_name }}</td>
+                    <td>
+                        {% if p.day_of_week == 1 %}Monday
+                        {% elif p.day_of_week == 2 %}Tuesday
+                        {% elif p.day_of_week == 3 %}Wednesday
+                        {% elif p.day_of_week == 4 %}Thursday
+                        {% elif p.day_of_week == 5 %}Friday
+                        {% elif p.day_of_week == 6 %}Saturday
+                        {% elif p.day_of_week == 7 %}Sunday
+                        {% endif %}
+                    </td>
+                    <td>{{ p.start_time }}</td>
+                    <td>{{ p.end_time }}</td>
+                    <td>{{ p.slot_duration_minutes }} min</td>
+                    <td>{{ 'Yes' if p.is_active else 'No' }}</td>
+
+                    <td class="action-cell" onclick="event.stopPropagation();">
+
+                        <button type="button"
+                                class="table-action edit-action"
+                                title="Edit"
+                                onclick="openProgramModal(
+                                    '{{ p.id }}',
+                                    '{{ p.doctor_id }}',
+                                    '{{ p.center_id }}',
+                                    '{{ p.day_of_week }}',
+                                    '{{ p.start_time }}',
+                                    '{{ p.end_time }}',
+                                    '{{ p.slot_duration_minutes }}',
+                                    '{{ 1 if p.is_active else 0 }}'
+                                )">
+                            <i class="fas fa-pen"></i>
+                        </button>
+
+                        {% if p.is_active %}
+                            <form method="POST"
+                                  action="{{ url_for('stop_doctor_weekly_program', program_id=p.id) }}"
+                                  class="inline-delete-form"
+                                  onsubmit="return confirm('Stop this weekly program?');">
+                                <button type="submit"
+                                        class="table-action delete-action"
+                                        title="Stop Weekly Program">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="locked-label" title="Inactive weekly program">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                        {% endif %}
+
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="empty-row">
+                        No weekly programs found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+</section>
+
+<div id="programEditModal" class="modal">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h2><i class="fas fa-pen"></i> Weekly Program Information</h2>
+            <button type="button" class="modal-close-btn" onclick="closeProgramModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="programEditForm" method="POST" class="modal-form">
+
+            <div class="form-grid two-column-grid">
+
+                <div class="form-group">
+                    <label>Doctor</label>
+                    <select id="modal_doctor_id"
+                            name="doctor_id"
+                            required
+                            onchange="loadDoctorCenters(this.value, 'modal_center_id')">
+                        <option value="">Choose doctor</option>
+                        {% for doctor in doctors %}
+                            <option value="{{ doctor.id }}">
+                                {{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Medical Center</label>
+                    <select id="modal_center_id" name="center_id" required>
+                        <option value="">Choose doctor first</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Day of Week</label>
+                    <select id="modal_day_of_week" name="day_of_week" required>
+                        <option value="">Choose day</option>
+                        <option value="1">Monday</option>
+                        <option value="2">Tuesday</option>
+                        <option value="3">Wednesday</option>
+                        <option value="4">Thursday</option>
+                        <option value="5">Friday</option>
+                        <option value="6">Saturday</option>
+                        <option value="7">Sunday</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Slot Duration</label>
+                    <input type="number"
+                           id="modal_slot_duration_minutes"
+                           name="slot_duration_minutes"
+                           min="5"
+                           step="5"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label>Start Time</label>
+                        <input type="time" 
+                        id="modal_start_time"
+                        name="start_time"
+                        value="08:00"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label>End Time</label>
+                    <input type="time"
+                        id="modal_end_time"
+                        name="end_time"
+                        value="17:00"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label>Active</label>
+                    <select id="modal_is_active" name="is_active">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i> Save
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-cancel-btn"
+                        onclick="closeProgramModal()">
+                    <i class="fas fa-ban"></i> Cancel
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<div id="addProgramModal" class="modal">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h2><i class="fas fa-plus"></i> Add Weekly Program</h2>
+            <button type="button" class="modal-close-btn" onclick="closeAddProgramModal(true)">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="addProgramForm"
+              method="POST"
+              action="{{ url_for('manage_doctor_weekly_programs') }}"
+              class="modal-form">
+
+            <div class="form-grid two-column-grid">
+
+                <div class="form-group">
+                    <label>Doctor</label>
+                    <select name="doctor_id"
+                            required
+                            onchange="loadDoctorCenters(this.value, 'add_center_id')">
+                        <option value="">Choose doctor</option>
+                        {% for doctor in doctors %}
+                            <option value="{{ doctor.id }}">
+                                {{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Medical Center</label>
+                    <select id="add_center_id" name="center_id" required>
+                        <option value="">Choose doctor first</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Day of Week</label>
+                    <select name="day_of_week" required>
+                        <option value="">Choose day</option>
+                        <option value="1">Monday</option>
+                        <option value="2">Tuesday</option>
+                        <option value="3">Wednesday</option>
+                        <option value="4">Thursday</option>
+                        <option value="5">Friday</option>
+                        <option value="6">Saturday</option>
+                        <option value="7">Sunday</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Slot Duration</label>
+                    <input type="number"
+                           name="slot_duration_minutes"
+                           value="30"
+                           min="5"
+                           step="5"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label>Start Time</label>
+                    <input type="time" 
+                        name="start_time"
+                        value="08:00"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label>End Time</label>
+                    <input type="time"
+                        name="end_time"
+                        value="17:00"
+                        required>
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i> Save
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-save-btn"
+                        onclick="saveProgramAndNext()">
+                    <i class="fas fa-forward"></i> Next
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-cancel-btn"
+                        onclick="closeAddProgramModal(true)">
+                    <i class="fas fa-ban"></i> Cancel
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    const weeklyProgramDoctorId = document.getElementById("doctorWeeklyProgramDoctorId");
+    const weeklyProgramReportBtn = document.getElementById("doctorWeeklyProgramReportBtn");
+
+    if(weeklyProgramDoctorId && weeklyProgramReportBtn){
+        weeklyProgramReportBtn.addEventListener("click", function(){
+            const reportUrl = new URL("{{ url_for('doctor_weekly_programs_report') }}", window.location.origin);
+            const doctorId = weeklyProgramDoctorId.value.trim();
+
+            if(doctorId){
+                reportUrl.searchParams.set("doctor_id", doctorId);
+            }
+
+            window.open(reportUrl.toString(), "_blank");
+        });
+    }
+});
+
+document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
+    const input = selectBox.querySelector(".searchable-select-input");
+    const valueInput = selectBox.querySelector(".searchable-select-value");
+    const options = Array.from(selectBox.querySelectorAll(".searchable-select-option"));
+    const emptyState = selectBox.querySelector(".searchable-select-empty");
+
+    function openOptions(){
+        selectBox.classList.add("is-open");
+    }
+
+    function closeOptions(){
+        selectBox.classList.remove("is-open");
+    }
+
+    function filterOptions(){
+        const searchText = input.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        options.forEach(function(option){
+            const label = option.dataset.label.toLowerCase();
+            const isVisible = label.includes(searchText);
+
+            option.hidden = !isVisible;
+
+            if(isVisible){
+                visibleCount += 1;
+            }
+        });
+
+        emptyState.hidden = visibleCount !== 0;
+    }
+
+    input.addEventListener("focus", function(){
+        openOptions();
+        filterOptions();
+    });
+
+    input.addEventListener("input", function(){
+        valueInput.value = "";
+        openOptions();
+        filterOptions();
+    });
+
+    options.forEach(function(option){
+        option.addEventListener("click", function(){
+            input.value = option.dataset.label;
+            valueInput.value = option.dataset.value;
+            closeOptions();
+        });
+    });
+
+    document.addEventListener("click", function(event){
+        if(!selectBox.contains(event.target)){
+            closeOptions();
+        }
+    });
+});
+
+const DEFAULT_PROGRAM_START_TIME = "08:00";
+const DEFAULT_PROGRAM_END_TIME = "17:00";
+
+function normalizeTimeValue(timeValue, fallbackValue) {
+    if (!timeValue) {
+        return fallbackValue;
+    }
+
+    const parts = String(timeValue).split(":");
+
+    if (parts.length < 2) {
+        return fallbackValue;
+    }
+
+    const hours = parts[0].padStart(2, "0");
+    const minutes = parts[1].padStart(2, "0");
+
+    return `${hours}:${minutes}`;
+}
+
+function loadDoctorCenters(doctorId, centerSelectId, selectedCenterId = "") {
+    const centerSelect = document.getElementById(centerSelectId);
+
+    centerSelect.innerHTML = '<option value="">Loading...</option>';
+
+    if (!doctorId) {
+        centerSelect.innerHTML = '<option value="">Choose doctor first</option>';
+        return;
+    }
+
+    fetch("/admin/doctor_assigned_centers/" + encodeURIComponent(doctorId))
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Could not load centers.");
+            }
+
+            return response.json();
+        })
+        .then(data => {
+            centerSelect.innerHTML = '<option value="">Choose center</option>';
+
+            if (!data.centers || data.centers.length === 0) {
+                centerSelect.innerHTML = '<option value="">No assigned centers found</option>';
+                return;
+            }
+
+            data.centers.forEach(center => {
+                const option = document.createElement("option");
+                option.value = center.id;
+                option.textContent = center.center_name;
+
+                if (String(center.id) === String(selectedCenterId)) {
+                    option.selected = true;
+                }
+
+                centerSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            centerSelect.innerHTML = '<option value="">Error loading centers</option>';
+            console.error(error);
+        });
+}
+
+function openProgramModal(id, doctorId, centerId, dayOfWeek, startTime, endTime, slotDuration, active) {
+    const form = document.getElementById("programEditForm");
+
+    form.action = "/admin/doctor_weekly_programs/update/" + id;
+
+    document.getElementById("modal_doctor_id").value = doctorId;
+    loadDoctorCenters(doctorId, "modal_center_id", centerId);
+
+    document.getElementById("modal_day_of_week").value = dayOfWeek;
+    document.getElementById("modal_start_time").value =
+        normalizeTimeValue(startTime, DEFAULT_PROGRAM_START_TIME);
+    document.getElementById("modal_end_time").value =
+        normalizeTimeValue(endTime, DEFAULT_PROGRAM_END_TIME);
+    document.getElementById("modal_slot_duration_minutes").value = slotDuration;
+    document.getElementById("modal_is_active").value = active;
+
+    document.getElementById("programEditModal").style.display = "block";
+}
+
+function closeProgramModal() {
+    document.getElementById("programEditModal").style.display = "none";
+}
+
+function openAddProgramModal() {
+    const form = document.getElementById("addProgramForm");
+
+    form.reset();
+    form.querySelector("input[name='start_time']").value = DEFAULT_PROGRAM_START_TIME;
+    form.querySelector("input[name='end_time']").value = DEFAULT_PROGRAM_END_TIME;
+    document.getElementById("add_center_id").innerHTML =
+        '<option value="">Choose doctor first</option>';
+    document.getElementById("addProgramModal").style.display = "block";
+}
+
+function closeAddProgramModal(refresh=false) {
+    document.getElementById("addProgramModal").style.display = "none";
+
+    if (refresh) {
+        window.location.reload();
+    }
+}
+
+function saveProgramAndNext() {
+    const form = document.getElementById("addProgramForm");
+
+    if (!form.reportValidity()) {
+        return;
+    }
+
+    const formData = new FormData(form);
+
+    fetch("{{ url_for('add_doctor_weekly_program_ajax') }}", {
+        method: "POST",
+        body: formData
+    })
+    .then(response =>
+        response.json().then(data => ({
+            ok: response.ok,
+            data: data
+        }))
+    )
+    .then(result => {
+        const data = result.data;
+
+        if (!result.ok || !data.success) {
+            alert(data.message || "Error saving weekly program.");
+            return;
+        }
+
+        form.reset();
+        form.querySelector("input[name='start_time']").value = DEFAULT_PROGRAM_START_TIME;
+        form.querySelector("input[name='end_time']").value = DEFAULT_PROGRAM_END_TIME;
+        document.getElementById("add_center_id").innerHTML =
+            '<option value="">Choose doctor first</option>';
+        form.querySelector("select[name='doctor_id']").focus();
+    })
+    .catch(error => {
+        alert("Error saving weekly program.");
+        console.error(error);
+    });
+}
+
+window.onclick = function(event) {
+    const editModal = document.getElementById("programEditModal");
+    const addModal = document.getElementById("addProgramModal");
+
+    if (event.target === editModal) {
+        closeProgramModal();
+    }
+
+    if (event.target === addModal) {
+        closeAddProgramModal(true);
+    }
+};
+</script>
+
+{% endblock %}

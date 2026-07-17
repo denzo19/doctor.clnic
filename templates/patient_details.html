@@ -1,0 +1,1029 @@
+
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="patient-details-container{% if request.endpoint == 'patient_history_details' %} unchecked-patient-details{% endif %}">
+
+    {% if patient %}
+
+    <div class="page-header">
+        <h1>
+            <i class="fas fa-user-injured"></i>
+            Patient Profile
+        </h1>
+    </div>
+
+    <div class="details-card">
+        <h2>
+            <i class="fas fa-id-card"></i>
+            Basic Information
+        </h2>
+
+        <div class="patient-profile-grid">
+            <div class="patient-profile-item">
+                <span>Full Name</span>
+                <strong>
+                    {{ patient.first_name }}
+                    {{ patient.middle_name or '' }}
+                    {{ patient.last_name }}
+                </strong>
+            </div>
+            <div class="patient-profile-item">
+                <span>Date of Birth</span>
+                <strong>{{ patient.date_of_birth }}</strong>
+            </div>
+            <div class="patient-profile-item">
+                <span>Gender</span>
+                <strong>{{ patient.gender }}</strong>
+            </div>
+            <div class="patient-profile-item">
+                <span>Phone</span>
+                <strong>{{ patient.phone_number }}</strong>
+            </div>
+            <div class="patient-profile-item">
+                <span>Address</span>
+                <strong>{{ patient.address }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="details-section">
+        <h2><i class="fas fa-heartbeat"></i> Vital Signs</h2>
+
+        <div class="toolbar-form patient-vital-history-toolbar">
+            <select id="vitalHistoryMetric" class="toolbar-search-input">
+                <option value="blood_pressure">Blood Pressure</option>
+                <option value="heart_rate">Heart Rate</option>
+                <option value="respiratory_rate">Respiratory</option>
+                <option value="body_temperature">Temperature</option>
+                <option value="oxygen_saturation">Oxygen Saturation</option>
+                <option value="weight">Weight</option>
+            </select>
+
+            <button type="button"
+                    class="standard-btn primary-btn"
+                    id="vitalHistoryButton"
+                    {% if not vital_signs %}disabled{% endif %}
+                    onclick="openVitalHistoryModal()">
+                <i class="fas fa-chart-line"></i> Historic
+            </button>
+        </div>
+
+        <div class="table-container patient-vital-signs-table-wrap">
+            <table class="app-table details-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Blood Pressure</th>
+                        <th>Heart Rate</th>
+                        <th>Respiratory</th>
+                        <th>Temperature</th>
+                        <th>Oxygen Saturation</th>
+                        <th>Weight</th>
+                        <th>Height</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vital in vital_signs %}
+                    <tr>
+                        <td>{{ vital.mdate }}</td>
+                        <td>{{ vital.blood_pressure }}</td>
+                        <td>{{ vital.heart_rate }}</td>
+                        <td>{{ vital.respiratory_rate }}</td>
+                        <td>{{ vital.body_temperature }}</td>
+                        <td>{{ vital.oxygen_saturation }}</td>
+                        <td>{{ vital.weight }}</td>
+                        <td>{{ vital.height }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="empty-row">No vital signs recorded.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="vitalHistoryModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2>
+                    <i class="fas fa-chart-line"></i>
+                    Historic
+                </h2>
+                <button type="button" class="modal-close-btn" onclick="closeVitalHistoryModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="lab-history-chart-wrap">
+                <svg id="vitalHistoryChart"
+                     class="lab-history-chart"
+                     viewBox="0 0 760 520"
+                     role="img"
+                     aria-label="Vital signs history chart"></svg>
+                <div id="vitalHistoryEmpty" class="empty-row" hidden>
+                    Not enough numeric records to display a graph.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="details-section">
+        <h2><i class="fas fa-notes-medical"></i> Diseases</h2>
+
+        <table class="app-table details-table">
+            <thead>
+                <tr>
+                    <th>Disease</th>
+                    <th>Category</th>
+                    <th>Diagnosis Date</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                {% for disease in diseases %}
+                <tr>
+                    <td>{{ disease.disease_name }}</td>
+                    <td>{{ disease.disease_category }}</td>
+                    <td>{{ disease.diagnosis_date }}</td>
+                    <td>
+                        <span class="status-badge status-{{ disease.status }}">
+                            {{ disease.status }}
+                        </span>
+                    </td>
+                    <td>{{ disease.notes }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="empty-row">No diseases recorded.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="details-section">
+        <h2><i class="fas fa-pills"></i> Medications</h2>
+
+        <div class="table-container patient-medications-table-wrap">
+            <table class="app-table details-table">
+                <thead>
+                    <tr>
+                        <th>Medication</th>
+                        <th>Strength</th>
+                        <th>Form</th>
+                        <th>Dose</th>
+                        <th>Frequency</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for med in medications %}
+                    <tr>
+                        <td>{{ med.medication_name }}</td>
+                        <td>{{ med.strength }}</td>
+                        <td>{{ med.dosage_form }}</td>
+                        <td>{{ med.dose }}</td>
+                        <td>{{ med.frequency }}</td>
+                        <td>{{ med.start_date }}</td>
+                        <td>{{ med.end_date or 'Current' }}</td>
+                        <td>{{ med.notes }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="empty-row">No active medications recorded.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="details-section" id="lab-results-section">
+        <h2><i class="fas fa-vial"></i> Lab Results</h2>
+
+        <form method="GET"
+              action="{{ url_for('patient_details', patient_id=patient.id) }}#lab-results-section"
+              class="toolbar-form patient-lab-filter-form">
+            {% if doctor_id %}
+                <input type="hidden" name="doctor_id" value="{{ doctor_id }}">
+            {% endif %}
+
+            <label class="toolbar-filter-label" for="patient_lab_test_filter">Test</label>
+            <div class="searchable-select" data-searchable-select>
+                <input type="text"
+                       id="patient_lab_test_filter"
+                       class="toolbar-search-input searchable-select-input"
+                       placeholder="All completed tests"
+                       autocomplete="off"
+                       value="{% for test in lab_test_options %}{% if selected_lab_test_id == test.id %}{{ test.test_name }}{% if test.category %} - {{ test.category }}{% endif %}{% endif %}{% endfor %}">
+                <input type="hidden"
+                       name="lab_test_id"
+                       class="searchable-select-value"
+                       value="{{ selected_lab_test_id or '' }}">
+                <div class="searchable-select-options">
+                    {% for test in lab_test_options %}
+                        <button type="button"
+                                class="searchable-select-option"
+                                data-value="{{ test.id }}"
+                                data-label="{{ test.test_name }}{% if test.category %} - {{ test.category }}{% endif %}">
+                            {{ test.test_name }}{% if test.category %} - {{ test.category }}{% endif %}
+                        </button>
+                    {% endfor %}
+                    <div class="searchable-select-empty">
+                        No completed tests found.
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="toolbar-btn search-btn" title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <a href="{% if doctor_id %}{{ url_for('patient_details', patient_id=patient.id, doctor_id=doctor_id) }}{% else %}{{ url_for('patient_details', patient_id=patient.id) }}{% endif %}#lab-results-section"
+               class="toolbar-btn clear-btn"
+               title="Clear">
+                <i class="fas fa-times"></i>
+            </a>
+
+            <button type="button"
+                    class="standard-btn primary-btn"
+                    id="labHistoryButton"
+                    {% if not selected_lab_test_id %}disabled{% endif %}
+                    onclick="openLabHistoryModal()">
+                <i class="fas fa-chart-line"></i> Historic
+            </button>
+        </form>
+
+        <div class="table-container patient-lab-results-table-wrap">
+            <table class="app-table details-table">
+                <thead>
+                    <tr>
+                        <th>Test</th>
+                        <th>Category</th>
+                        <th>Result</th>
+                        <th></th>
+                        <th>Unit</th>
+                        <th>Normal Range</th>
+                        <th>Date</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lab in lab_results %}
+                    <tr>
+                        <td>{{ lab.test_name }}</td>
+                        <td>{{ lab.category }}</td>
+                        <td>{{ lab.result_value }}</td>
+                        <td>
+                            {% if lab.result_level %}
+                                <span class="lab-result-level-alert">{{ lab.result_level }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ lab.unit }}</td>
+                        <td>{{ lab.normal_range }}</td>
+                        <td>{{ lab.result_date }}</td>
+                        <td>{{ lab.notes }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="empty-row">No lab results recorded.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="labHistoryModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2>
+                    <i class="fas fa-chart-line"></i>
+                    Historic
+                </h2>
+                <button type="button" class="modal-close-btn" onclick="closeLabHistoryModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="lab-history-chart-wrap">
+                <svg id="labHistoryChart"
+                     class="lab-history-chart"
+                     viewBox="0 0 760 520"
+                     role="img"
+                     aria-label="Lab result history chart"></svg>
+                <div id="labHistoryEmpty" class="empty-row" hidden>
+                    Not enough numeric results to display a graph.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="details-section">
+        <h2><i class="fas fa-file-medical-alt"></i> Visit Reports</h2>
+
+        <table class="app-table details-table">
+            <thead>
+                <tr>
+                    <th>Visit Date</th>
+                    <th>Chief Complaint</th>
+                    <th>Diagnosis</th>
+                    <th>Treatment Plan</th>
+                    <th>Doctor Notes</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for visit in visit_reports %}
+                <tr>
+                    <td>{{ visit.visit_date }}</td>
+                    </td>
+                    <td class="fixed-col">
+                        <div class="scroll-cell">{{ visit.chief_complaint }}</div>
+                    </td>
+                    </td>
+                    <td class="fixed-col">
+                        <div class="scroll-cell">{{ visit.diagnosis }}</div>
+                    </td>
+
+                    <td class="fixed-col">
+                        <div class="scroll-cell">{{ visit.treatment_plan }}</div>
+                    </td>
+
+                    <td class="fixed-col">
+                        <div class="scroll-cell">{{ visit.doctor_notes }}</div>
+                    </td>
+                     <td>
+                        <span class="status-badge status-{{ visit.visit_status }}">
+                            {{ visit.visit_status }}
+                        </span>
+                    </td>
+                    <td>
+                    {% if visit.visit_status|trim|lower == 'draft' %}
+
+                        <a href="{{ url_for('edit_visit', visit_id=visit.id, doctor_id=doctor_id) }}"
+                        class="table-action edit-action"
+                        title="Edit">
+                            <i class="fas fa-pen"></i>
+                        </a>
+
+                        <form method="POST"
+                            action="{{ url_for('delete_visit', visit_id=visit.id, doctor_id=doctor_id) }}"
+                            class="inline-delete-form"
+                            onsubmit="return confirm('Delete this visit?');">
+
+                            <button class="table-action delete-action"
+                                    type="submit"
+                                    title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+
+                        </form>
+
+                    {% else %}
+
+                        <span class="locked-label">
+                            <i class="fas fa-lock"></i> Final
+                        </span>
+
+                    {% endif %}
+
+                    </td>
+
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="empty-row">No visit reports recorded.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <br>
+
+    <div class="page-actions">
+
+        {% if active_check_in %}
+            <a href="{{ url_for(
+                    'start_visit',
+                    patient_id=patient.id,
+                    check_in_item_id=active_check_in.id,
+                    doctor_id=doctor_id
+                ) }}"
+            class="action-btn primary-btn">
+                <i class="fas fa-stethoscope"></i>
+                New Visit
+            </a>
+        {% else %}
+            <a href="{{ url_for(
+                    'start_visit',
+                    patient_id=patient.id,
+                    doctor_id=doctor_id
+                ) }}"
+            class="action-btn primary-btn">
+                <i class="fas fa-stethoscope"></i>
+                New Visit
+            </a>
+        {% endif %}
+
+        <a href="{{ url_for(
+                'new_managed_prescription',
+                patient_id=patient.id,
+                doctor_id=doctor_id,
+                return_to_patient=1
+            ) }}"
+           class="action-btn primary-btn">
+            <i class="fas fa-prescription-bottle-alt"></i>
+            New Subscription
+        </a>
+
+        <a href="{{ url_for(
+                'new_lab_order',
+                patient_id=patient.id,
+                doctor_id=doctor_id,
+                return_to_patient=1
+            ) }}"
+           class="action-btn primary-btn">
+            <i class="fa fa-vial"></i>
+            New Lab Order
+        </a>
+
+        {% if request.endpoint == 'patient_history_details' %}
+            <a href="{{ url_for('home') }}"
+               class="action-btn secondary-btn">
+                <i class="fas fa-arrow-left"></i>
+                Back
+            </a>
+        {% else %}
+            <a href="{{ url_for('checked_in_patients', doctor_id=doctor_id) }}"
+            class="action-btn secondary-btn">
+                <i class="fas fa-arrow-left"></i>
+                Back to Checked-in Patients
+            </a>
+        {% endif %}
+
+    </div>
+
+    {% else %}
+
+    <div class="patient-details-container">
+        <h1>Patient not found</h1>
+        <a href="{{ url_for('patients') }}" class="back-btn">
+            Back to Patients
+        </a>
+    </div>
+
+    {% endif %}
+
+</section>
+<script>
+document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
+    const input = selectBox.querySelector(".searchable-select-input");
+    const valueInput = selectBox.querySelector(".searchable-select-value");
+    const options = Array.from(selectBox.querySelectorAll(".searchable-select-option"));
+    const emptyState = selectBox.querySelector(".searchable-select-empty");
+
+    function openOptions(){
+        selectBox.classList.add("is-open");
+    }
+
+    function closeOptions(){
+        selectBox.classList.remove("is-open");
+    }
+
+    function filterOptions(){
+        const searchText = input.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        options.forEach(function(option){
+            const label = option.dataset.label.toLowerCase();
+            const isVisible = label.includes(searchText);
+            option.hidden = !isVisible;
+
+            if(isVisible){
+                visibleCount += 1;
+            }
+        });
+
+        emptyState.hidden = visibleCount !== 0;
+    }
+
+    input.addEventListener("focus", function(){
+        openOptions();
+        filterOptions();
+    });
+
+    input.addEventListener("input", function(){
+        valueInput.value = "";
+        openOptions();
+        filterOptions();
+    });
+
+    options.forEach(function(option){
+        option.addEventListener("click", function(){
+            input.value = option.dataset.label;
+            valueInput.value = option.dataset.value;
+            closeOptions();
+        });
+    });
+
+    document.addEventListener("click", function(event){
+        if(!selectBox.contains(event.target)){
+            closeOptions();
+        }
+    });
+});
+
+const vitalHistoryRows = {{ vital_signs|tojson }};
+const labHistoryRows = {{ lab_results|tojson }};
+const vitalHistoryMetricLabels = {
+    blood_pressure: "Blood Pressure",
+    heart_rate: "Heart Rate",
+    respiratory_rate: "Respiratory",
+    body_temperature: "Temperature",
+    oxygen_saturation: "Oxygen Saturation",
+    weight: "Weight"
+};
+
+function parseLabResultValue(value) {
+    if (value === null || value === undefined) {
+        return null;
+    }
+
+    const match = String(value).replace(",", ".").match(/-?\d+(\.\d+)?/);
+    return match ? Number(match[0]) : null;
+}
+
+function createSvgElement(name, attributes = {}) {
+    const element = document.createElementNS("http://www.w3.org/2000/svg", name);
+
+    Object.entries(attributes).forEach(function(entry){
+        element.setAttribute(entry[0], entry[1]);
+    });
+
+    return element;
+}
+
+function parseVitalHistoryValue(row, metric) {
+    const value = row[metric];
+
+    if (value === null || value === undefined || value === "") {
+        return null;
+    }
+
+    if (metric === "blood_pressure") {
+        const match = String(value).match(/\d+/);
+        return match ? Number(match[0]) : null;
+    }
+
+    return parseLabResultValue(value);
+}
+
+function renderVitalHistoryChart() {
+    const metricSelect = document.getElementById("vitalHistoryMetric");
+    const metric = metricSelect ? metricSelect.value : "blood_pressure";
+    const metricLabel = vitalHistoryMetricLabels[metric] || "Vital Sign";
+    const svg = document.getElementById("vitalHistoryChart");
+    const emptyState = document.getElementById("vitalHistoryEmpty");
+    const points = vitalHistoryRows
+        .map(function(row){
+            return {
+                date: row.mdate || "",
+                displayDate: formatLabHistoryDate(row.mdate),
+                value: parseVitalHistoryValue(row, metric)
+            };
+        })
+        .filter(function(row){
+            return row.date && Number.isFinite(row.value);
+        })
+        .sort(function(a, b){
+            return new Date(a.date) - new Date(b.date);
+        });
+
+    svg.innerHTML = "";
+
+    if (points.length < 2) {
+        svg.hidden = true;
+        emptyState.hidden = false;
+        return;
+    }
+
+    svg.hidden = false;
+    emptyState.hidden = true;
+
+    const width = 760;
+    const height = 520;
+    const margin = { top: 22, right: 28, bottom: 220, left: 64 };
+    const chartWidth = width - margin.left - margin.right;
+    const chartHeight = height - margin.top - margin.bottom;
+    const values = points.map(function(point){ return point.value; });
+    let minValue = Math.min.apply(null, values);
+    let maxValue = Math.max.apply(null, values);
+
+    if (minValue === maxValue) {
+        minValue -= 1;
+        maxValue += 1;
+    }
+
+    const valuePadding = (maxValue - minValue) * 0.08;
+    minValue -= valuePadding;
+    maxValue += valuePadding;
+
+    function xPosition(index) {
+        return margin.left + (index / (points.length - 1)) * chartWidth;
+    }
+
+    function yPosition(value) {
+        return margin.top + chartHeight - ((value - minValue) / (maxValue - minValue)) * chartHeight;
+    }
+
+    svg.appendChild(createSvgElement("line", {
+        x1: margin.left,
+        y1: margin.top,
+        x2: margin.left,
+        y2: margin.top + chartHeight,
+        stroke: "#6b7d90",
+        "stroke-width": "1"
+    }));
+
+    svg.appendChild(createSvgElement("line", {
+        x1: margin.left,
+        y1: margin.top + chartHeight,
+        x2: margin.left + chartWidth,
+        y2: margin.top + chartHeight,
+        stroke: "#6b7d90",
+        "stroke-width": "1"
+    }));
+
+    const gridCount = 4;
+    for (let index = 0; index <= gridCount; index += 1) {
+        const value = minValue + ((maxValue - minValue) * index / gridCount);
+        const y = yPosition(value);
+
+        svg.appendChild(createSvgElement("line", {
+            x1: margin.left,
+            y1: y,
+            x2: margin.left + chartWidth,
+            y2: y,
+            stroke: "#e1e7ef",
+            "stroke-width": "1"
+        }));
+
+        const label = createSvgElement("text", {
+            x: margin.left - 10,
+            y: y + 4,
+            fill: "#40566d",
+            "font-size": "12",
+            "text-anchor": "end"
+        });
+        label.textContent = Number(value.toFixed(2)).toString();
+        svg.appendChild(label);
+    }
+
+    const pathData = points.map(function(point, index){
+        const command = index === 0 ? "M" : "L";
+        return command + " " + xPosition(index).toFixed(2) + " " + yPosition(point.value).toFixed(2);
+    }).join(" ");
+
+    svg.appendChild(createSvgElement("path", {
+        d: pathData,
+        fill: "none",
+        stroke: "#1565c0",
+        "stroke-width": "2",
+        "stroke-dasharray": "2 5",
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round"
+    }));
+
+    points.forEach(function(point, index){
+        const x = xPosition(index);
+        const y = yPosition(point.value);
+
+        const circle = createSvgElement("circle", {
+            cx: x,
+            cy: y,
+            r: "4.5",
+            fill: "#2e7d32",
+            stroke: "#2e7d32",
+            "stroke-width": "2"
+        });
+        circle.appendChild(createSvgElement("title"));
+        circle.querySelector("title").textContent = point.displayDate + ": " + point.value;
+        svg.appendChild(circle);
+
+        const dateLabel = createSvgElement("text", {
+            x: x,
+            y: margin.top + chartHeight + 10,
+            fill: "#40566d",
+            "font-size": "11",
+            "text-anchor": "end",
+            transform: "rotate(-90 " + x + " " + (margin.top + chartHeight + 10) + ")"
+        });
+        dateLabel.textContent = point.displayDate;
+        svg.appendChild(dateLabel);
+    });
+
+    const yAxisLabel = createSvgElement("text", {
+        x: 18,
+        y: margin.top + chartHeight / 2,
+        fill: "#22384d",
+        "font-size": "13",
+        "font-weight": "700",
+        transform: "rotate(-90 18 " + (margin.top + chartHeight / 2) + ")",
+        "text-anchor": "middle"
+    });
+    yAxisLabel.textContent = metricLabel;
+    svg.appendChild(yAxisLabel);
+
+    const xAxisLabel = createSvgElement("text", {
+        x: margin.left + chartWidth / 2,
+        y: height - 16,
+        fill: "#22384d",
+        "font-size": "13",
+        "font-weight": "700",
+        "text-anchor": "middle"
+    });
+    xAxisLabel.textContent = "Date";
+    svg.appendChild(xAxisLabel);
+}
+
+function formatLabHistoryDate(value) {
+    if (!value) {
+        return "";
+    }
+
+    if (typeof value === "string") {
+        const isoDate = value.match(/\d{4}-\d{2}-\d{2}/);
+        if (isoDate) {
+            return isoDate[0];
+        }
+    }
+
+    const parsedDate = new Date(value);
+    if (Number.isNaN(parsedDate.getTime())) {
+        return String(value).split(" ")[0];
+    }
+
+    const year = parsedDate.getFullYear();
+    const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+    const day = String(parsedDate.getDate()).padStart(2, "0");
+    return year + "-" + month + "-" + day;
+}
+
+function parseNormalLimit(value) {
+    if (value === null || value === undefined || value === "") {
+        return null;
+    }
+
+    const parsed = Number(String(value).replace(",", "."));
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function getLabHistoryPointColor(point) {
+    const low = parseNormalLimit(point.normalLow);
+    const high = parseNormalLimit(point.normalHigh);
+
+    if (low !== null && point.value < low) {
+        return "#c62828";
+    }
+
+    if (high !== null && point.value > high) {
+        return "#c62828";
+    }
+
+    return "#2e7d32";
+}
+
+function renderLabHistoryChart() {
+    const svg = document.getElementById("labHistoryChart");
+    const emptyState = document.getElementById("labHistoryEmpty");
+    const points = labHistoryRows
+        .map(function(row){
+            const displayDate = formatLabHistoryDate(row.result_date);
+
+            return {
+                date: row.result_date || "",
+                displayDate: displayDate,
+                testName: row.test_name || "Result Value",
+                value: parseLabResultValue(row.result_value),
+                unit: row.unit || "",
+                normalLow: row.normal_low,
+                normalHigh: row.normal_high
+            };
+        })
+        .filter(function(row){
+            return row.date && Number.isFinite(row.value);
+        })
+        .sort(function(a, b){
+            return new Date(a.date) - new Date(b.date);
+        });
+
+    svg.innerHTML = "";
+
+    if (points.length < 2) {
+        svg.hidden = true;
+        emptyState.hidden = false;
+        return;
+    }
+
+    svg.hidden = false;
+    emptyState.hidden = true;
+
+    const width = 760;
+    const height = 520;
+    const margin = { top: 22, right: 28, bottom: 220, left: 64 };
+    const chartWidth = width - margin.left - margin.right;
+    const chartHeight = height - margin.top - margin.bottom;
+    const values = points.map(function(point){ return point.value; });
+    let minValue = Math.min.apply(null, values);
+    let maxValue = Math.max.apply(null, values);
+
+    if (minValue === maxValue) {
+        minValue -= 1;
+        maxValue += 1;
+    }
+
+    const valuePadding = (maxValue - minValue) * 0.08;
+    minValue -= valuePadding;
+    maxValue += valuePadding;
+
+    function xPosition(index) {
+        if (points.length === 1) {
+            return margin.left + chartWidth / 2;
+        }
+
+        return margin.left + (index / (points.length - 1)) * chartWidth;
+    }
+
+    function yPosition(value) {
+        return margin.top + chartHeight - ((value - minValue) / (maxValue - minValue)) * chartHeight;
+    }
+
+    svg.appendChild(createSvgElement("line", {
+        x1: margin.left,
+        y1: margin.top,
+        x2: margin.left,
+        y2: margin.top + chartHeight,
+        stroke: "#6b7d90",
+        "stroke-width": "1"
+    }));
+
+    svg.appendChild(createSvgElement("line", {
+        x1: margin.left,
+        y1: margin.top + chartHeight,
+        x2: margin.left + chartWidth,
+        y2: margin.top + chartHeight,
+        stroke: "#6b7d90",
+        "stroke-width": "1"
+    }));
+
+    const gridCount = 4;
+    for (let index = 0; index <= gridCount; index += 1) {
+        const value = minValue + ((maxValue - minValue) * index / gridCount);
+        const y = yPosition(value);
+
+        svg.appendChild(createSvgElement("line", {
+            x1: margin.left,
+            y1: y,
+            x2: margin.left + chartWidth,
+            y2: y,
+            stroke: "#e1e7ef",
+            "stroke-width": "1"
+        }));
+
+        const label = createSvgElement("text", {
+            x: margin.left - 10,
+            y: y + 4,
+            fill: "#40566d",
+            "font-size": "12",
+            "text-anchor": "end"
+        });
+        label.textContent = Number(value.toFixed(2)).toString();
+        svg.appendChild(label);
+    }
+
+    const pathData = points.map(function(point, index){
+        const command = index === 0 ? "M" : "L";
+        return command + " " + xPosition(index).toFixed(2) + " " + yPosition(point.value).toFixed(2);
+    }).join(" ");
+
+    svg.appendChild(createSvgElement("path", {
+        d: pathData,
+        fill: "none",
+        stroke: "#1565c0",
+        "stroke-width": "2",
+        "stroke-dasharray": "2 5",
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round"
+    }));
+
+    points.forEach(function(point, index){
+        const x = xPosition(index);
+        const y = yPosition(point.value);
+        const pointColor = getLabHistoryPointColor(point);
+
+        const circle = createSvgElement("circle", {
+            cx: x,
+            cy: y,
+            r: "4.5",
+            fill: pointColor,
+            stroke: pointColor,
+            "stroke-width": "2"
+        });
+        circle.appendChild(createSvgElement("title"));
+        circle.querySelector("title").textContent = point.displayDate + ": " + point.value + (point.unit ? " " + point.unit : "");
+        svg.appendChild(circle);
+
+        const dateLabel = createSvgElement("text", {
+            x: x,
+            y: margin.top + chartHeight + 10,
+            fill: "#40566d",
+            "font-size": "11",
+            "text-anchor": "end",
+            transform: "rotate(-90 " + x + " " + (margin.top + chartHeight + 10) + ")"
+        });
+        dateLabel.textContent = point.displayDate;
+        svg.appendChild(dateLabel);
+    });
+
+    const yAxisLabel = createSvgElement("text", {
+        x: 18,
+        y: margin.top + chartHeight / 2,
+        fill: "#22384d",
+        "font-size": "13",
+        "font-weight": "700",
+        transform: "rotate(-90 18 " + (margin.top + chartHeight / 2) + ")",
+        "text-anchor": "middle"
+    });
+    yAxisLabel.textContent = points[0].testName || "Result Value";
+    svg.appendChild(yAxisLabel);
+
+    const xAxisLabel = createSvgElement("text", {
+        x: margin.left + chartWidth / 2,
+        y: height - 16,
+        fill: "#22384d",
+        "font-size": "13",
+        "font-weight": "700",
+        "text-anchor": "middle"
+    });
+    xAxisLabel.textContent = "Date";
+    svg.appendChild(xAxisLabel);
+}
+
+function openLabHistoryModal() {
+    const modal = document.getElementById("labHistoryModal");
+    modal.style.display = "block";
+    renderLabHistoryChart();
+}
+
+function closeLabHistoryModal() {
+    document.getElementById("labHistoryModal").style.display = "none";
+}
+
+function openVitalHistoryModal() {
+    const modal = document.getElementById("vitalHistoryModal");
+    modal.style.display = "block";
+    renderVitalHistoryChart();
+}
+
+function closeVitalHistoryModal() {
+    document.getElementById("vitalHistoryModal").style.display = "none";
+}
+
+const vitalHistoryMetricSelect = document.getElementById("vitalHistoryMetric");
+
+if (vitalHistoryMetricSelect) {
+    vitalHistoryMetricSelect.addEventListener("change", function(){
+        const modal = document.getElementById("vitalHistoryModal");
+
+        if (modal && modal.style.display === "block") {
+            renderVitalHistoryChart();
+        }
+    });
+}
+
+function copyText(button) {
+    const text = button.getAttribute("data-copy");
+
+    navigator.clipboard.writeText(text).then(function() {
+        const originalIcon = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i>';
+
+        setTimeout(function() {
+            button.innerHTML = originalIcon;
+        }, 1000);
+    });
+}
+</script>
+{% endblock %}

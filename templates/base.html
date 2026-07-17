@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Doctor Healthcare App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<nav class="top-navbar">
+
+    {% for parent in user_menu %}
+        {% if parent.children %}
+            <div class="nav-dropdown">
+
+                <button class="nav-dropbtn">
+                    {% if parent.icon %}
+                        <i class="{{ parent.icon }}"></i>
+                    {% endif %}
+                    {{ parent.name }}
+                    <i class="fas fa-caret-down"></i>
+                </button>
+
+                <div class="nav-dropdown-content">
+                    {% for child in parent.children %}
+                        <a href="{{ child.url }}">
+                            {% if child.icon %}
+                                <i class="{{ child.icon }}"></i>
+                            {% endif %}
+                            {{ child.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+
+            </div>
+        {% else %}
+            <a href="{{ parent.url }}" class="nav-direct-link">
+                {% if parent.icon %}
+                    <i class="{{ parent.icon }}"></i>
+                {% endif %}
+                {{ parent.name }}
+            </a>
+        {% endif %}
+    {% endfor %}
+    <div class="nav-right">
+
+<div class="nav-right">
+
+    <div class="nav-user-display">
+        <i class="fas fa-user"></i>
+        {{ session.get('full_name', session.get('username', 'User')) }}
+    </div>
+
+    <a href="{{ url_for('logout') }}"
+       class="nav-logout-btn">
+        <i class="fas fa-sign-out-alt"></i>
+        Logout
+    </a>
+
+</div>
+
+
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+
+        <div class="flash-container">
+
+            {% for category, message in messages %}
+
+                <div class="
+                    flash-message
+                    {% if category == 'error' %}
+                        flash-error
+                    {% else %}
+                        flash-success
+                    {% endif %}
+                ">
+                    {{ message }}
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+{% endwith %}
+
+<main>
+    {% block content %}
+    <h1>Doctor Healthcare App</h1>
+    {% endblock %}
+</main>
+<script>
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    const flashMessages =
+        document.querySelectorAll(".flash-message");
+
+    if(flashMessages.length > 0){
+
+        setTimeout(function(){
+
+            flashMessages.forEach(function(msg){
+
+                msg.classList.add("flash-hide");
+
+                setTimeout(function(){
+                    msg.remove();
+                }, 1000);
+
+            });
+
+        }, 30000);
+
+    }
+
+});
+
+</script>
+</body>
+</html>

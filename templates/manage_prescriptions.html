@@ -1,0 +1,391 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1><i class="fas fa-prescription-bottle-alt"></i> Manage Prescriptions</h1>
+    </div>
+
+    <div class="details-card">
+        <form method="GET" action="{{ url_for('manage_prescriptions') }}" class="toolbar-form">
+            <div class="searchable-select" data-searchable-select>
+                <input type="text"
+                       class="toolbar-search-input searchable-select-input"
+                       placeholder="All doctors"
+                       autocomplete="off"
+                       value="{% for doctor in doctors %}{% if selected_doctor_id == doctor.id %}{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}{% endif %}{% endfor %}">
+                <input type="hidden"
+                       name="doctor_id"
+                       class="searchable-select-value"
+                       value="{{ selected_doctor_id or '' }}">
+                <div class="searchable-select-options">
+                    {% for doctor in doctors %}
+                        <button type="button"
+                                class="searchable-select-option"
+                                data-value="{{ doctor.id }}"
+                                data-label="{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}">
+                            {{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}
+                        </button>
+                    {% endfor %}
+                    <div class="searchable-select-empty">No doctors found.</div>
+                </div>
+            </div>
+
+            <div class="searchable-select" data-searchable-select>
+                <input type="text"
+                       class="toolbar-search-input searchable-select-input"
+                       placeholder="All patients"
+                       autocomplete="off"
+                       value="{% for patient in patients %}{% if selected_patient_id == patient.id %}{{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}{% endif %}{% endfor %}">
+                <input type="hidden"
+                       name="patient_id"
+                       class="searchable-select-value"
+                       value="{{ selected_patient_id or '' }}">
+                <div class="searchable-select-options">
+                    {% for patient in patients %}
+                        <button type="button"
+                                class="searchable-select-option"
+                                data-value="{{ patient.id }}"
+                                data-label="{{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}">
+                            {{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}
+                        </button>
+                    {% endfor %}
+                    <div class="searchable-select-empty">No patients found.</div>
+                </div>
+            </div>
+
+            <select name="status" class="toolbar-search-input">
+                <option value="">All statuses</option>
+                <option value="draft" {% if selected_status == 'draft' %}selected{% endif %}>Draft</option>
+                <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
+                <option value="stopped" {% if selected_status == 'stopped' %}selected{% endif %}>Stopped</option>
+            </select>
+
+            <button type="submit" class="toolbar-btn search-btn" title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <a href="{{ url_for('manage_prescriptions') }}" class="toolbar-btn clear-btn" title="Clear">
+                <i class="fas fa-times"></i>
+            </a>
+
+            <a href="{{ url_for('new_managed_prescription', doctor_id=selected_doctor_id) }}"
+               class="toolbar-btn add-btn"
+               title="Add Prescription">
+                <i class="fas fa-plus"></i>
+            </a>
+        </form>
+    </div>
+
+    <div class="table-container limited-height-table">
+        <table class="app-table">
+            <thead>
+                <tr>
+                    <th>Prescription</th>
+                    <th>Start Date</th>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Medications</th>
+                    <th>Status</th>
+                    <th class="actions-header">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prescription in prescriptions %}
+                <tr>
+                    <td>{{ prescription.first_prescription_id }}</td>
+                    <td>{{ prescription.start_date or '' }}</td>
+                    <td>{{ prescription.patient_code }} - {{ prescription.patient_name }}</td>
+                    <td>
+                        {{ prescription.doctor_name or '' }}
+                        {% if prescription.doctor_specialty %} - {{ prescription.doctor_specialty }}{% endif %}
+                    </td>
+                    <td>
+                        <strong>{{ prescription.medication_count }}</strong>
+                        {{ prescription.medications }}
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ prescription.prescription_status }}">
+                            {{ prescription.prescription_status }}
+                        </span>
+                    </td>
+                    <td class="action-cell">
+                        <button type="button"
+                                class="table-action view-action"
+                                title="View"
+                                data-view-prescription
+                                data-url="{{ url_for('view_managed_prescription', order_key=prescription.order_key) }}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+
+                        <a href="{{ url_for('print_managed_prescription', order_key=prescription.order_key) }}"
+                           class="table-action view-action"
+                           title="Print"
+                           target="_blank">
+                            <i class="fas fa-print"></i>
+                        </a>
+
+                        {% if prescription.prescription_status == 'draft' %}
+                            <a href="{{ url_for('update_managed_prescription', order_key=prescription.order_key) }}"
+                               class="table-action edit-action"
+                               title="Edit">
+                                <i class="fas fa-pen"></i>
+                            </a>
+
+                            <form method="POST"
+                                  action="{{ url_for('delete_managed_prescription', order_key=prescription.order_key) }}"
+                                  class="inline-delete-form"
+                                  onsubmit="return confirm('Delete this draft prescription?');">
+                                <button type="submit"
+                                        class="table-action delete-action"
+                                        title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        {% elif prescription.prescription_status == 'active' %}
+                            <form method="POST"
+                                  action="{{ url_for('stop_managed_prescription', order_key=prescription.order_key) }}"
+                                  class="inline-delete-form"
+                                  onsubmit="return confirm('Stop this prescription?');">
+                                <button type="submit"
+                                        class="table-action delete-action"
+                                        title="Stop">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="locked-label">Locked</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="empty-row">No prescriptions found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<div id="prescriptionViewModal" class="modal">
+    <div class="modal-content large-modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-eye"></i> Prescription Details</h2>
+            <button type="button" class="modal-close-btn" onclick="closePrescriptionViewModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-form">
+            <div class="prescription-view-summary">
+                <div>
+                    <span>Prescription</span>
+                    <strong id="viewPrescriptionId"></strong>
+                </div>
+                <div>
+                    <span>Start Date</span>
+                    <strong id="viewPrescriptionDate"></strong>
+                </div>
+                <div>
+                    <span>Patient</span>
+                    <strong id="viewPrescriptionPatient"></strong>
+                </div>
+                <div>
+                    <span>Doctor</span>
+                    <strong id="viewPrescriptionDoctor"></strong>
+                </div>
+                <div>
+                    <span>Status</span>
+                    <strong id="viewPrescriptionStatus"></strong>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="app-table">
+                    <thead>
+                        <tr>
+                            <th>Medication</th>
+                            <th>Dose</th>
+                            <th>Frequency</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="viewPrescriptionMedicationsBody">
+                        <tr>
+                            <td colspan="7" class="empty-row">No medications found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button"
+                        class="standard-btn form-cancel-btn"
+                        onclick="closePrescriptionViewModal()">
+                    <i class="fas fa-ban"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.prescription-view-summary {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(120px, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.prescription-view-summary div {
+    border: 1px solid #d6dce2;
+    border-radius: 6px;
+    background: #f8fbff;
+    padding: 8px 10px;
+}
+
+.prescription-view-summary span {
+    display: block;
+    color: #5c6f82;
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.prescription-view-summary strong {
+    color: #1f4e79;
+    font-size: 13px;
+}
+
+@media (max-width: 900px) {
+    .prescription-view-summary {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
+    const input = selectBox.querySelector(".searchable-select-input");
+    const valueInput = selectBox.querySelector(".searchable-select-value");
+    const options = Array.from(selectBox.querySelectorAll(".searchable-select-option"));
+    const emptyState = selectBox.querySelector(".searchable-select-empty");
+
+    function openOptions(){ selectBox.classList.add("is-open"); }
+    function closeOptions(){ selectBox.classList.remove("is-open"); }
+
+    function filterOptions(){
+        const searchText = input.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        options.forEach(function(option){
+            const isVisible = option.dataset.label.toLowerCase().includes(searchText);
+            option.hidden = !isVisible;
+            if (isVisible) { visibleCount += 1; }
+        });
+
+        emptyState.hidden = visibleCount !== 0;
+    }
+
+    input.addEventListener("focus", function(){ openOptions(); filterOptions(); });
+    input.addEventListener("input", function(){ valueInput.value = ""; openOptions(); filterOptions(); });
+
+    options.forEach(function(option){
+        option.addEventListener("click", function(){
+            input.value = option.dataset.label;
+            valueInput.value = option.dataset.value;
+            closeOptions();
+        });
+    });
+
+    document.addEventListener("click", function(event){
+        if (!selectBox.contains(event.target)) { closeOptions(); }
+    });
+});
+
+function setPrescriptionViewText(id, value) {
+    document.getElementById(id).textContent = value || "";
+}
+
+function renderPrescriptionMedications(medications) {
+    const body = document.getElementById("viewPrescriptionMedicationsBody");
+    body.innerHTML = "";
+
+    if (!medications || medications.length === 0) {
+        body.innerHTML = '<tr><td colspan="7" class="empty-row">No medications found.</td></tr>';
+        return;
+    }
+
+    medications.forEach(function(medication){
+        const row = document.createElement("tr");
+        const fields = [
+            medication.medication,
+            medication.dose,
+            medication.frequency,
+            medication.start_date,
+            medication.end_date,
+            medication.status,
+            medication.notes
+        ];
+
+        fields.forEach(function(value){
+            const cell = document.createElement("td");
+            cell.textContent = value || "";
+            row.appendChild(cell);
+        });
+
+        body.appendChild(row);
+    });
+}
+
+function openPrescriptionViewModal(url) {
+    fetch(url)
+        .then(function(response){
+            if (!response.ok) {
+                throw new Error("Could not load prescription details.");
+            }
+            return response.json();
+        })
+        .then(function(data){
+            const prescription = data.prescription || {};
+
+            setPrescriptionViewText("viewPrescriptionId", prescription.prescription_id);
+            setPrescriptionViewText("viewPrescriptionDate", prescription.start_date);
+            setPrescriptionViewText("viewPrescriptionPatient", prescription.patient);
+            setPrescriptionViewText("viewPrescriptionDoctor", prescription.doctor);
+            setPrescriptionViewText("viewPrescriptionStatus", prescription.status);
+            renderPrescriptionMedications(data.medications || []);
+
+            document.getElementById("prescriptionViewModal").style.display = "block";
+        })
+        .catch(function(error){
+            alert(error.message || "Could not load prescription details.");
+        });
+}
+
+function closePrescriptionViewModal() {
+    document.getElementById("prescriptionViewModal").style.display = "none";
+}
+
+document.querySelectorAll("[data-view-prescription]").forEach(function(button){
+    button.addEventListener("click", function(){
+        openPrescriptionViewModal(button.dataset.url);
+    });
+});
+
+window.addEventListener("click", function(event) {
+    const viewModal = document.getElementById("prescriptionViewModal");
+
+    if (event.target === viewModal) {
+        closePrescriptionViewModal();
+    }
+});
+</script>
+
+{% endblock %}

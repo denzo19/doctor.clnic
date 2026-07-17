@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1><i class="fas fa-user-md"></i> Doctor Speciality</h1>
+    </div>
+
+    <div class="details-card">
+        <form method="GET"
+              action="{{ url_for('doctor_specialties') }}"
+              class="toolbar-form">
+
+            <input type="text"
+                   id="doctorSpecialtySearch"
+                   name="search"
+                   value="{{ search or '' }}"
+                   class="toolbar-search-input"
+                   placeholder="Search speciality">
+
+            <button type="submit" class="toolbar-btn search-btn" title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <a href="{{ url_for('doctor_specialties') }}"
+               class="toolbar-btn clear-btn"
+               title="Clear">
+                <i class="fas fa-times"></i>
+            </a>
+
+            <button type="button"
+                    class="toolbar-btn add-btn"
+                    title="Add Doctor Speciality"
+                    onclick="openAddSpecialtyModal()">
+                <i class="fas fa-plus"></i>
+            </button>
+
+        </form>
+    </div>
+
+    <div class="table-container limited-height-table">
+        <table class="app-table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Speciality</th>
+                    <th>Group</th>
+                    <th>Classification</th>
+                    <th>Active</th>
+                    <th class="actions-header">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for specialty in specialties %}
+                <tr class="clickable-row"
+                    onclick='openSpecialtyModal({{ specialty|tojson }})'>
+
+                    <td>{{ specialty.specialty_code }}</td>
+                    <td>{{ specialty.specialty_name }}</td>
+                    <td>{{ specialty.specialty_group or '' }}</td>
+                    <td>{{ specialty.classification_system }}</td>
+                    <td>{{ 'Yes' if specialty.is_active else 'No' }}</td>
+
+                    <td class="action-cell" onclick="event.stopPropagation();">
+                        <button type="button"
+                                class="table-action edit-action"
+                                title="Edit"
+                                onclick='openSpecialtyModal({{ specialty|tojson }})'>
+                            <i class="fas fa-pen"></i>
+                        </button>
+
+                        {% if specialty.is_active %}
+                            <form method="POST"
+                                  action="{{ url_for('stop_doctor_specialty', specialty_id=specialty.id) }}"
+                                  class="inline-delete-form"
+                                  onsubmit="return confirm('Deactivate this doctor speciality?');">
+                                <button type="submit"
+                                        class="table-action delete-action"
+                                        title="Deactivate">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="locked-label" title="Inactive speciality">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="empty-row">No doctor specialities found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<datalist id="classificationSystems">
+    <option value="ABMS/ACGME"></option>
+    <option value="Clinic"></option>
+    {% for system in classification_systems %}
+        <option value="{{ system.classification_system }}"></option>
+    {% endfor %}
+</datalist>
+
+<datalist id="specialtyGroups">
+    {% for group in specialty_groups %}
+        <option value="{{ group.specialty_group }}"></option>
+    {% endfor %}
+</datalist>
+
+<div id="specialtyEditModal" class="modal">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h2><i class="fas fa-pen"></i> Doctor Speciality Information</h2>
+            <button type="button" class="modal-close-btn" onclick="closeSpecialtyModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="specialtyEditForm" method="POST" class="modal-form">
+
+            <div class="form-grid two-column-grid">
+
+                <div class="form-group">
+                    <label>Code</label>
+                    <input type="text" id="modal_specialty_code" name="specialty_code" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Speciality</label>
+                    <input type="text" id="modal_specialty_name" name="specialty_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Group</label>
+                    <input type="text"
+                           id="modal_specialty_group"
+                           name="specialty_group"
+                           list="specialtyGroups">
+                </div>
+
+                <div class="form-group">
+                    <label>Classification</label>
+                    <input type="text"
+                           id="modal_classification_system"
+                           name="classification_system"
+                           list="classificationSystems"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label>Active</label>
+                    <select id="modal_is_active" name="is_active">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+
+                <div class="form-group form-group-wide">
+                    <label>Description</label>
+                    <textarea id="modal_description" name="description" rows="3"></textarea>
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i> Save
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-cancel-btn"
+                        onclick="closeSpecialtyModal()">
+                    <i class="fas fa-ban"></i> Cancel
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<div id="addSpecialtyModal" class="modal">
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h2><i class="fas fa-plus"></i> Add Doctor Speciality</h2>
+            <button type="button" class="modal-close-btn" onclick="closeAddSpecialtyModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="addSpecialtyForm"
+              method="POST"
+              action="{{ url_for('doctor_specialties') }}"
+              class="modal-form">
+
+            <div class="form-grid two-column-grid">
+
+                <div class="form-group">
+                    <label>Code</label>
+                    <input type="text" name="specialty_code" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Speciality</label>
+                    <input type="text" name="specialty_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Group</label>
+                    <input type="text" name="specialty_group" list="specialtyGroups">
+                </div>
+
+                <div class="form-group">
+                    <label>Classification</label>
+                    <input type="text"
+                           name="classification_system"
+                           value="ABMS/ACGME"
+                           list="classificationSystems"
+                           required>
+                </div>
+
+                <div class="form-group form-group-wide">
+                    <label>Description</label>
+                    <textarea name="description" rows="3"></textarea>
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit" class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i> Save
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-cancel-btn"
+                        onclick="closeAddSpecialtyModal()">
+                    <i class="fas fa-ban"></i> Cancel
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+function openSpecialtyModal(specialty) {
+    const form = document.getElementById("specialtyEditForm");
+
+    form.action = "/clinic/doctor_specialties/update/" + specialty.id;
+
+    document.getElementById("modal_specialty_code").value = specialty.specialty_code || "";
+    document.getElementById("modal_specialty_name").value = specialty.specialty_name || "";
+    document.getElementById("modal_specialty_group").value = specialty.specialty_group || "";
+    document.getElementById("modal_classification_system").value = specialty.classification_system || "";
+    document.getElementById("modal_description").value = specialty.description || "";
+    document.getElementById("modal_is_active").value = specialty.is_active ? "1" : "0";
+
+    document.getElementById("specialtyEditModal").style.display = "block";
+}
+
+function closeSpecialtyModal() {
+    document.getElementById("specialtyEditModal").style.display = "none";
+}
+
+function openAddSpecialtyModal() {
+    document.getElementById("addSpecialtyForm").reset();
+    document.querySelector("#addSpecialtyForm input[name='classification_system']").value = "ABMS/ACGME";
+    document.getElementById("addSpecialtyModal").style.display = "block";
+}
+
+function closeAddSpecialtyModal() {
+    document.getElementById("addSpecialtyModal").style.display = "none";
+}
+
+window.onclick = function(event) {
+    const editModal = document.getElementById("specialtyEditModal");
+    const addModal = document.getElementById("addSpecialtyModal");
+
+    if (event.target === editModal) {
+        closeSpecialtyModal();
+    }
+
+    if (event.target === addModal) {
+        closeAddSpecialtyModal();
+    }
+};
+</script>
+
+{% endblock %}

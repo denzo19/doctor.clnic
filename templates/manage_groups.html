@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1>
+            <i class="fas fa-layer-group"></i>
+            Manage Groups
+        </h1>
+    </div>
+    <div class="details-card">
+        <form method="POST" class="toolbar-form">
+            <input type="text"
+                   name="group_name"
+                   class="toolbar-search-input"
+                   placeholder="Group name"
+                   required>
+
+            <input type="text"
+                   name="description"
+                   class="toolbar-search-input"
+                   placeholder="Description">
+
+            <button type="submit"
+                    class="toolbar-btn add-btn"
+                    title="Add Group">
+                <i class="fas fa-plus"></i>
+            </button>
+        </form>
+    </div>
+
+    <div class="details-card table-search-card">
+        <div class="toolbar-form table-search-form">
+            <input type="text"
+                   id="groupTableSearch"
+                   class="toolbar-search-input table-search-input"
+                   placeholder="Search groups table"
+                   autocomplete="off">
+
+            <button type="button"
+                    id="groupTableSearchBtn"
+                    class="toolbar-btn search-btn"
+                    title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <button type="button"
+                    id="groupTableClearBtn"
+                    class="toolbar-btn clear-btn"
+                    title="Clear">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="app-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Group Name</th>
+                    <th>Description</th>
+                    <th>Active</th>
+                    <th>Users</th>
+                    <th class="actions-header">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for group in groups %}
+                <tr data-group-row
+                    data-search-text="{{ group.id }} {{ group.group_name }} {{ group.description or '' }} {% if group.is_active %}Yes Active{% else %}No Inactive{% endif %} {{ group.user_count }}">
+                    <form method="POST"
+                          action="{{ url_for('update_group', group_id=group.id) }}">
+
+                        <td>{{ group.id }}</td>
+
+                        <td>
+                            <input type="text"
+                                   name="group_name"
+                                   value="{{ group.group_name }}"
+                                   class="table-input"
+                                   required>
+                        </td>
+
+                        <td>
+                            <input type="text"
+                                   name="description"
+                                   value="{{ group.description or '' }}"
+                                   class="table-input">
+                        </td>
+
+                        <td>
+                            <select name="is_active" class="table-input">
+                                <option value="1" {% if group.is_active %}selected{% endif %}>Yes</option>
+                                <option value="0" {% if not group.is_active %}selected{% endif %}>No</option>
+                            </select>
+                        </td>
+
+                        <td>{{ group.user_count }}</td>
+
+                        <td class="action-cell">
+                            <button type="submit"
+                                    class="table-action edit-action"
+                                    title="Update">
+                                <i class="fas fa-save"></i>
+                            </button>
+                    </form>
+
+                            {% if group.user_count == 0 %}
+                                <form method="POST"
+                                      action="{{ url_for('delete_group', group_id=group.id) }}"
+                                      class="inline-delete-form"
+                                      onsubmit="return confirm('Delete this group?');">
+                                    <button type="submit"
+                                            class="table-action delete-action"
+                                            title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="locked-label" title="Users assigned">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            {% endif %}
+                        </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="empty-row">
+                        No groups found.
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr id="groupTableNoMatches" hidden>
+                    <td colspan="6" class="empty-row">
+                        No matching groups found.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    const groupTableSearch = document.getElementById("groupTableSearch");
+    const groupTableSearchBtn = document.getElementById("groupTableSearchBtn");
+    const groupTableClearBtn = document.getElementById("groupTableClearBtn");
+    const groupRows = Array.from(document.querySelectorAll("[data-group-row]"));
+    const noMatchesRow = document.getElementById("groupTableNoMatches");
+
+    function filterGroupTable(){
+        const searchText = groupTableSearch.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        groupRows.forEach(function(row){
+            const rowText = row.dataset.searchText.toLowerCase();
+            const isVisible = rowText.includes(searchText);
+
+            row.hidden = !isVisible;
+
+            if(isVisible){
+                visibleCount += 1;
+            }
+        });
+
+        if(noMatchesRow){
+            noMatchesRow.hidden = !searchText || visibleCount !== 0;
+        }
+    }
+
+    if(groupTableSearch && groupTableSearchBtn && groupTableClearBtn){
+        groupTableSearchBtn.addEventListener("click", filterGroupTable);
+
+        groupTableSearch.addEventListener("keydown", function(event){
+            if(event.key === "Enter"){
+                event.preventDefault();
+                filterGroupTable();
+            }
+        });
+
+        groupTableClearBtn.addEventListener("click", function(){
+            groupTableSearch.value = "";
+            filterGroupTable();
+            groupTableSearch.focus();
+        });
+    }
+});
+</script>
+
+{% endblock %}

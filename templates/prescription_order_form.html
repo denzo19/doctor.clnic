@@ -1,0 +1,508 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="app-page">
+
+    <div class="page-header">
+        <h1><i class="fas fa-prescription-bottle-alt"></i> Prescription</h1>
+    </div>
+
+    <div class="details-card">
+        <form method="POST"
+              action="{{ form_action }}"
+              id="prescriptionOrderForm"
+              class="modal-form">
+            {% if return_to_patient %}
+                <input type="hidden" name="return_to_patient" value="1">
+            {% endif %}
+
+            <div class="prescription-order-header-grid">
+                <div class="form-group">
+                    <label>Patient</label>
+                    <div class="searchable-select"
+                         data-searchable-select
+                         data-required-message="Please choose a patient from the list.">
+                        <input type="text"
+                               class="searchable-select-input"
+                               placeholder="Choose patient"
+                               autocomplete="off"
+                               required
+                               value="{% for patient in patients %}{% if prescription and prescription.patient_id == patient.id %}{{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}{% endif %}{% endfor %}">
+                        <input type="hidden"
+                               id="prescription_patient_id"
+                               name="patient_id"
+                               class="searchable-select-value"
+                               value="{% if prescription %}{{ prescription.patient_id or '' }}{% endif %}">
+                        <div class="searchable-select-options">
+                            {% for patient in patients %}
+                                <button type="button"
+                                        class="searchable-select-option"
+                                        data-value="{{ patient.id }}"
+                                        data-label="{{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}">
+                                    {{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}
+                                </button>
+                            {% endfor %}
+                            <div class="searchable-select-empty">
+                                No patients found.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Doctor</label>
+                    <div class="searchable-select"
+                         data-searchable-select
+                         data-required-message="Please choose a doctor from the list.">
+                        <input type="text"
+                               class="searchable-select-input"
+                               placeholder="Choose doctor"
+                               autocomplete="off"
+                               required
+                               value="{% for doctor in doctors %}{% if selected_doctor_id and selected_doctor_id == doctor.id %}{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}{% endif %}{% endfor %}">
+                        <input type="hidden"
+                               id="prescription_doctor_id"
+                               name="doctor_id"
+                               class="searchable-select-value"
+                               value="{{ selected_doctor_id or '' }}">
+                        <div class="searchable-select-options">
+                            {% for doctor in doctors %}
+                                <button type="button"
+                                        class="searchable-select-option"
+                                        data-value="{{ doctor.id }}"
+                                        data-label="{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}">
+                                    {{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}
+                                </button>
+                            {% endfor %}
+                            <div class="searchable-select-empty">
+                                No doctors found.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="prescription-order-header-actions">
+                    <button type="button"
+                            class="standard-btn form-save-btn"
+                            onclick="openMedicationModal()">
+                        <i class="fas fa-plus"></i> Add Medication
+                    </button>
+
+                    <a href="{% if return_to_patient and prescription and prescription.patient_id %}{{ url_for('patient_details', patient_id=prescription.patient_id, doctor_id=selected_doctor_id) }}{% else %}{{ url_for('manage_prescriptions') }}{% endif %}"
+                       class="standard-btn form-cancel-btn">
+                        <i class="fas fa-ban"></i> Cancel
+                    </a>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="app-table">
+                    <thead>
+                        <tr>
+                            <th>Medication</th>
+                            <th>Dose</th>
+                            <th>Frequency</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Notes</th>
+                            <th class="actions-header">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="temporaryMedicationsBody">
+                        <tr id="emptyTemporaryMedicationsRow">
+                            <td colspan="7" class="empty-row">No medications added.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-actions">
+                <button type="submit"
+                        name="save_type"
+                        value="draft"
+                        class="standard-btn form-save-btn">
+                    <i class="fas fa-save"></i> Save Draft
+                </button>
+
+                <button type="submit"
+                        name="save_type"
+                        value="final"
+                        class="standard-btn primary-btn">
+                    <i class="fas fa-lock"></i> Final Save
+                </button>
+
+                {% if show_final_print_button %}
+                    <button type="submit"
+                            name="save_type"
+                            value="final_print"
+                            formtarget="_blank"
+                            class="standard-btn primary-btn">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+</section>
+
+<div id="medicationModal" class="modal">
+    <div class="modal-content large-modal">
+        <div class="modal-header">
+            <h2><i class="fas fa-prescription-bottle-alt"></i> Choose Medication</h2>
+            <button type="button" class="modal-close-btn" onclick="closeMedicationModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-form">
+            <div class="form-grid">
+                <div class="form-group form-group-wide">
+                    <label>Medication</label>
+                    <select id="modal_medication_id" required>
+                        <option value="">Choose medication</option>
+                        {% for medication in medications %}
+                            <option value="{{ medication.id }}">
+                                {{ medication.medication_name }}{% if medication.strength %} - {{ medication.strength }}{% endif %}{% if medication.dosage_form %} - {{ medication.dosage_form }}{% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Dose</label>
+                    <input type="text" id="modal_dose" placeholder="Dose">
+                </div>
+
+                <div class="form-group">
+                    <label>Frequency</label>
+                    <input type="text" id="modal_frequency" placeholder="Frequency">
+                </div>
+
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" id="modal_start_date" value="{{ default_start_date }}">
+                </div>
+
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input type="date" id="modal_end_date">
+                </div>
+
+                <div class="form-group form-group-wide">
+                    <label>Notes</label>
+                    <textarea id="modal_notes"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button"
+                        class="standard-btn form-save-btn"
+                        onclick="saveTemporaryMedication()">
+                    <i class="fas fa-forward"></i> Next
+                </button>
+
+                <button type="button"
+                        class="standard-btn form-cancel-btn"
+                        onclick="closeMedicationModal()">
+                    <i class="fas fa-ban"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.prescription-order-header-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.2fr) minmax(220px, 1.2fr) auto;
+    gap: 14px;
+    align-items: end;
+}
+
+.prescription-order-header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: end;
+    justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+    .prescription-order-header-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .prescription-order-header-actions {
+        justify-content: flex-start;
+    }
+}
+</style>
+
+<script>
+const medications = {{ medications|tojson }};
+const initialTemporaryMedications = {{ prescription['items']|tojson if prescription else '[]' }};
+const medicationLookup = {};
+let temporaryMedications = initialTemporaryMedications.map(function(item){
+    return {
+        medication_id: String(item.medication_id || ""),
+        dose: item.dose || "",
+        frequency: item.frequency || "",
+        start_date: item.start_date || "{{ default_start_date }}",
+        end_date: item.end_date || "",
+        notes: item.notes || ""
+    };
+});
+let editingMedicationIndex = null;
+
+medications.forEach(function(medication){
+    medicationLookup[String(medication.id)] = medication;
+});
+
+document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
+    const input = selectBox.querySelector(".searchable-select-input");
+    const valueInput = selectBox.querySelector(".searchable-select-value");
+    const options = Array.from(selectBox.querySelectorAll(".searchable-select-option"));
+    const emptyState = selectBox.querySelector(".searchable-select-empty");
+    const form = selectBox.closest("form");
+
+    function openOptions(){
+        selectBox.classList.add("is-open");
+    }
+
+    function closeOptions(){
+        selectBox.classList.remove("is-open");
+    }
+
+    function filterOptions(){
+        const searchText = input.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        options.forEach(function(option){
+            const label = option.dataset.label.toLowerCase();
+            const isVisible = label.includes(searchText);
+
+            option.hidden = !isVisible;
+
+            if(isVisible){
+                visibleCount += 1;
+            }
+        });
+
+        emptyState.hidden = visibleCount !== 0;
+    }
+
+    input.addEventListener("focus", function(){
+        openOptions();
+        filterOptions();
+    });
+
+    input.addEventListener("input", function(){
+        valueInput.value = "";
+        input.setCustomValidity("");
+        openOptions();
+        filterOptions();
+    });
+
+    options.forEach(function(option){
+        option.addEventListener("click", function(){
+            input.value = option.dataset.label;
+            valueInput.value = option.dataset.value;
+            input.setCustomValidity("");
+            closeOptions();
+        });
+    });
+
+    document.addEventListener("click", function(event){
+        if(!selectBox.contains(event.target)){
+            closeOptions();
+        }
+    });
+
+    if(form){
+        form.addEventListener("submit", function(event){
+            if(!valueInput.value){
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                input.setCustomValidity(selectBox.dataset.requiredMessage);
+                input.reportValidity();
+                openOptions();
+                filterOptions();
+            }
+        });
+    }
+});
+
+function getMedicationLabel(medicationId) {
+    const medication = medicationLookup[String(medicationId)] || {};
+    let label = medication.medication_name || "";
+
+    if (medication.strength) {
+        label += " - " + medication.strength;
+    }
+
+    if (medication.dosage_form) {
+        label += " - " + medication.dosage_form;
+    }
+
+    return label;
+}
+
+function appendHiddenInput(cell, name, value) {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = value || "";
+    cell.appendChild(input);
+}
+
+function renderTemporaryMedications() {
+    const body = document.getElementById("temporaryMedicationsBody");
+    body.innerHTML = "";
+
+    if (temporaryMedications.length === 0) {
+        body.innerHTML = '<tr id="emptyTemporaryMedicationsRow"><td colspan="7" class="empty-row">No medications added.</td></tr>';
+        return;
+    }
+
+    temporaryMedications.forEach(function(item, index){
+        const row = document.createElement("tr");
+        const medicationCell = document.createElement("td");
+        const doseCell = document.createElement("td");
+        const frequencyCell = document.createElement("td");
+        const startDateCell = document.createElement("td");
+        const endDateCell = document.createElement("td");
+        const notesCell = document.createElement("td");
+        const actionCell = document.createElement("td");
+        const editButton = document.createElement("button");
+        const deleteButton = document.createElement("button");
+
+        appendHiddenInput(medicationCell, "medication_ids", item.medication_id);
+        appendHiddenInput(medicationCell, "doses", item.dose);
+        appendHiddenInput(medicationCell, "frequencies", item.frequency);
+        appendHiddenInput(medicationCell, "start_dates", item.start_date);
+        appendHiddenInput(medicationCell, "end_dates", item.end_date);
+        appendHiddenInput(medicationCell, "line_notes", item.notes);
+
+        medicationCell.appendChild(document.createTextNode(getMedicationLabel(item.medication_id)));
+        doseCell.textContent = item.dose || "";
+        frequencyCell.textContent = item.frequency || "";
+        startDateCell.textContent = item.start_date || "";
+        endDateCell.textContent = item.end_date || "";
+        notesCell.textContent = item.notes || "";
+        actionCell.className = "action-cell";
+
+        editButton.type = "button";
+        editButton.className = "table-action edit-action";
+        editButton.title = "Edit";
+        editButton.innerHTML = '<i class="fas fa-pen"></i>';
+        editButton.addEventListener("click", function(){
+            editTemporaryMedication(index);
+        });
+
+        deleteButton.type = "button";
+        deleteButton.className = "table-action delete-action";
+        deleteButton.title = "Delete";
+        deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteButton.addEventListener("click", function(){
+            deleteTemporaryMedication(index);
+        });
+
+        actionCell.appendChild(editButton);
+        actionCell.appendChild(deleteButton);
+        row.appendChild(medicationCell);
+        row.appendChild(doseCell);
+        row.appendChild(frequencyCell);
+        row.appendChild(startDateCell);
+        row.appendChild(endDateCell);
+        row.appendChild(notesCell);
+        row.appendChild(actionCell);
+
+        body.appendChild(row);
+    });
+}
+
+function openMedicationModal(medicationIndex=null) {
+    const item = medicationIndex === null ? null : temporaryMedications[medicationIndex];
+    editingMedicationIndex = medicationIndex;
+
+    document.getElementById("modal_medication_id").value = item ? String(item.medication_id || "") : "";
+    document.getElementById("modal_dose").value = item ? item.dose : "";
+    document.getElementById("modal_frequency").value = item ? item.frequency : "";
+    document.getElementById("modal_start_date").value = item ? item.start_date : "{{ default_start_date }}";
+    document.getElementById("modal_end_date").value = item ? item.end_date : "";
+    document.getElementById("modal_notes").value = item ? item.notes : "";
+    document.getElementById("medicationModal").style.display = "block";
+}
+
+function closeMedicationModal() {
+    document.getElementById("medicationModal").style.display = "none";
+    editingMedicationIndex = null;
+}
+
+function saveTemporaryMedication() {
+    const medicationSelect = document.getElementById("modal_medication_id");
+    const medicationId = medicationSelect.value;
+
+    if (!medicationId) {
+        medicationSelect.reportValidity();
+        return;
+    }
+
+    const duplicateIndex = temporaryMedications.findIndex(function(existingItem, index){
+        return existingItem.medication_id === medicationId && index !== editingMedicationIndex;
+    });
+
+    if (duplicateIndex !== -1) {
+        alert("This medication is already added.");
+        return;
+    }
+
+    const item = {
+        medication_id: medicationId,
+        dose: document.getElementById("modal_dose").value,
+        frequency: document.getElementById("modal_frequency").value,
+        start_date: document.getElementById("modal_start_date").value || "{{ default_start_date }}",
+        end_date: document.getElementById("modal_end_date").value,
+        notes: document.getElementById("modal_notes").value
+    };
+
+    if (editingMedicationIndex !== null) {
+        temporaryMedications[editingMedicationIndex] = item;
+    } else {
+        temporaryMedications.push(item);
+    }
+
+    renderTemporaryMedications();
+    openMedicationModal();
+    medicationSelect.focus();
+}
+
+function editTemporaryMedication(index) {
+    openMedicationModal(index);
+}
+
+function deleteTemporaryMedication(index) {
+    temporaryMedications.splice(index, 1);
+    renderTemporaryMedications();
+}
+
+document.getElementById("prescriptionOrderForm").addEventListener("submit", function(event){
+    if (temporaryMedications.length === 0) {
+        event.preventDefault();
+        alert("Add at least one medication.");
+    }
+});
+
+window.addEventListener("click", function(event) {
+    const medicationModal = document.getElementById("medicationModal");
+
+    if (event.target === medicationModal) {
+        closeMedicationModal();
+    }
+});
+
+renderTemporaryMedications();
+</script>
+
+{% endblock %}
