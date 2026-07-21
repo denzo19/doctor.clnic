@@ -7,3 +7,4 @@ static/uploads/
 venv/
 *.sqlite3
 *.db
+*.sql
