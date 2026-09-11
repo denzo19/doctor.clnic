@@ -1,0 +1,112 @@
+body.lang-ar {
+    direction: rtl;
+    text-align: right;
+    font-family: Arial, sans-serif;
+    font-size: 1.08em;
+}
+
+body.lang-ar .top-navbar {
+    direction: rtl;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+body.lang-ar .nav-dropdown-content {
+    right: 0;
+    left: auto;
+    text-align: right;
+}
+
+body.lang-ar .nav-dropdown-content a,
+body.lang-ar .nav-direct-link,
+body.lang-ar .nav-dropbtn,
+body.lang-ar .nav-user-display,
+body.lang-ar .nav-logout-btn {
+    direction: rtl;
+}
+
+body.lang-ar .nav-right {
+    margin-right: auto;
+    margin-left: 0;
+    flex-direction: row;
+    direction: rtl;
+}
+
+.nav-language-switch {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #ffffff;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.nav-language-switch a {
+    color: #ffffff;
+    text-decoration: none;
+    opacity: 0.75;
+}
+
+.nav-language-switch a.active,
+.nav-language-switch a:hover {
+    opacity: 1;
+    font-weight: 700;
+}
+
+body.lang-ar .page-header h1,
+body.lang-ar .modal-header h2,
+body.lang-ar .details-section h2 {
+    direction: rtl;
+}
+
+body.lang-ar .toolbar-form,
+body.lang-ar .modal-actions,
+body.lang-ar .page-actions {
+    direction: rtl;
+}
+
+body.lang-ar input,
+body.lang-ar textarea,
+body.lang-ar select {
+    direction: rtl;
+    text-align: right;
+}
+
+body.lang-ar input[type="email"],
+body.lang-ar input[type="url"],
+body.lang-ar input[type="number"],
+body.lang-ar input[type="date"],
+body.lang-ar input[type="time"] {
+    direction: ltr;
+    text-align: left;
+}
+
+body.lang-ar table {
+    direction: rtl;
+}
+
+body.lang-ar th,
+body.lang-ar td {
+    text-align: right;
+}
+
+body.lang-ar .action-cell,
+body.lang-ar .actions-header {
+    text-align: center;
+}
+
+body.lang-ar .searchable-select-options {
+    right: 0;
+    left: auto;
+    text-align: right;
+}
+
+body.lang-ar .searchable-select-option,
+body.lang-ar .searchable-select-empty {
+    text-align: right;
+}
+
+body.lang-ar .modal-close-btn {
+    margin-right: auto;
+    margin-left: 0;
+}
