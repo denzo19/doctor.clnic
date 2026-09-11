@@ -5,7 +5,7 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-bars"></i> Manage Menu Options</h1>
+        <h1><i class="fas fa-bars"></i> {{ t('Manage Menu Options') }}</h1>
     </div>
     <div class="details-card">
         <form method="GET"
@@ -17,21 +17,21 @@
                    name="search"
                    value="{{ search or '' }}"
                    class="toolbar-search-input"
-                   placeholder="Search menu option">
+                   placeholder="{{ t('Search menu option') }}">
 
-            <button type="submit" class="toolbar-btn search-btn" title="Search">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
             <a href="{{ url_for('admin_menu_options') }}"
                class="toolbar-btn clear-btn"
-               title="Clear">
+               title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </a>
 
             <button type="button"
                     class="toolbar-btn add-btn"
-                    title="Add Menu Option"
+                    title="{{ t('Add Menu Option') }}"
                     onclick="openAddMenuOptionModal()">
                 <i class="fas fa-plus"></i>
             </button>
@@ -39,7 +39,7 @@
             <button type="button"
                     id="menuOptionReportBtn"
                     class="toolbar-btn search-btn"
-                    title="Menu Options Report">
+                    title="{{ t('Menu Options Report') }}">
                 <i class="fas fa-file-pdf"></i>
             </button>
 
@@ -50,36 +50,37 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>Option Name</th>
-                    <th>Endpoint</th>
-                    <th>Parent</th>
-                    <th>Order</th>
-                    <th>Active</th>
-                    <th>Assigned</th>
-                    <th>Children</th>
-                    <th class="actions-header">Actions</th>
+                    <th>{{ t('Option Name') }}</th>
+                    <th>{{ t('Endpoint') }}</th>
+                    <th>{{ t('Parent') }}</th>
+                    <th>{{ t('Order') }}</th>
+                    <th>{{ t('Active') }}</th>
+                    <th>{{ t('Assigned') }}</th>
+                    <th>{{ t('Children') }}</th>
+                    <th class="actions-header">{{ t('Actions') }}</th>
                 </tr>
             </thead>
 
             <tbody>
                 {% for option in menu_options %}
                 <tr class="clickable-row"
-                    onclick="openMenuOptionModal(
-                        '{{ option.id }}',
-                        '{{ option.option_name }}',
-                        '{{ option.endpoint_name or '' }}',
-                        '{{ option.url or '' }}',
-                        '{{ option.icon_class or '' }}',
-                        '{{ option.parent_id or '' }}',
-                        '{{ option.display_order }}',
-                        '{{ 1 if option.is_active else 0 }}'
-                    )">
+                    onclick='openMenuOptionModal(
+                        {{ option.id|tojson }},
+                        {{ option.option_name|tojson }},
+                        {{ option.option_name_ar|default('', true)|tojson }},
+                        {{ (option.endpoint_name or '')|tojson }},
+                        {{ (option.url or '')|tojson }},
+                        {{ (option.icon_class or '')|tojson }},
+                        {{ (option.parent_id or '')|tojson }},
+                        {{ option.display_order|tojson }},
+                        {{ (1 if option.is_active else 0)|tojson }}
+                    )'>
 
                     <td>{{ option.option_name }}</td>
                     <td>{{ option.endpoint_name or '' }}</td>
-                    <td>{{ option.parent_name or 'Main option' }}</td>
+                    <td>{{ option.parent_name or t('Main option') }}</td>
                     <td>{{ option.display_order }}</td>
-                    <td>{{ 'Yes' if option.is_active else 'No' }}</td>
+                    <td>{{ t('Yes') if option.is_active else t('No') }}</td>
                     <td>{{ option.permission_count }}</td>
                     <td>{{ option.child_count }}</td>
 
@@ -87,17 +88,18 @@
 
                         <button type="button"
                                 class="table-action edit-action"
-                                title="Edit"
-                                onclick="openMenuOptionModal(
-                                    '{{ option.id }}',
-                                    '{{ option.option_name }}',
-                                    '{{ option.endpoint_name or '' }}',
-                                    '{{ option.url or '' }}',
-                                    '{{ option.icon_class or '' }}',
-                                    '{{ option.parent_id or '' }}',
-                                    '{{ option.display_order }}',
-                                    '{{ 1 if option.is_active else 0 }}'
-                                )">
+                                title="{{ t('Edit') }}"
+                                onclick='openMenuOptionModal(
+                                    {{ option.id|tojson }},
+                                    {{ option.option_name|tojson }},
+                                    {{ option.option_name_ar|default('', true)|tojson }},
+                                    {{ (option.endpoint_name or '')|tojson }},
+                                    {{ (option.url or '')|tojson }},
+                                    {{ (option.icon_class or '')|tojson }},
+                                    {{ (option.parent_id or '')|tojson }},
+                                    {{ option.display_order|tojson }},
+                                    {{ (1 if option.is_active else 0)|tojson }}
+                                )'>
                             <i class="fas fa-pen"></i>
                         </button>
 
@@ -105,15 +107,15 @@
                             <form method="POST"
                                   action="{{ url_for('delete_menu_option', menu_option_id=option.id) }}"
                                   class="inline-delete-form"
-                                  onsubmit="return confirm('Delete this menu option?');">
+                                  onsubmit="return confirm({{ t('Delete this menu option?')|tojson }});">
                                 <button type="submit"
                                         class="table-action delete-action"
-                                        title="Delete">
+                                        title="{{ t('Delete') }}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>
                         {% else %}
-                            <span class="locked-label" title="Assigned or has children">
+                            <span class="locked-label" title="{{ t('Assigned or has children') }}">
                                 <i class="fas fa-lock"></i>
                             </span>
                         {% endif %}
@@ -122,7 +124,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="8" class="empty-row">No menu options found.</td>
+                    <td colspan="8" class="empty-row">{{ t('No menu options found.') }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -135,7 +137,7 @@
     <div class="modal-content">
 
         <div class="modal-header">
-            <h2><i class="fas fa-pen"></i> Menu Option Information</h2>
+            <h2><i class="fas fa-pen"></i> {{ t('Menu Option Information') }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeMenuOptionModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -146,27 +148,32 @@
             <div class="form-grid two-column-grid">
 
                 <div class="form-group">
-                    <label>Option Name</label>
+                    <label>{{ t('Option Name') }}</label>
                     <input type="text" id="modal_option_name" name="option_name" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Endpoint</label>
+                    <label>{{ t('Arabic Option Name') }}</label>
+                    <input type="text" id="modal_option_name_ar" name="option_name_ar" dir="rtl">
+                </div>
+
+                <div class="form-group">
+                    <label>{{ t('Endpoint') }}</label>
                     <input type="text" id="modal_endpoint_name" name="endpoint_name">
                 </div>
                 <div class="form-group">
-                    <label>URL</label>
+                    <label>{{ t('URL') }}</label>
                     <input type="text" id="modal_url" name="url">
                 </div>
 
                 <div class="form-group">
-                    <label>Icon Class</label>
+                    <label>{{ t('Icon Class') }}</label>
                     <input type="text" id="modal_icon_class" name="icon_class">
                 </div>
                 <div class="form-group">
-                    <label>Parent</label>
+                    <label>{{ t('Parent') }}</label>
                     <select id="modal_parent_id" name="parent_id">
-                        <option value="">Main option</option>
+                        <option value="">{{ t('Main option') }}</option>
                         {% for parent in parent_options %}
                             <option value="{{ parent.id }}">{{ parent.option_name }}</option>
                         {% endfor %}
@@ -174,15 +181,15 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Display Order</label>
+                    <label>{{ t('Display Order') }}</label>
                     <input type="number" id="modal_display_order" name="display_order" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Active</label>
+                    <label>{{ t('Active') }}</label>
                     <select id="modal_is_active" name="is_active">
-                        <option value="1">Yes</option>
-                        <option value="0">No</option>
+                        <option value="1">{{ t('Yes') }}</option>
+                        <option value="0">{{ t('No') }}</option>
                     </select>
                 </div>
 
@@ -190,13 +197,13 @@
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t('Save') }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeMenuOptionModal()">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t('Cancel') }}
                 </button>
             </div>
 
@@ -208,7 +215,7 @@
     <div class="modal-content">
 
         <div class="modal-header">
-            <h2><i class="fas fa-plus"></i> Add Menu Option</h2>
+            <h2><i class="fas fa-plus"></i> {{ t('Add Menu Option') }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeAddMenuOptionModal(true)">
                 <i class="fas fa-times"></i>
             </button>
@@ -222,29 +229,34 @@
             <div class="form-grid two-column-grid">
 
                 <div class="form-group">
-                    <label>Option Name</label>
+                    <label>{{ t('Option Name') }}</label>
                     <input type="text" name="option_name" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Endpoint</label>
+                    <label>{{ t('Arabic Option Name') }}</label>
+                    <input type="text" name="option_name_ar" dir="rtl">
+                </div>
+
+                <div class="form-group">
+                    <label>{{ t('Endpoint') }}</label>
                     <input type="text" name="endpoint_name">
                 </div>
 
                 <div class="form-group">
-                    <label>URL</label>
+                    <label>{{ t('URL') }}</label>
                     <input type="text" name="url">
                 </div>
 
                 <div class="form-group">
-                    <label>Icon Class</label>
+                    <label>{{ t('Icon Class') }}</label>
                     <input type="text" name="icon_class">
                 </div>
 
                 <div class="form-group">
-                    <label>Parent</label>
+                    <label>{{ t('Parent') }}</label>
                     <select name="parent_id">
-                        <option value="">Main option</option>
+                        <option value="">{{ t('Main option') }}</option>
                         {% for parent in parent_options %}
                             <option value="{{ parent.id }}">{{ parent.option_name }}</option>
                         {% endfor %}
@@ -252,7 +264,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Display Order</label>
+                    <label>{{ t('Display Order') }}</label>
                     <input type="number" name="display_order" value="0" required>
                 </div>
 
@@ -260,19 +272,19 @@
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t('Save') }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-save-btn"
                         onclick="saveMenuOptionAndNext()">
-                    <i class="fas fa-forward"></i> Next
+                    <i class="fas fa-forward"></i> {{ t('Next') }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeAddMenuOptionModal(true)">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t('Cancel') }}
                 </button>
             </div>
 
@@ -299,12 +311,15 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 });
 
-function openMenuOptionModal(id, optionName, endpointName, url, iconClass, parentId, displayOrder, active) {
+const errorSavingMenuOptionMessage = {{ t('Error saving menu option.')|tojson }};
+
+function openMenuOptionModal(id, optionName, optionNameAr, endpointName, url, iconClass, parentId, displayOrder, active) {
     const form = document.getElementById("menuOptionEditForm");
 
     form.action = "/admin/menu_options/update/" + id;
 
     document.getElementById("modal_option_name").value = optionName;
+    document.getElementById("modal_option_name_ar").value = optionNameAr;
     document.getElementById("modal_endpoint_name").value = endpointName;
     document.getElementById("modal_url").value = url;
     document.getElementById("modal_icon_class").value = iconClass;
@@ -345,15 +360,25 @@ function saveMenuOptionAndNext() {
         method: "POST",
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
+    .then(response =>
+        response.json().then(data => ({
+            ok: response.ok,
+            data: data
+        }))
+    )
+    .then(result => {
+        const data = result.data;
+
+        if (result.ok && data.success) {
             form.reset();
             form.querySelector("input[name='option_name']").focus();
+            return;
         }
+
+        alert(data.message || errorSavingMenuOptionMessage);
     })
     .catch(error => {
-        alert("Error saving menu option.");
+        alert(errorSavingMenuOptionMessage);
         console.error(error);
     });
 }

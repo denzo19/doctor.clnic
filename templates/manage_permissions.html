@@ -5,7 +5,7 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-key"></i> Manage Permissions</h1>
+        <h1><i class="fas fa-key"></i> {{ t('Manage Permissions') }}</h1>
     </div>
 
     <div class="details-card">
@@ -13,10 +13,10 @@
 
             <div class="searchable-select"
                  data-searchable-select
-                 data-required-message="Please choose a group from the list.">
+                 data-required-message="{{ t('Please choose a group from the list.') }}">
                 <input type="text"
                        class="toolbar-search-input searchable-select-input"
-                       placeholder="Choose group"
+                       placeholder="{{ t('Choose group') }}"
                        autocomplete="off"
                        required>
                 <input type="hidden"
@@ -32,17 +32,17 @@
                         </button>
                     {% endfor %}
                     <div class="searchable-select-empty">
-                        No groups found.
+                        {{ t('No groups found.') }}
                     </div>
                 </div>
             </div>
 
             <div class="searchable-select"
                  data-searchable-select
-                 data-required-message="Please choose a menu option from the list.">
+                 data-required-message="{{ t('Please choose a menu option from the list.') }}">
                 <input type="text"
                        class="toolbar-search-input searchable-select-input"
-                       placeholder="Choose menu option"
+                       placeholder="{{ t('Choose menu option') }}"
                        autocomplete="off"
                        required>
                 <input type="hidden"
@@ -58,14 +58,14 @@
                         </button>
                     {% endfor %}
                     <div class="searchable-select-empty">
-                        No menu options found.
+                        {{ t('No menu options found.') }}
                     </div>
                 </div>
             </div>
 
             <button type="submit"
                     class="toolbar-btn add-btn"
-                    title="Add Permission">
+                    title="{{ t('Add Permission') }}">
                 <i class="fas fa-plus"></i>
             </button>
 
@@ -79,27 +79,27 @@
             <input type="text"
                    id="permissionTableSearch"
                    class="toolbar-search-input table-search-input"
-                   placeholder="Search permissions table"
+                   placeholder="{{ t('Search permissions table') }}"
                    autocomplete="off">
 
             <button type="button"
                     id="permissionTableSearchBtn"
                     class="toolbar-btn search-btn"
-                    title="Search">
+                    title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
             <button type="button"
                     id="permissionTableClearBtn"
                     class="toolbar-btn clear-btn"
-                    title="Clear">
+                    title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </button>
 
             <button type="button"
                     id="permissionTableReportBtn"
                     class="toolbar-btn search-btn"
-                    title="Permissions Report">
+                    title="{{ t('Permissions Report') }}">
                 <i class="fas fa-file-pdf"></i>
             </button>
         </div>
@@ -109,10 +109,10 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>Group</th>
-                    <th>Option</th>
-                    <th>Endpoint</th>
-                    <th>Action</th>
+                    <th>{{ t('Group') }}</th>
+                    <th>{{ t('Option') }}</th>
+                    <th>{{ t('Endpoint') }}</th>
+                    <th>{{ t('Action') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -126,7 +126,7 @@
                         <form method="POST"
                               action="{{ url_for('delete_permission', permission_id=p.id) }}"
                               class="inline-delete-form"
-                              onsubmit="return confirm('Delete this permission?');">
+                              onsubmit="return confirm({{ t('Delete this permission?')|tojson }});">
                             <button class="table-action delete-action" type="submit">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -135,11 +135,11 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="4" class="empty-row">No permissions found.</td>
+                    <td colspan="4" class="empty-row">{{ t('No permissions found.') }}</td>
                 </tr>
                 {% endfor %}
                 <tr id="permissionTableNoMatches" hidden>
-                    <td colspan="4" class="empty-row">No matching permissions found.</td>
+                    <td colspan="4" class="empty-row">{{ t('No matching permissions found.') }}</td>
                 </tr>
             </tbody>
         </table>

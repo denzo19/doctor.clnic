@@ -1,10 +1,11 @@
 from datetime import date, datetime, timedelta
 
 import mysql.connector
-from flask import Response, flash, redirect, render_template, request, url_for
+from flask import Response, flash, redirect, render_template, request, session, url_for
 
 from auth import login_required, permission_required
 from database import execute_query
+from i18n import translate
 from pdf_utils import (
     add_standard_pdf_image_objects,
     escape_pdf_text,
@@ -16,6 +17,9 @@ from pdf_utils import (
 
 
 def register_appointment_routes(app):
+    def flash_t(message, category="success"):
+        flash(translate(message, session.get("language", "en")), category)
+
     def fetch_patient_for_appointments(patient_id):
         if not patient_id:
             return None
@@ -348,13 +352,13 @@ def register_appointment_routes(app):
         selected_patient_id = request.args.get("patient_id", type=int)
 
         if not selected_patient_id:
-            flash("Choose a patient before generating the appointments report.", "error")
+            flash_t("Choose a patient before generating the appointments report.", "error")
             return redirect(url_for("manage_appointments"))
 
         patient = fetch_patient_for_appointments(selected_patient_id)
 
         if not patient:
-            flash("Patient not found.", "error")
+            flash_t("Patient not found.", "error")
             return redirect(url_for("manage_appointments"))
 
         appointments = fetch_patient_appointments(selected_patient_id)
@@ -419,11 +423,11 @@ def register_appointment_routes(app):
         )
 
         if not appointment:
-            flash("Appointment not found.", "error")
+            flash_t("Appointment not found.", "error")
             return redirect(url_for("manage_appointments"))
 
         if appointment["appointment_status"] != "booked":
-            flash("Only booked appointments can be updated.", "error")
+            flash_t("Only booked appointments can be updated.", "error")
             return redirect(url_for("manage_appointments", patient_id=appointment["patient_id"]))
 
         doctors = execute_query(
@@ -553,11 +557,11 @@ def register_appointment_routes(app):
         )
 
         if not appointment:
-            flash("Appointment not found.", "error")
+            flash_t("Appointment not found.", "error")
             return redirect(url_for("manage_appointments"))
 
         if appointment["appointment_status"] != "booked":
-            flash("Only booked appointments can be updated.", "error")
+            flash_t("Only booked appointments can be updated.", "error")
             return redirect(url_for("manage_appointments", patient_id=appointment["patient_id"]))
 
         if notes is None:
@@ -578,7 +582,7 @@ def register_appointment_routes(app):
         )
 
         if not new_slot:
-            flash("Selected slot is not available.", "error")
+            flash_t("Selected slot is not available.", "error")
             return redirect(url_for("edit_managed_appointment", appointment_id=appointment_id))
 
         execute_query(
@@ -622,7 +626,7 @@ def register_appointment_routes(app):
             (slot_id,)
         )
 
-        flash("Appointment updated successfully.", "success")
+        flash_t("Appointment updated successfully.", "success")
         return redirect(url_for("manage_appointments", patient_id=appointment["patient_id"]))
 
     @app.route("/secretary/manage_appointments/update/<int:appointment_id>", methods=["POST"])
@@ -645,13 +649,13 @@ def register_appointment_routes(app):
         )
 
         if not appointment:
-            flash("Appointment not found.", "error")
+            flash_t("Appointment not found.", "error")
             return redirect(url_for("manage_appointments", patient_id=selected_patient_id))
 
         selected_patient_id = selected_patient_id or appointment["patient_id"]
 
         if appointment["appointment_status"] != "booked":
-            flash("Only booked appointments can be updated.", "error")
+            flash_t("Only booked appointments can be updated.", "error")
             return redirect(url_for("manage_appointments", patient_id=selected_patient_id))
 
         if not new_slot_id:
@@ -664,7 +668,7 @@ def register_appointment_routes(app):
                 (notes, appointment_id)
             )
 
-            flash("Appointment notes updated successfully.", "success")
+            flash_t("Appointment notes updated successfully.", "success")
             return redirect(url_for("manage_appointments", patient_id=selected_patient_id))
 
         new_slot = execute_query(
@@ -680,7 +684,7 @@ def register_appointment_routes(app):
         )
 
         if not new_slot:
-            flash("Selected slot is not available.", "error")
+            flash_t("Selected slot is not available.", "error")
             return redirect(url_for("manage_appointments", patient_id=selected_patient_id))
 
         execute_query(
@@ -712,7 +716,7 @@ def register_appointment_routes(app):
             (new_slot_id,)
         )
 
-        flash("Appointment updated successfully.", "success")
+        flash_t("Appointment updated successfully.", "success")
         return redirect(url_for("manage_appointments", patient_id=selected_patient_id))
 
     @app.route("/secretary/manage_appointments/delete/<int:appointment_id>", methods=["POST"])
@@ -733,7 +737,7 @@ def register_appointment_routes(app):
         )
 
         if not appointment:
-            flash("Appointment not found.", "error")
+            flash_t("Appointment not found.", "error")
             return redirect(url_for("manage_appointments", patient_id=selected_patient_id))
 
         selected_patient_id = selected_patient_id or appointment["patient_id"]
@@ -753,7 +757,7 @@ def register_appointment_routes(app):
             (appointment_id,)
         )
 
-        flash("Appointment deleted successfully.", "success")
+        flash_t("Appointment deleted successfully.", "success")
         return redirect(url_for("manage_appointments", patient_id=selected_patient_id))
 
     @app.route("/admin/generate_slots", methods=["GET", "POST"])
@@ -766,7 +770,16 @@ def register_appointment_routes(app):
 
             created, skipped = generate_slots_for_date_range(start_date, end_date)
 
-            flash(f"Slot generation completed. Created: {created}, skipped existing: {skipped}.", "success")
+            flash(
+                translate(
+                    "Slot generation completed. Created: {created}, skipped existing: {skipped}.",
+                    session.get("language", "en")
+                ).format(
+                    created=created,
+                    skipped=skipped
+                ),
+                "success"
+            )
             return redirect(url_for("generate_appointment_slots"))
 
         return render_template("generate_slots.html")
@@ -791,7 +804,15 @@ def register_appointment_routes(app):
             created, skipped = generate_slots_for_date_range(start_date, end_date)
 
             flash(
-                f"Schedule extended from {start_date} to {end_date}. Created: {created}, skipped existing: {skipped}.",
+                translate(
+                    "Schedule extended from {start_date} to {end_date}. Created: {created}, skipped existing: {skipped}.",
+                    session.get("language", "en")
+                ).format(
+                    start_date=start_date,
+                    end_date=end_date,
+                    created=created,
+                    skipped=skipped
+                ),
                 "success"
             )
             return redirect(url_for("extend_schedule"))
@@ -958,7 +979,7 @@ def register_appointment_routes(app):
         )
 
         if not slot:
-            flash("Slot already booked or unavailable.", "error")
+            flash_t("Slot already booked or unavailable.", "error")
             return redirect(url_for("search_book_appointment"))
 
         existing = execute_query(
@@ -972,7 +993,7 @@ def register_appointment_routes(app):
         )
 
         if existing:
-            flash("This slot is already booked.", "error")
+            flash_t("This slot is already booked.", "error")
             return redirect(url_for("search_book_appointment"))
 
         execute_query(
@@ -1002,7 +1023,7 @@ def register_appointment_routes(app):
             (slot_id,)
         )
 
-        flash("Appointment booked successfully.", "success")
+        flash_t("Appointment booked successfully.", "success")
 
         return redirect(url_for("search_book_appointment"))
 
@@ -1095,7 +1116,7 @@ def register_appointment_routes(app):
         )
 
         if not appointment:
-            flash("Appointment already cancelled.", "error")
+            flash_t("Appointment already cancelled.", "error")
             return redirect(url_for("search_cancel_appointment"))
 
         execute_query(
@@ -1117,7 +1138,7 @@ def register_appointment_routes(app):
             (appointment["slot_id"],)
         )
 
-        flash("Appointment cancelled successfully.", "success")
+        flash_t("Appointment cancelled successfully.", "success")
 
         return redirect(url_for(
             "search_cancel_appointment",

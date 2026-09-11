@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Voice Search</h1>
+<h1>{{ t('Voice Search') }}</h1>
 
-<button onclick="startVoice()">Start Voice Search</button>
+<button onclick="startVoice()">{{ t('Start Voice Search') }}</button>
 
-<input type="text" id="voice_text" placeholder="Voice result will appear here">
+<input type="text" id="voice_text" placeholder="{{ t('Voice result will appear here') }}">
 
 <script src="{{ url_for('static', filename='js/voice.js') }}"></script>
 {% endblock %}

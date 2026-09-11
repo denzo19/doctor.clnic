@@ -5,7 +5,7 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-vial"></i> Lab Order</h1>
+        <h1><i class="fas fa-vial"></i> {{ t("Lab Order") }}</h1>
     </div>
 
     <div class="details-card">
@@ -19,13 +19,13 @@
 
             <div class="lab-order-header-grid">
                 <div class="form-group">
-                    <label>Patient</label>
+                    <label>{{ t("Patient") }}</label>
                     <div class="searchable-select"
                          data-searchable-select
-                         data-required-message="Please choose a patient from the list.">
+                         data-required-message="{{ t('Please choose a patient from the list.') }}">
                         <input type="text"
                                class="searchable-select-input"
-                               placeholder="Choose patient"
+                               placeholder="{{ t('Choose patient') }}"
                                autocomplete="off"
                                required
                                value="{% for patient in patients %}{% if order and order.patient_id == patient.id %}{{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}{% endif %}{% endfor %}">
@@ -44,20 +44,20 @@
                                 </button>
                             {% endfor %}
                             <div class="searchable-select-empty">
-                                No patients found.
+                                {{ t("No patients found.") }}
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Doctor</label>
+                    <label>{{ t("Doctor") }}</label>
                     <div class="searchable-select"
                          data-searchable-select
-                         data-required-message="Please choose a doctor from the list.">
+                         data-required-message="{{ t('Please choose a doctor from the list.') }}">
                         <input type="text"
                                class="searchable-select-input"
-                               placeholder="Choose doctor"
+                               placeholder="{{ t('Choose doctor') }}"
                                autocomplete="off"
                                required
                                value="{% for doctor in doctors %}{% if selected_doctor_id and selected_doctor_id == doctor.id %}{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}{% endif %}{% endfor %}">
@@ -76,14 +76,14 @@
                                 </button>
                             {% endfor %}
                             <div class="searchable-select-empty">
-                                No doctors found.
+                                {{ t("No doctors found.") }}
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Order Date</label>
+                    <label>{{ t("Order Date") }}</label>
                     <input type="date"
                            id="order_result_date"
                            name="result_date"
@@ -92,7 +92,7 @@
                 </div>
 
                 <div class="form-group lab-order-notes-field">
-                    <label>Notes</label>
+                    <label>{{ t("Notes") }}</label>
                     <textarea id="order_notes" name="notes">{% if order %}{{ order.notes or '' }}{% endif %}</textarea>
                 </div>
 
@@ -100,12 +100,12 @@
                     <button type="button"
                             class="standard-btn form-save-btn"
                             onclick="openTestModal()">
-                        <i class="fas fa-plus"></i> Add Test
+                        <i class="fas fa-plus"></i> {{ t("Add Test") }}
                     </button>
 
                     <a href="{% if return_to_patient and order and order.patient_id %}{{ url_for('patient_details', patient_id=order.patient_id, doctor_id=selected_doctor_id) }}{% else %}{{ url_for('lab_order') }}{% endif %}"
                        class="standard-btn form-cancel-btn">
-                        <i class="fas fa-ban"></i> Cancel
+                        <i class="fas fa-ban"></i> {{ t("Cancel") }}
                     </a>
                 </div>
             </div>
@@ -114,15 +114,15 @@
                 <table class="app-table">
                     <thead>
                         <tr>
-                            <th>Test</th>
-                            <th>Category</th>
-                            <th>Unit</th>
-                            <th class="actions-header">Actions</th>
+                            <th>{{ t("Test") }}</th>
+                            <th>{{ t("Category") }}</th>
+                            <th>{{ t("Unit") }}</th>
+                            <th class="actions-header">{{ t("Actions") }}</th>
                         </tr>
                     </thead>
                     <tbody id="temporaryTestsBody">
                         <tr id="emptyTemporaryTestsRow">
-                            <td colspan="4" class="empty-row">No tests added.</td>
+                            <td colspan="4" class="empty-row">{{ t("No tests added.") }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -133,14 +133,14 @@
                         name="save_type"
                         value="draft"
                         class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save Draft
+                    <i class="fas fa-save"></i> {{ t("Save Draft") }}
                 </button>
 
                 <button type="submit"
                         name="save_type"
                         value="final"
                         class="standard-btn primary-btn">
-                    <i class="fas fa-lock"></i> Final Save
+                    <i class="fas fa-lock"></i> {{ t("Final Save") }}
                 </button>
 
                 {% if show_final_print_button %}
@@ -149,7 +149,7 @@
                             value="final_print"
                             formtarget="_blank"
                             class="standard-btn primary-btn">
-                        <i class="fas fa-print"></i> Print
+                        <i class="fas fa-print"></i> {{ t("Print") }}
                     </button>
                 {% endif %}
             </div>
@@ -161,7 +161,7 @@
 <div id="testModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2><i class="fas fa-vial"></i> Choose Lab Test</h2>
+            <h2><i class="fas fa-vial"></i> {{ t("Choose Lab Test") }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeTestModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -170,9 +170,9 @@
         <div class="modal-form">
             <div class="form-grid">
                 <div class="form-group form-group-wide">
-                    <label>Lab Test</label>
+                    <label>{{ t("Lab Test") }}</label>
                     <select id="modal_test_id" required>
-                        <option value="">Choose test</option>
+                        <option value="">{{ t("Choose test") }}</option>
                         {% for test in lab_tests %}
                             <option value="{{ test.id }}">
                                 {{ test.test_name }}{% if test.category %} - {{ test.category }}{% endif %}{% if test.unit %} - {{ test.unit }}{% endif %}
@@ -186,13 +186,13 @@
                 <button type="button"
                         class="standard-btn form-save-btn"
                         onclick="saveTemporaryTest()">
-                    <i class="fas fa-forward"></i> Next
+                    <i class="fas fa-forward"></i> {{ t("Next") }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeTestModal()">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t("Cancel") }}
                 </button>
             </div>
         </div>
@@ -242,6 +242,13 @@
 <script>
 const labTests = {{ lab_tests|tojson }};
 const initialTemporaryTests = {{ order.test_ids|tojson if order else '[]' }};
+const labOrderText = {
+    noTestsAdded: {{ t("No tests added.")|tojson }},
+    edit: {{ t("Edit")|tojson }},
+    delete: {{ t("Delete")|tojson }},
+    testAlreadyAdded: {{ t("This test is already added.")|tojson }},
+    addAtLeastOneLabTest: {{ t("Add at least one lab test.")|tojson }}
+};
 const testLookup = {};
 let temporaryTests = initialTemporaryTests.map(function(testId){
     return String(testId);
@@ -331,7 +338,7 @@ function renderTemporaryTests() {
     body.innerHTML = "";
 
     if (temporaryTests.length === 0) {
-        body.innerHTML = '<tr id="emptyTemporaryTestsRow"><td colspan="4" class="empty-row">No tests added.</td></tr>';
+        body.innerHTML = '<tr id="emptyTemporaryTestsRow"><td colspan="4" class="empty-row">' + labOrderText.noTestsAdded + '</td></tr>';
         return;
     }
 
@@ -358,7 +365,7 @@ function renderTemporaryTests() {
 
         editButton.type = "button";
         editButton.className = "table-action edit-action";
-        editButton.title = "Edit";
+        editButton.title = labOrderText.edit;
         editButton.innerHTML = '<i class="fas fa-pen"></i>';
         editButton.addEventListener("click", function(){
             editTemporaryTest(index);
@@ -366,7 +373,7 @@ function renderTemporaryTests() {
 
         deleteButton.type = "button";
         deleteButton.className = "table-action delete-action";
-        deleteButton.title = "Delete";
+        deleteButton.title = labOrderText.delete;
         deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
         deleteButton.addEventListener("click", function(){
             deleteTemporaryTest(index);
@@ -409,7 +416,7 @@ function saveTemporaryTest() {
     });
 
     if (duplicateIndex !== -1) {
-        alert("This test is already added.");
+        alert(labOrderText.testAlreadyAdded);
         return;
     }
 
@@ -437,7 +444,7 @@ function deleteTemporaryTest(index) {
 document.getElementById("labOrderForm").addEventListener("submit", function(event){
     if (temporaryTests.length === 0) {
         event.preventDefault();
-        alert("Add at least one lab test.");
+        alert(labOrderText.addAtLeastOneLabTest);
     }
 });
 

@@ -7,7 +7,7 @@
     <div class="page-header">
         <h1>
             <i class="fas fa-list-check"></i>
-            Diagnosis ICD Fine Tuning
+            {{ t('Diagnosis ICD Fine Tuning') }}
         </h1>
     </div>
 
@@ -15,7 +15,7 @@
         <form method="GET"
               action="{{ url_for('diagnosis_icd_fine_tuning') }}"
               class="toolbar-form">
-            <label class="toolbar-filter-label" for="specialtyFilter">Specialty</label>
+            <label class="toolbar-filter-label" for="specialtyFilter">{{ t('Specialty') }}</label>
             <select id="specialtyFilter"
                     name="specialty"
                     class="toolbar-search-input"
@@ -29,7 +29,7 @@
             </select>
 
             {% if fine_block_options %}
-                <label class="toolbar-filter-label" for="fineBlockFilter">Block</label>
+                <label class="toolbar-filter-label" for="fineBlockFilter">{{ t('Block') }}</label>
                 <select id="fineBlockFilter"
                         name="fine_block_id"
                         class="toolbar-search-input">
@@ -42,25 +42,25 @@
                 </select>
             {% endif %}
 
-            <button type="submit" class="toolbar-btn search-btn" title="Load">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Load') }}">
                 <i class="fas fa-search"></i>
             </button>
 
             <a href="{{ url_for('diagnosis_icd_setup', specialty=selected_specialty) }}"
                class="standard-btn form-cancel-btn">
                 <i class="fas fa-arrow-left"></i>
-                Back
+                {{ t('Back') }}
             </a>
         </form>
     </div>
 
     {% if not active_version %}
         <div class="details-card">
-            <p class="empty-row">Import an ICD-10-CM version before fine tuning categories and codes.</p>
+            <p class="empty-row">{{ t('Import an ICD-10-CM version before fine tuning categories and codes.') }}</p>
         </div>
     {% elif not fine_block_options %}
         <div class="details-card">
-            <p class="empty-row">Select and save at least one chapter or block before fine tuning categories and codes.</p>
+            <p class="empty-row">{{ t('Select and save at least one chapter or block before fine tuning categories and codes.') }}</p>
         </div>
     {% elif selected_fine_block %}
         <form method="POST"
@@ -79,15 +79,15 @@
                         value="save_detail"
                         class="standard-btn form-save-btn">
                     <i class="fas fa-save"></i>
-                    Save Fine Tuning
+                    {{ t('Save Fine Tuning') }}
                 </button>
                 <button type="submit"
                         name="action"
                         value="clear_detail"
                         class="standard-btn form-cancel-btn"
-                        onclick="return confirm('Clear category/code tuning for this block?');">
+                        onclick="return confirm({{ t('Clear category/code tuning for this block?')|tojson }});">
                     <i class="fas fa-times"></i>
-                    Clear Fine Tuning
+                    {{ t('Clear Fine Tuning') }}
                 </button>
             </div>
 
@@ -102,7 +102,7 @@
                         <span>
                             {{ category.category_code }}
                             {{ category.title }}
-                            <em>{{ category.billable_code_count }} billable codes</em>
+                            <em>{{ category.billable_code_count }} {{ t('billable codes') }}</em>
                         </span>
                     </label>
 
@@ -130,15 +130,15 @@
                         value="save_detail"
                         class="standard-btn form-save-btn">
                     <i class="fas fa-save"></i>
-                    Save Fine Tuning
+                    {{ t('Save Fine Tuning') }}
                 </button>
                 <button type="submit"
                         name="action"
                         value="clear_detail"
                         class="standard-btn form-cancel-btn"
-                        onclick="return confirm('Clear category/code tuning for this block?');">
+                        onclick="return confirm({{ t('Clear category/code tuning for this block?')|tojson }});">
                     <i class="fas fa-times"></i>
-                    Clear Fine Tuning
+                    {{ t('Clear Fine Tuning') }}
                 </button>
             </div>
         </form>

@@ -9,7 +9,7 @@
         <div class="modal-header">
             <h2>
                 <i class="fas fa-pen"></i>
-                Edit Visit
+                {{ t("Edit Visit") }}
             </h2>
 
             <a href="{{ url_for('patient_details', patient_id=visit.patient_id) }}"
@@ -22,22 +22,22 @@
 
             <div class="visit-patient-title">
                 <i class="fas fa-user-injured"></i>
-                Visit ID: {{ visit.id }}
+                {{ t("Visit ID:") }} {{ visit.id }}
             </div>
 
             <div class="form-grid visit-grid">
 
                 <div class="form-group form-group-wide">
-                    <label>Chief Complaint</label>
+                    <label>{{ t("Chief Complaint") }}</label>
                     <textarea name="chief_complaint">{{ visit.chief_complaint }}</textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>Chapter / Block</label>
+                    <label>{{ t("Chapter / Block") }}</label>
                     <div class="searchable-select" data-visit-block-select>
                         <input type="text"
                                class="searchable-select-input"
-                               placeholder="Choose chapter/block"
+                               placeholder="{{ t('Choose chapter/block') }}"
                                autocomplete="off"
                                {% if not diagnosis_blocks %}disabled{% endif %}>
                         <input type="hidden"
@@ -55,18 +55,18 @@
                                 </button>
                             {% endfor %}
                             <div class="searchable-select-empty">
-                                No ICD blocks found for this doctor speciality.
+                                {{ t("No ICD blocks found for this doctor speciality.") }}
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Diagnosis Name</label>
+                    <label>{{ t("Diagnosis Name") }}</label>
                     <div class="searchable-select" data-visit-diagnosis-select>
                         <input type="text"
                                class="searchable-select-input"
-                               placeholder="Choose diagnosis"
+                               placeholder="{{ t('Choose diagnosis') }}"
                                autocomplete="off"
                                disabled>
                         <input type="hidden"
@@ -75,19 +75,19 @@
                                value="{% if visit.diagnosis_item_type and visit.diagnosis_item_id %}{{ visit.diagnosis_item_type }}:{{ visit.diagnosis_item_id }}{% endif %}">
                         <div class="searchable-select-options">
                             <div class="searchable-select-empty">
-                                Choose chapter/block first.
+                                {{ t("Choose chapter/block first.") }}
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Treatment Plan</label>
+                    <label>{{ t("Treatment Plan") }}</label>
                     <textarea name="treatment_plan">{{ visit.treatment_plan }}</textarea>
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Doctor Notes</label>
+                    <label>{{ t("Doctor Notes") }}</label>
                     <textarea name="doctor_notes">{{ visit.doctor_notes }}</textarea>
                 </div>
 
@@ -95,29 +95,26 @@
 
             <div class="modal-actions">
 
-                <!-- Save Draft -->
                 <button type="submit"
                         name="save_type"
                         value="draft"
                         class="standard-btn form-save-btn">
                     <i class="fas fa-save"></i>
-                    Save Draft
+                    {{ t("Save Draft") }}
                 </button>
 
-                <!-- Final Save -->
                 <button type="submit"
                         name="save_type"
                         value="final"
                         class="standard-btn primary-btn">
                     <i class="fas fa-lock"></i>
-                    Final Save
+                    {{ t("Final Save") }}
                 </button>
 
-                <!-- Cancel -->
                 <a href="{{ url_for('patient_details', patient_id=visit.patient_id) }}"
                    class="standard-btn form-cancel-btn">
                     <i class="fas fa-ban"></i>
-                    Cancel
+                    {{ t("Cancel") }}
                 </a>
 
             </div>
@@ -132,6 +129,10 @@
 const diagnosisOptionsByBlock = {{ diagnosis_options_by_block|tojson }};
 const selectedDiagnosisBlockId = "{{ visit.diagnosis_block_id or '' }}";
 const selectedDiagnosisItemValue = "{% if visit.diagnosis_item_type and visit.diagnosis_item_id %}{{ visit.diagnosis_item_type }}:{{ visit.diagnosis_item_id }}{% endif %}";
+const visitText = {
+    noDiagnosesForBlock: {{ t("No diagnoses found for this block.")|tojson }},
+    noDiagnoses: {{ t("No diagnoses found.")|tojson }}
+};
 
 function setupVisitSearchableSelect(selectBox, onSelect) {
     const input = selectBox.querySelector(".searchable-select-input");
@@ -206,7 +207,7 @@ function renderDiagnosisOptions(blockId) {
 
     if (!options.length) {
         input.disabled = true;
-        optionsWrap.innerHTML = '<div class="searchable-select-empty">No diagnoses found for this block.</div>';
+        optionsWrap.innerHTML = '<div class="searchable-select-empty">' + visitText.noDiagnosesForBlock + '</div>';
         return;
     }
 
@@ -224,7 +225,7 @@ function renderDiagnosisOptions(blockId) {
 
     const empty = document.createElement("div");
     empty.className = "searchable-select-empty";
-    empty.textContent = "No diagnoses found.";
+    empty.textContent = visitText.noDiagnoses;
     optionsWrap.appendChild(empty);
 }
 

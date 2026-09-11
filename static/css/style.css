@@ -509,6 +509,19 @@ main {
     min-width: 280px;
 }
 
+.patients-page .searchable-select {
+    width: 322px;
+    max-width: 100%;
+}
+
+.manage-appointments-page .searchable-select,
+.patient-history-page .searchable-select,
+.appointment-checkin-page .searchable-select,
+.checkin-patient-page .searchable-select {
+    width: 322px;
+    max-width: 100%;
+}
+
 .form-group .searchable-select {
     min-width: 0;
     width: 100%;
@@ -1048,6 +1061,28 @@ main {
 .nav-user-display:hover {
     background: #91c0ef;
     color: #1f4e79;
+}
+
+.nav-language-switch {
+    background: #1f4e79;
+    color: white;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.nav-language-switch a {
+    color: white;
+    text-decoration: none;
+    opacity: 0.72;
+}
+
+.nav-language-switch a.active,
+.nav-language-switch a:hover {
+    opacity: 1;
 }
 
 /* LOGOUT */

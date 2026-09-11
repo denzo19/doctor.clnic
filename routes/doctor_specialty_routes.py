@@ -1,10 +1,14 @@
-from flask import flash, redirect, render_template, request, url_for
+from flask import flash, redirect, render_template, request, session, url_for
 
 from auth import login_required, permission_required
 from database import execute_query
+from i18n import translate
 
 
 def register_doctor_specialty_routes(app):
+    def flash_t(message, category="success"):
+        flash(translate(message, session.get("language", "en")), category)
+
     def specialty_code_exists(specialty_code, exclude_specialty_id=None):
         if exclude_specialty_id:
             return execute_query(
@@ -72,15 +76,15 @@ def register_doctor_specialty_routes(app):
             description = request.form.get("description", "").strip()
 
             if not specialty_code or not specialty_name or not classification_system:
-                flash("Specialty code, name, and classification system are required.", "error")
+                flash_t("Specialty code, name, and classification system are required.", "error")
                 return redirect(url_for("doctor_specialties"))
 
             if specialty_code_exists(specialty_code):
-                flash("Specialty code already exists.", "error")
+                flash_t("Specialty code already exists.", "error")
                 return redirect(url_for("doctor_specialties"))
 
             if specialty_name_exists(specialty_name, classification_system):
-                flash("Specialty already exists in this classification system.", "error")
+                flash_t("Specialty already exists in this classification system.", "error")
                 return redirect(url_for("doctor_specialties"))
 
             execute_query(
@@ -105,7 +109,7 @@ def register_doctor_specialty_routes(app):
                 )
             )
 
-            flash("Doctor speciality added successfully.", "success")
+            flash_t("Doctor speciality added successfully.", "success")
             return redirect(url_for("doctor_specialties"))
 
         search = request.args.get("search", "").strip()
@@ -180,15 +184,15 @@ def register_doctor_specialty_routes(app):
         is_active = 1 if request.form.get("is_active") == "1" else 0
 
         if not specialty_code or not specialty_name or not classification_system:
-            flash("Specialty code, name, and classification system are required.", "error")
+            flash_t("Specialty code, name, and classification system are required.", "error")
             return redirect(url_for("doctor_specialties"))
 
         if specialty_code_exists(specialty_code, specialty_id):
-            flash("Specialty code already exists.", "error")
+            flash_t("Specialty code already exists.", "error")
             return redirect(url_for("doctor_specialties"))
 
         if specialty_name_exists(specialty_name, classification_system, specialty_id):
-            flash("Specialty already exists in this classification system.", "error")
+            flash_t("Specialty already exists in this classification system.", "error")
             return redirect(url_for("doctor_specialties"))
 
         execute_query(
@@ -213,7 +217,7 @@ def register_doctor_specialty_routes(app):
             )
         )
 
-        flash("Doctor speciality updated successfully.", "success")
+        flash_t("Doctor speciality updated successfully.", "success")
         return redirect(url_for("doctor_specialties"))
 
     @app.route("/clinic/doctor_specialties/stop/<int:specialty_id>", methods=["POST"])
@@ -229,5 +233,5 @@ def register_doctor_specialty_routes(app):
             (specialty_id,)
         )
 
-        flash("Doctor speciality deactivated.", "success")
+        flash_t("Doctor speciality deactivated.", "success")
         return redirect(url_for("doctor_specialties"))

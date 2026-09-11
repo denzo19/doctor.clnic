@@ -5,6 +5,7 @@ from flask import Response, flash, redirect, render_template, request, session, 
 
 from auth import login_required, permission_required
 from database import execute_query
+from i18n import translate
 from pdf_utils import (
     add_standard_pdf_image_objects,
     escape_pdf_text,
@@ -16,6 +17,12 @@ from pdf_utils import (
 
 
 def register_admin_routes(app, bcrypt, menu_option_name_exists):
+    def flash_t(message, category="success"):
+        flash(translate(message, session.get("language", "en")), category)
+
+    def translate_message(message):
+        return translate(message, session.get("language", "en"))
+
     @app.route("/admin/diagnosis_icd_setup", methods=["GET", "POST"])
     @login_required
     @permission_required("diagnosis_icd_setup")
@@ -53,11 +60,11 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
 
         if request.method == "POST":
             if not active_version:
-                flash("Import an ICD-10-CM version before saving specialty selections.", "error")
+                flash_t("Import an ICD-10-CM version before saving specialty selections.", "error")
                 return redirect(url_for("diagnosis_icd_setup"))
 
             if not selected_specialty:
-                flash("Choose a specialty before saving ICD selections.", "error")
+                flash_t("Choose a specialty before saving ICD selections.", "error")
                 return redirect(url_for("diagnosis_icd_setup"))
 
             action = request.form.get("action")
@@ -73,7 +80,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
                     (active_version["id"], selected_specialty)
                 )
 
-                flash("Diagnosis ICD specialty selection cleared.", "success")
+                flash_t("Diagnosis ICD specialty selection cleared.", "success")
                 return redirect(url_for(
                     "diagnosis_icd_setup",
                     specialty=selected_specialty
@@ -128,7 +135,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
                     )
                 )
 
-            flash("Diagnosis ICD specialty selection saved successfully.", "success")
+            flash_t("Diagnosis ICD specialty selection saved successfully.", "success")
             return redirect(url_for(
                 "diagnosis_icd_setup",
                 specialty=selected_specialty
@@ -373,15 +380,15 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
 
         if request.method == "POST":
             if not active_version:
-                flash("Import an ICD-10-CM version before saving category/code tuning.", "error")
+                flash_t("Import an ICD-10-CM version before saving category/code tuning.", "error")
                 return redirect(url_for("diagnosis_icd_fine_tuning"))
 
             if not selected_specialty:
-                flash("Choose a specialty before saving category/code tuning.", "error")
+                flash_t("Choose a specialty before saving category/code tuning.", "error")
                 return redirect(url_for("diagnosis_icd_fine_tuning"))
 
             if not selected_fine_block_id:
-                flash("Choose a block before saving category/code tuning.", "error")
+                flash_t("Choose a block before saving category/code tuning.", "error")
                 return redirect(url_for(
                     "diagnosis_icd_fine_tuning",
                     specialty=selected_specialty
@@ -401,7 +408,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             )
 
             if not fine_block:
-                flash("Selected ICD block was not found for the active version.", "error")
+                flash_t("Selected ICD block was not found for the active version.", "error")
                 return redirect(url_for(
                     "diagnosis_icd_fine_tuning",
                     specialty=selected_specialty
@@ -435,7 +442,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             )
 
             if request.form.get("action") == "clear_detail":
-                flash("ICD category/code tuning cleared for the selected block.", "success")
+                flash_t("ICD category/code tuning cleared for the selected block.", "success")
                 return redirect(url_for(
                     "diagnosis_icd_fine_tuning",
                     specialty=selected_specialty,
@@ -481,7 +488,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
                     )
                 )
 
-            flash("ICD category/code tuning saved for the selected block.", "success")
+            flash_t("ICD category/code tuning saved for the selected block.", "success")
             return redirect(url_for(
                 "diagnosis_icd_fine_tuning",
                 specialty=selected_specialty,
@@ -632,7 +639,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             description = request.form.get("description")
 
             if not group_name:
-                flash("Group name is required.", "error")
+                flash_t("Group name is required.", "error")
                 return redirect(url_for("manage_groups"))
 
             existing_group = execute_query(
@@ -646,7 +653,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             )
 
             if existing_group:
-                flash("Group already exists.", "error")
+                flash_t("Group already exists.", "error")
                 return redirect(url_for("manage_groups"))
 
             execute_query(
@@ -657,7 +664,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
                 (group_name, description)
             )
 
-            flash("Group added successfully.", "success")
+            flash_t("Group added successfully.", "success")
             return redirect(url_for("manage_groups"))
 
         groups = execute_query(
@@ -845,7 +852,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
         is_active = 1 if request.form.get("is_active") == "1" else 0
 
         if not group_name:
-            flash("Group name is required.", "error")
+            flash_t("Group name is required.", "error")
             return redirect(url_for("manage_groups"))
 
         existing_group = execute_query(
@@ -860,7 +867,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
         )
 
         if existing_group:
-            flash("Group already exists.", "error")
+            flash_t("Group already exists.", "error")
             return redirect(url_for("manage_groups"))
 
         execute_query(
@@ -874,7 +881,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             (group_name, description, is_active, group_id)
         )
 
-        flash("Group updated successfully.", "success")
+        flash_t("Group updated successfully.", "success")
         return redirect(url_for("manage_groups"))
 
 
@@ -891,7 +898,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
         )
 
         if result["total"] > 0:
-            flash("This group cannot be deleted because users are assigned to it.", "error")
+            flash_t("This group cannot be deleted because users are assigned to it.", "error")
             return redirect(url_for("manage_groups"))
 
         execute_query(
@@ -904,7 +911,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             (group_id,)
         )
 
-        flash("Group deleted successfully.", "success")
+        flash_t("Group deleted successfully.", "success")
         return redirect(url_for("manage_groups"))
 
 
@@ -926,7 +933,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             )
 
             if existing_permission:
-                flash("This permission is already added to the selected group.", "error")
+                flash_t("This permission is already added to the selected group.", "error")
                 return redirect(url_for("manage_permissions"))
 
             execute_query(
@@ -937,7 +944,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
                 (group_id, menu_option_id)
             )
 
-            flash("Permission added successfully.", "success")
+            flash_t("Permission added successfully.", "success")
             return redirect(url_for("manage_permissions"))
 
         groups = execute_query(
@@ -1138,7 +1145,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             (permission_id,)
         )
 
-        flash("Permission deleted successfully.", "success")
+        flash_t("Permission deleted successfully.", "success")
         return redirect(url_for("manage_permissions"))
 
 
@@ -1152,7 +1159,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             password = request.form.get("password", "").strip()
 
             if not password:
-                flash("Password is required.", "error")
+                flash_t("Password is required.", "error")
                 return redirect(url_for("manage_users"))
 
             password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
@@ -1160,7 +1167,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             # ---- VALIDATIONS ----
 
             if not username:
-                flash("Username is required.", "error")
+                flash_t("Username is required.", "error")
                 return redirect(url_for("manage_users"))
 
             # Duplicate username
@@ -1175,7 +1182,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             )
 
             if existing_username:
-                flash("Username already exists.", "error")
+                flash_t("Username already exists.", "error")
                 return redirect(url_for("manage_users"))
 
             # Employee already linked to another user
@@ -1190,7 +1197,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             )
 
             if existing_employee:
-                flash("This employee already has a user account.", "error")
+                flash_t("This employee already has a user account.", "error")
                 return redirect(url_for("manage_users"))
 
             employee = execute_query(
@@ -1208,7 +1215,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             )
 
             if not employee:
-                flash("Selected employee not found.", "error")
+                flash_t("Selected employee not found.", "error")
                 return redirect(url_for("manage_users"))
 
             if employee["email"]:
@@ -1223,7 +1230,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
                 )
 
                 if existing_email:
-                    flash("Email already exists.", "error")
+                    flash_t("Email already exists.", "error")
                     return redirect(url_for("manage_users"))
 
             execute_query(
@@ -1243,7 +1250,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
                 )
             )
 
-            flash("User added successfully.", "success")
+            flash_t("User added successfully.", "success")
             return redirect(url_for("manage_users"))
 
         users = execute_query(
@@ -1522,7 +1529,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
         is_active = 1 if request.form.get("is_active") == "1" else 0
 
         if not username:
-            flash("Username is required.", "error")
+            flash_t("Username is required.", "error")
             return redirect(url_for("manage_users"))
 
         user = execute_query(
@@ -1536,7 +1543,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
         )
 
         if not user:
-            flash("User not found.", "error")
+            flash_t("User not found.", "error")
             return redirect(url_for("manage_users"))
 
         employee = execute_query(
@@ -1550,7 +1557,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
         )
 
         if not employee:
-            flash("Linked employee not found.", "error")
+            flash_t("Linked employee not found.", "error")
             return redirect(url_for("manage_users"))
 
         existing_username = execute_query(
@@ -1565,7 +1572,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
         )
 
         if existing_username:
-            flash("Username already exists.", "error")
+            flash_t("Username already exists.", "error")
             return redirect(url_for("manage_users"))
 
         if employee["email"]:
@@ -1581,7 +1588,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             )
 
             if existing_email:
-                flash("Email already exists.", "error")
+                flash_t("Email already exists.", "error")
                 return redirect(url_for("manage_users"))
 
         execute_query(
@@ -1606,7 +1613,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             )
         )
 
-        flash("User updated successfully.", "success")
+        flash_t("User updated successfully.", "success")
         return redirect(url_for("manage_users"))
 
     @app.route("/admin/users/stop/<int:user_id>", methods=["POST"])
@@ -1622,7 +1629,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             (user_id,)
         )
 
-        flash("User stopped successfully.", "success")
+        flash_t("User stopped successfully.", "success")
         return redirect(url_for("manage_users"))
 
     @app.route("/admin/users/delete/<int:user_id>", methods=["POST"])
@@ -1630,7 +1637,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
     @permission_required("manage_users")
     def delete_user(user_id):
         if user_id == session.get("user_id"):
-            flash("You cannot delete the current logged-in user.", "error")
+            flash_t("You cannot delete the current logged-in user.", "error")
             return redirect(url_for("manage_users"))
 
         user = execute_query(
@@ -1640,11 +1647,11 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
         )
 
         if not user:
-            flash("User not found.", "error")
+            flash_t("User not found.", "error")
             return redirect(url_for("manage_users"))
 
         if user_is_referenced(user_id):
-            flash("This user cannot be deleted because it is referred to by other records.", "error")
+            flash_t("This user cannot be deleted because it is referred to by other records.", "error")
             return redirect(url_for("manage_users"))
 
         execute_query(
@@ -1652,7 +1659,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             (user_id,)
         )
 
-        flash("User deleted successfully.", "success")
+        flash_t("User deleted successfully.", "success")
         return redirect(url_for("manage_users"))
 
     @app.route("/create_first_admin")
@@ -1665,8 +1672,8 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
         )
 
         if not admin_group:
-            flash("Admin group not found.", "error")
-            return "Admin group not found."
+            flash_t("Admin group not found.", "error")
+            return translate("Admin group not found.", session.get("language", "en"))
 
         execute_query(
             """
@@ -1712,6 +1719,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
         if request.method == "POST":
 
             option_name = request.form.get("option_name", "").strip()
+            option_name_ar = request.form.get("option_name_ar", "").strip() or None
 
             endpoint_name = request.form.get(
                 "endpoint_name",
@@ -1736,11 +1744,11 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
                 parent_id = None
 
             if not option_name:
-                flash("Option name is required.", "error")
+                flash_t("Option name is required.", "error")
                 return redirect(url_for("admin_menu_options"))
 
             if menu_option_name_exists(option_name, parent_id):
-                flash("An option with this name already exists under the selected parent.", "error")
+                flash_t("An option with this name already exists under the selected parent.", "error")
                 return redirect(url_for("admin_menu_options"))
 
             execute_query(
@@ -1748,6 +1756,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
                 INSERT INTO menu_options
                 (
                     option_name,
+                    option_name_ar,
                     endpoint_name,
                     url,
                     icon_class,
@@ -1763,11 +1772,13 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
                     %s,
                     %s,
                     %s,
+                    %s,
                     1
                 )
                 """,
                 (
                     option_name,
+                    option_name_ar,
                     endpoint_name,
                     url,
                     icon_class,
@@ -1776,7 +1787,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
                 )
             )
 
-            flash("Menu option added successfully.", "success")
+            flash_t("Menu option added successfully.", "success")
 
             return redirect(url_for("admin_menu_options"))
 
@@ -1795,6 +1806,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             SELECT
                 mo.id,
                 mo.option_name,
+                mo.option_name_ar,
                 mo.endpoint_name,
                 mo.url,
                 mo.icon_class,
@@ -2032,6 +2044,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
     @permission_required("admin_menu_options")
     def update_menu_option(menu_option_id):
         option_name = request.form.get("option_name", "").strip()
+        option_name_ar = request.form.get("option_name_ar", "").strip() or None
         endpoint_name = request.form.get("endpoint_name", "").strip() or None
         url = request.form.get("url", "").strip() or None
         icon_class = request.form.get("icon_class", "").strip() or None
@@ -2040,21 +2053,22 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
         is_active = 1 if request.form.get("is_active") == "1" else 0
 
         if not option_name:
-            flash("Option name is required.", "error")
+            flash_t("Option name is required.", "error")
             return redirect(url_for("admin_menu_options"))
 
         if str(menu_option_id) == str(parent_id):
-            flash("A menu option cannot be its own parent.", "error")
+            flash_t("A menu option cannot be its own parent.", "error")
             return redirect(url_for("admin_menu_options"))
 
         if menu_option_name_exists(option_name, parent_id, menu_option_id):
-            flash("An option with this name already exists under the selected parent.", "error")
+            flash_t("An option with this name already exists under the selected parent.", "error")
             return redirect(url_for("admin_menu_options"))
 
         execute_query(
             """
             UPDATE menu_options
             SET option_name = %s,
+                option_name_ar = %s,
                 endpoint_name = %s,
                 url = %s,
                 icon_class = %s,
@@ -2065,6 +2079,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             """,
             (
                 option_name,
+                option_name_ar,
                 endpoint_name,
                 url,
                 icon_class,
@@ -2075,7 +2090,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             )
         )
 
-        flash("Menu option updated successfully.", "success")
+        flash_t("Menu option updated successfully.", "success")
         return redirect(url_for("admin_menu_options"))
 
 
@@ -2104,11 +2119,11 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
         )
 
         if assigned["total"] > 0:
-            flash("This menu option cannot be deleted because it is assigned to a group.", "error")
+            flash_t("This menu option cannot be deleted because it is assigned to a group.", "error")
             return redirect(url_for("admin_menu_options"))
 
         if children["total"] > 0:
-            flash("This main menu option cannot be deleted because it has child options.", "error")
+            flash_t("This main menu option cannot be deleted because it has child options.", "error")
             return redirect(url_for("admin_menu_options"))
 
         execute_query(
@@ -2116,7 +2131,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
             (menu_option_id,)
         )
 
-        flash("Menu option deleted successfully.", "success")
+        flash_t("Menu option deleted successfully.", "success")
         return redirect(url_for("admin_menu_options"))
 
     @app.route("/admin/menu_options/add_ajax", methods=["POST"])
@@ -2124,6 +2139,7 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
     @permission_required("admin_menu_options")
     def add_menu_option_ajax():
         option_name = request.form.get("option_name", "").strip()
+        option_name_ar = request.form.get("option_name_ar", "").strip() or None
         endpoint_name = request.form.get("endpoint_name", "").strip() or None
         url = request.form.get("url", "").strip() or None
         icon_class = request.form.get("icon_class", "").strip() or None
@@ -2133,24 +2149,25 @@ def register_admin_routes(app, bcrypt, menu_option_name_exists):
         if not option_name:
             return {
                 "success": False,
-                "message": "Option name is required."
+                "message": translate_message("Option name is required.")
             }, 400
 
         if menu_option_name_exists(option_name, parent_id):
             return {
                 "success": False,
-                "message": "An option with this name already exists under the selected parent."
+                "message": translate_message("An option with this name already exists under the selected parent.")
             }, 400
 
         execute_query(
             """
             INSERT INTO menu_options
-            (option_name, endpoint_name, url, icon_class,
+            (option_name, option_name_ar, endpoint_name, url, icon_class,
             parent_id, display_order, is_active)
-            VALUES (%s, %s, %s, %s, %s, %s, 1)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, 1)
             """,
             (
                 option_name,
+                option_name_ar,
                 endpoint_name,
                 url,
                 icon_class,

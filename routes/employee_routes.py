@@ -1,9 +1,10 @@
 from datetime import datetime
 
-from flask import Response, flash, redirect, render_template, request, url_for
+from flask import Response, flash, redirect, render_template, request, session, url_for
 
 from auth import login_required, permission_required
 from database import execute_query
+from i18n import translate
 from pdf_utils import (
     add_standard_pdf_image_objects,
     escape_pdf_text,
@@ -15,6 +16,12 @@ from pdf_utils import (
 
 
 def register_employee_routes(app):
+    def flash_t(message, category="success"):
+        flash(translate(message, session.get("language", "en")), category)
+
+    def translate_message(message):
+        return translate(message, session.get("language", "en"))
+
     def employee_email_exists(email, exclude_employee_id=None):
         if not email:
             return False
@@ -89,7 +96,7 @@ def register_employee_routes(app):
 
             if employee_email_exists(email):
 
-                flash("Employee email already exists.", "error")
+                flash_t("Employee email already exists.", "error")
 
                 return redirect(
                     url_for("manage_employees")
@@ -111,7 +118,7 @@ def register_employee_routes(app):
 
             if existing_employee:
 
-                flash("Employee code already exists.", "error")
+                flash_t("Employee code already exists.", "error")
 
                 return redirect(
                     url_for("manage_employees")
@@ -152,7 +159,7 @@ def register_employee_routes(app):
                 )
             )
 
-            flash("Employee added successfully.", "success")
+            flash_t("Employee added successfully.", "success")
 
             return redirect(
                 url_for("manage_employees")
@@ -433,7 +440,7 @@ def register_employee_routes(app):
 
         if employee_email_exists(email, employee_id):
 
-            flash("Employee email already exists.", "error")
+            flash_t("Employee email already exists.", "error")
 
             return redirect(
                 url_for("manage_employees")
@@ -459,7 +466,7 @@ def register_employee_routes(app):
 
         if existing_employee:
 
-            flash("Employee code already exists.", "error")
+            flash_t("Employee code already exists.", "error")
 
             return redirect(
                 url_for("manage_employees")
@@ -490,7 +497,7 @@ def register_employee_routes(app):
             )
         )
 
-        flash("Employee updated successfully.", "success")
+        flash_t("Employee updated successfully.", "success")
         return redirect(url_for("manage_employees"))
 
 
@@ -516,7 +523,7 @@ def register_employee_routes(app):
             (employee_id,)
         )
 
-        flash("Employee stopped successfully.", "success")
+        flash_t("Employee stopped successfully.", "success")
         return redirect(url_for("manage_employees"))
 
     @app.route("/admin/employees/add_ajax", methods=["POST"])
@@ -528,7 +535,7 @@ def register_employee_routes(app):
         if employee_email_exists(email):
             return {
                 "success": False,
-                "message": "Employee email already exists."
+                "message": translate_message("Employee email already exists.")
             }, 409
 
         execute_query(

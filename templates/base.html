@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_language }}" dir="{{ current_direction }}">
 <head>
     <meta charset="UTF-8">
-    <title>Doctor Healthcare App</title>
+    <title>{{ t("Clinics Management App") }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% if current_language == 'ar' %}
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/rtl.css') }}">
+    {% endif %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-<body>
+<body class="lang-{{ current_language }}">
 
 <nav class="top-navbar">
 
@@ -43,19 +46,29 @@
             </a>
         {% endif %}
     {% endfor %}
-    <div class="nav-right">
-
 <div class="nav-right">
 
     <div class="nav-user-display">
         <i class="fas fa-user"></i>
-        {{ session.get('full_name', session.get('username', 'User')) }}
+        {{ session.get('full_name', session.get('username', t('User'))) }}
+    </div>
+
+    <div class="nav-language-switch" title="{{ t('Language') }}">
+        <a href="{{ url_for('set_language', language='en') }}"
+           class="{% if current_language == 'en' %}active{% endif %}">
+            {{ t("English") }}
+        </a>
+        <span>|</span>
+        <a href="{{ url_for('set_language', language='ar') }}"
+           class="{% if current_language == 'ar' %}active{% endif %}">
+            {{ t("Arabic") }}
+        </a>
     </div>
 
     <a href="{{ url_for('logout') }}"
        class="nav-logout-btn">
         <i class="fas fa-sign-out-alt"></i>
-        Logout
+        {{ t("Logout") }}
     </a>
 
 </div>
@@ -90,7 +103,7 @@
 
 <main>
     {% block content %}
-    <h1>Doctor Healthcare App</h1>
+    <h1>{{ t("Clinics Management App") }}</h1>
     {% endblock %}
 </main>
 <script>

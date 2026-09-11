@@ -5,17 +5,15 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-calendar-plus"></i> Initiate Schedule</h1>
+        <h1><i class="fas fa-calendar-plus"></i> {{ t('Initiate Schedule') }}</h1>
     </div>
     <div class="details-card">
         <p>
-            This function generates appointment slots for one year starting today,
-            based on active doctor weekly programs.
+            {{ t('This function generates appointment slots for one year starting today, based on active doctor weekly programs.') }}
         </p>
 
         <p>
-            Existing slots are skipped. Slots overlapping active doctor absences
-            are created as unavailable.
+            {{ t('Existing slots are skipped. Slots overlapping active doctor absences are created as unavailable.') }}
         </p>
 
         <form method="POST"
@@ -25,7 +23,7 @@
                     id="generateSlotsButton"
                     class="standard-btn form-save-btn">
                 <i class="fas fa-calendar-plus"></i>
-                Initiate Schedule
+                {{ t('Initiate Schedule') }}
             </button>
 
         </form>
@@ -37,7 +35,7 @@
                 <div class="progress-bar-fill"></div>
             </div>
             <div class="progress-text">
-                Generating appointment slots. Please wait...
+                {{ t('Generating appointment slots. Please wait...') }}
             </div>
         </div>
     </div>
@@ -46,7 +44,7 @@
 
 <script>
 document.getElementById("generateSlotsForm").addEventListener("submit", function(event){
-    if (!confirm("Initiate schedule for one year?")) {
+    if (!confirm({{ t('Initiate schedule for one year?')|tojson }})) {
         event.preventDefault();
         return;
     }
@@ -55,7 +53,7 @@ document.getElementById("generateSlotsForm").addEventListener("submit", function
     const progress = document.getElementById("generateSlotsProgress");
 
     button.disabled = true;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + {{ t('Generating...')|tojson }};
     progress.hidden = false;
 });
 </script>

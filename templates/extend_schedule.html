@@ -5,29 +5,27 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-calendar-plus"></i> Extend Schedule</h1>
+        <h1><i class="fas fa-calendar-plus"></i> {{ t('Extend Schedule') }}</h1>
     </div>
 
     <div class="details-card">
         <p>
-            This function extends appointment slots from the day after the latest
-            existing schedule through the end of the following month.
+            {{ t('This function extends appointment slots from the day after the latest existing schedule through the end of the following month.') }}
         </p>
 
         <p>
-            Existing slots are skipped. Slots overlapping active doctor absences
-            are created as unavailable.
+            {{ t('Existing slots are skipped. Slots overlapping active doctor absences are created as unavailable.') }}
         </p>
 
         <p>
-            Latest existing slot:
-            <strong>{{ latest_slot_date or 'None' }}</strong>
+            {{ t('Latest existing slot:') }}
+            <strong>{{ latest_slot_date or t('None') }}</strong>
         </p>
 
         <p>
-            Extension range:
+            {{ t('Extension range:') }}
             <strong>{{ start_date }}</strong>
-            to
+            {{ t('to') }}
             <strong>{{ end_date }}</strong>
         </p>
 
@@ -38,7 +36,7 @@
                     id="extendScheduleButton"
                     class="standard-btn form-save-btn">
                 <i class="fas fa-calendar-plus"></i>
-                Extend Schedule
+                {{ t('Extend Schedule') }}
             </button>
 
         </form>
@@ -50,7 +48,7 @@
                 <div class="progress-bar-fill"></div>
             </div>
             <div class="progress-text">
-                Generating appointment slots. Please wait...
+                {{ t('Generating appointment slots. Please wait...') }}
             </div>
         </div>
     </div>
@@ -59,7 +57,7 @@
 
 <script>
 document.getElementById("extendScheduleForm").addEventListener("submit", function(event){
-    if (!confirm("Extend schedule for this date range?")) {
+    if (!confirm({{ t('Extend schedule for this date range?')|tojson }})) {
         event.preventDefault();
         return;
     }
@@ -68,7 +66,7 @@ document.getElementById("extendScheduleForm").addEventListener("submit", functio
     const progress = document.getElementById("extendScheduleProgress");
 
     button.disabled = true;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Extending...';
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + {{ t('Extending...')|tojson }};
     progress.hidden = false;
 });
 </script>

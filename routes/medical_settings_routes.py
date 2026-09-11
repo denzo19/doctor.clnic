@@ -1,9 +1,10 @@
 from datetime import datetime
 
-from flask import Response, flash, redirect, render_template, request, url_for
+from flask import Response, flash, redirect, render_template, request, session, url_for
 
 from auth import login_required, permission_required
 from database import execute_query
+from i18n import translate
 from pdf_utils import (
     add_standard_pdf_image_objects,
     escape_pdf_text,
@@ -15,6 +16,12 @@ from pdf_utils import (
 
 
 def register_medical_settings_routes(app):
+    def flash_t(message, category="success"):
+        flash(translate(message, session.get("language", "en")), category)
+
+    def translate_message(message):
+        return translate(message, session.get("language", "en"))
+
     def medical_center_name_exists(center_name, exclude_id=None):
         if exclude_id:
             return execute_query(
@@ -200,19 +207,19 @@ def register_medical_settings_routes(app):
             ) else 0
 
             if not center_name:
-                flash("Medical center name is required.", "error")
+                flash_t("Medical center name is required.", "error")
                 return redirect(url_for("manage_medical_centers"))
 
             if not phone_number:
-                flash("Phone number is required.", "error")
+                flash_t("Phone number is required.", "error")
                 return redirect(url_for("manage_medical_centers"))
 
             if medical_center_name_exists(center_name):
-                flash("Medical center name already exists.", "error")
+                flash_t("Medical center name already exists.", "error")
                 return redirect(url_for("manage_medical_centers"))
 
             if medical_center_phone_exists(phone_number):
-                flash("Medical center phone number already exists.", "error")
+                flash_t("Medical center phone number already exists.", "error")
                 return redirect(url_for("manage_medical_centers"))
 
             execute_query(
@@ -240,7 +247,7 @@ def register_medical_settings_routes(app):
                 )
             )
 
-            flash("Medical center added successfully.", "success")
+            flash_t("Medical center added successfully.", "success")
 
             return redirect(
                 url_for("manage_medical_centers")
@@ -457,25 +464,25 @@ def register_medical_settings_routes(app):
         if not center_name:
             return {
                 "success": False,
-                "message": "Medical center name is required."
+                "message": translate_message("Medical center name is required.")
             }, 400
 
         if not phone_number:
             return {
                 "success": False,
-                "message": "Phone number is required."
+                "message": translate_message("Phone number is required.")
             }, 400
 
         if medical_center_name_exists(center_name):
             return {
                 "success": False,
-                "message": "Medical center name already exists."
+                "message": translate_message("Medical center name already exists.")
             }, 400
 
         if medical_center_phone_exists(phone_number):
             return {
                 "success": False,
-                "message": "Medical center phone number already exists."
+                "message": translate_message("Medical center phone number already exists.")
             }, 400
 
         execute_query(
@@ -503,19 +510,19 @@ def register_medical_settings_routes(app):
         is_active = 1 if request.form.get("is_active") == "1" else 0
 
         if not center_name:
-            flash("Medical center name is required.", "error")
+            flash_t("Medical center name is required.", "error")
             return redirect(url_for("manage_medical_centers"))
 
         if not phone_number:
-            flash("Phone number is required.", "error")
+            flash_t("Phone number is required.", "error")
             return redirect(url_for("manage_medical_centers"))
 
         if medical_center_name_exists(center_name, center_id):
-            flash("Medical center name already exists.", "error")
+            flash_t("Medical center name already exists.", "error")
             return redirect(url_for("manage_medical_centers"))
 
         if medical_center_phone_exists(phone_number, center_id):
-            flash("Medical center phone number already exists.", "error")
+            flash_t("Medical center phone number already exists.", "error")
             return redirect(url_for("manage_medical_centers"))
 
         execute_query(
@@ -536,7 +543,7 @@ def register_medical_settings_routes(app):
             )
         )
 
-        flash("Medical center updated successfully.", "success")
+        flash_t("Medical center updated successfully.", "success")
         return redirect(url_for("manage_medical_centers"))
 
     @app.route("/admin/medical_centers/stop/<int:center_id>", methods=["POST"])
@@ -552,7 +559,7 @@ def register_medical_settings_routes(app):
             (center_id,)
         )
 
-        flash("Medical center stopped successfully.", "success")
+        flash_t("Medical center stopped successfully.", "success")
         return redirect(url_for("manage_medical_centers"))
 
     @app.route("/admin/doctor_center_assignments", methods=["GET", "POST"])
@@ -571,7 +578,7 @@ def register_medical_settings_routes(app):
             existing_assignment = doctor_center_assignment_exists(doctor_id, center_id)
 
             if existing_assignment and existing_assignment["is_active"]:
-                flash("This doctor is already assigned to the selected medical center.", "error")
+                flash_t("This doctor is already assigned to the selected medical center.", "error")
                 return redirect(
                     url_for("manage_doctor_center_assignments")
                 )
@@ -586,7 +593,7 @@ def register_medical_settings_routes(app):
                     (existing_assignment["id"],)
                 )
 
-                flash("Assignment reactivated successfully.", "success")
+                flash_t("Assignment reactivated successfully.", "success")
                 return redirect(
                     url_for("manage_doctor_center_assignments")
                 )
@@ -612,7 +619,7 @@ def register_medical_settings_routes(app):
                 )
             )
 
-            flash("Assignment added successfully.", "success")
+            flash_t("Assignment added successfully.", "success")
 
             return redirect(
                 url_for("manage_doctor_center_assignments")
@@ -622,7 +629,8 @@ def register_medical_settings_routes(app):
         # SEARCH
         # =====================================================
 
-        selected_doctor_id = request.args.get("doctor_id", type=int)
+        search = request.args.get("search", "").strip()
+        like_search = f"%{search}%"
 
         # =====================================================
         # ASSIGNMENTS
@@ -881,7 +889,7 @@ def register_medical_settings_routes(app):
         if existing_assignment and existing_assignment["is_active"]:
             return {
                 "success": False,
-                "message": "This doctor is already assigned to the selected medical center."
+                "message": translate_message("This doctor is already assigned to the selected medical center.")
             }, 400
 
         if existing_assignment:
@@ -919,7 +927,7 @@ def register_medical_settings_routes(app):
         is_active = 1 if request.form.get("is_active") == "1" else 0
 
         if doctor_center_assignment_exists(doctor_id, center_id, assignment_id):
-            flash("This doctor is already assigned to the selected medical center.", "error")
+            flash_t("This doctor is already assigned to the selected medical center.", "error")
             return redirect(url_for("manage_doctor_center_assignments"))
 
         execute_query(
@@ -938,7 +946,7 @@ def register_medical_settings_routes(app):
             )
         )
 
-        flash("Doctor-center assignment updated successfully.", "success")
+        flash_t("Doctor-center assignment updated successfully.", "success")
         return redirect(url_for("manage_doctor_center_assignments"))
 
     @app.route("/admin/doctor_center_assignments/stop/<int:assignment_id>", methods=["POST"])
@@ -954,7 +962,7 @@ def register_medical_settings_routes(app):
             (assignment_id,)
         )
 
-        flash("Doctor-center assignment stopped successfully.", "success")
+        flash_t("Doctor-center assignment stopped successfully.", "success")
         return redirect(url_for("manage_doctor_center_assignments"))
 
     @app.route("/admin/doctor_weekly_programs", methods=["GET", "POST"])
@@ -981,11 +989,11 @@ def register_medical_settings_routes(app):
             )
 
             if start_time >= end_time:
-                flash("Start time must be before end time.", "error")
+                flash_t("Start time must be before end time.", "error")
                 return redirect(url_for("manage_doctor_weekly_programs"))
 
             if doctor_weekly_program_conflicts(doctor_id, day_of_week, start_time, end_time):
-                flash("This doctor's weekly program overlaps with another program on the selected day.", "error")
+                flash_t("This doctor's weekly program overlaps with another program on the selected day.", "error")
                 return redirect(url_for("manage_doctor_weekly_programs"))
 
             execute_query(
@@ -1021,7 +1029,7 @@ def register_medical_settings_routes(app):
                 )
             )
 
-            flash("Weekly program added successfully.", "success")
+            flash_t("Weekly program added successfully.", "success")
 
             return redirect(
                 url_for("manage_doctor_weekly_programs")
@@ -1336,13 +1344,13 @@ def register_medical_settings_routes(app):
         if start_time >= end_time:
             return {
                 "success": False,
-                "message": "Start time must be before end time."
+                "message": translate_message("Start time must be before end time.")
             }, 400
 
         if doctor_weekly_program_conflicts(doctor_id, day_of_week, start_time, end_time):
             return {
                 "success": False,
-                "message": "This doctor's weekly program overlaps with another program on the selected day."
+                "message": translate_message("This doctor's weekly program overlaps with another program on the selected day.")
             }, 400
 
         execute_query(
@@ -1376,11 +1384,11 @@ def register_medical_settings_routes(app):
         is_active = 1 if request.form.get("is_active") == "1" else 0
 
         if start_time >= end_time:
-            flash("Start time must be before end time.", "error")
+            flash_t("Start time must be before end time.", "error")
             return redirect(url_for("manage_doctor_weekly_programs"))
 
         if is_active and doctor_weekly_program_conflicts(doctor_id, day_of_week, start_time, end_time, program_id):
-            flash("This doctor's weekly program overlaps with another program on the selected day.", "error")
+            flash_t("This doctor's weekly program overlaps with another program on the selected day.", "error")
             return redirect(url_for("manage_doctor_weekly_programs"))
 
         execute_query(
@@ -1407,7 +1415,7 @@ def register_medical_settings_routes(app):
             )
         )
 
-        flash("Doctor weekly program updated successfully.", "success")
+        flash_t("Doctor weekly program updated successfully.", "success")
         return redirect(url_for("manage_doctor_weekly_programs"))
 
     @app.route("/admin/doctor_weekly_programs/stop/<int:program_id>", methods=["POST"])
@@ -1423,7 +1431,7 @@ def register_medical_settings_routes(app):
             (program_id,)
         )
 
-        flash("Doctor weekly program stopped successfully.", "success")
+        flash_t("Doctor weekly program stopped successfully.", "success")
         return redirect(url_for("manage_doctor_weekly_programs"))
 
     @app.route("/admin/doctor_assigned_centers/<int:doctor_id>")
@@ -1455,7 +1463,7 @@ def register_medical_settings_routes(app):
             validation_error = absence_values_error(absence_values)
 
             if validation_error:
-                flash(validation_error, "error")
+                flash_t(validation_error, "error")
                 return redirect(url_for("manage_doctor_absences"))
 
             execute_query(
@@ -1477,7 +1485,7 @@ def register_medical_settings_routes(app):
                 )
             )
 
-            flash("Doctor absence added successfully.", "success")
+            flash_t("Doctor absence added successfully.", "success")
             return redirect(url_for("manage_doctor_absences"))
 
         search = request.args.get("search", "").strip()
@@ -1730,7 +1738,7 @@ def register_medical_settings_routes(app):
         if validation_error:
             return {
                 "success": False,
-                "message": validation_error
+                "message": translate_message(validation_error)
             }, 400
 
         execute_query(
@@ -1762,7 +1770,7 @@ def register_medical_settings_routes(app):
         validation_error = absence_values_error(absence_values)
 
         if validation_error:
-            flash(validation_error, "error")
+            flash_t(validation_error, "error")
             return redirect(url_for("manage_doctor_absences"))
 
         execute_query(
@@ -1793,7 +1801,7 @@ def register_medical_settings_routes(app):
             )
         )
 
-        flash("Doctor absence updated successfully.", "success")
+        flash_t("Doctor absence updated successfully.", "success")
         return redirect(url_for("manage_doctor_absences"))
 
     @app.route("/admin/doctor_absences/stop/<int:absence_id>", methods=["POST"])
@@ -1809,5 +1817,5 @@ def register_medical_settings_routes(app):
             (absence_id,)
         )
 
-        flash("Doctor absence stopped successfully.", "success")
+        flash_t("Doctor absence stopped successfully.", "success")
         return redirect(url_for("manage_doctor_absences"))

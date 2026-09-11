@@ -5,7 +5,7 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-user-md"></i> Manage Doctor-Center Assignments</h1>
+        <h1><i class="fas fa-user-md"></i> {{ t('Manage Doctor-Center Assignments') }}</h1>
     </div>
     <div class="details-card">
         <form method="GET"
@@ -17,21 +17,21 @@
                    name="search"
                    value="{{ search or '' }}"
                    class="toolbar-search-input"
-                   placeholder="Search assignment">
+                   placeholder="{{ t('Search assignment') }}">
 
-            <button type="submit" class="toolbar-btn search-btn" title="Search">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
             <a href="{{ url_for('manage_doctor_center_assignments') }}"
                class="toolbar-btn clear-btn"
-               title="Clear">
+               title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </a>
 
             <button type="button"
                     class="toolbar-btn add-btn"
-                    title="Add Assignment"
+                    title="{{ t('Add Assignment') }}"
                     onclick="openAddAssignmentModal()">
                 <i class="fas fa-plus"></i>
             </button>
@@ -39,7 +39,7 @@
             <button type="button"
                     id="doctorCenterAssignmentReportBtn"
                     class="toolbar-btn search-btn"
-                    title="Doctor-Center Assignments Report">
+                    title="{{ t('Doctor-Center Assignments Report') }}">
                 <i class="fas fa-file-pdf"></i>
             </button>
 
@@ -50,11 +50,11 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>Doctor</th>
-                    <th>Specialty</th>
-                    <th>Medical Center</th>
-                    <th>Active</th>
-                    <th class="actions-header">Actions</th>
+                    <th>{{ t('Doctor') }}</th>
+                    <th>{{ t('Specialty') }}</th>
+                    <th>{{ t('Medical Center') }}</th>
+                    <th>{{ t('Active') }}</th>
+                    <th class="actions-header">{{ t('Actions') }}</th>
                 </tr>
             </thead>
 
@@ -71,13 +71,13 @@
                     <td>{{ item.doctor_name }}</td>
                     <td>{{ item.specialty or '' }}</td>
                     <td>{{ item.center_name }}</td>
-                    <td>{{ 'Yes' if item.is_active else 'No' }}</td>
+                    <td>{{ t('Yes') if item.is_active else t('No') }}</td>
 
                     <td class="action-cell" onclick="event.stopPropagation();">
 
                         <button type="button"
                                 class="table-action edit-action"
-                                title="Edit"
+                                title="{{ t('Edit') }}"
                                 onclick="openAssignmentModal(
                                     '{{ item.id }}',
                                     '{{ item.doctor_id }}',
@@ -91,15 +91,15 @@
                             <form method="POST"
                                   action="{{ url_for('stop_doctor_center_assignment', assignment_id=item.id) }}"
                                   class="inline-delete-form"
-                                  onsubmit="return confirm('Stop this doctor-center assignment?');">
+                                  onsubmit="return confirm({{ t('Stop this doctor-center assignment?')|tojson }});">
                                 <button type="submit"
                                         class="table-action delete-action"
-                                        title="Stop Assignment">
+                                        title="{{ t('Stop Assignment') }}">
                                     <i class="fas fa-ban"></i>
                                 </button>
                             </form>
                         {% else %}
-                            <span class="locked-label" title="Inactive assignment">
+                            <span class="locked-label" title="{{ t('Inactive assignment') }}">
                                 <i class="fas fa-lock"></i>
                             </span>
                         {% endif %}
@@ -109,7 +109,7 @@
                 {% else %}
                 <tr>
                     <td colspan="5" class="empty-row">
-                        No doctor-center assignments found.
+                        {{ t('No doctor-center assignments found.') }}
                     </td>
                 </tr>
                 {% endfor %}
@@ -125,7 +125,7 @@
     <div class="modal-content">
 
         <div class="modal-header">
-            <h2><i class="fas fa-pen"></i> Doctor-Center Assignment</h2>
+            <h2><i class="fas fa-pen"></i> {{ t('Doctor-Center Assignment') }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeAssignmentModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -136,14 +136,14 @@
             <div class="form-grid two-column-grid">
 
                 <div class="form-group">
-                    <label>Doctor</label>
+                    <label>{{ t('Doctor') }}</label>
                     <div class="searchable-select"
                          data-searchable-select
-                         data-required-message="Please choose a doctor from the list.">
+                         data-required-message="{{ t('Please choose a doctor from the list.') }}">
                         <input type="text"
                                id="modal_doctor_search"
                                class="searchable-select-input"
-                               placeholder="Choose doctor"
+                               placeholder="{{ t('Choose doctor') }}"
                                autocomplete="off"
                                required>
                         <input type="hidden"
@@ -160,21 +160,21 @@
                                 </button>
                             {% endfor %}
                             <div class="searchable-select-empty">
-                                No doctors found.
+                                {{ t('No doctors found.') }}
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Medical Center</label>
+                    <label>{{ t('Medical Center') }}</label>
                     <div class="searchable-select"
                          data-searchable-select
-                         data-required-message="Please choose a medical center from the list.">
+                         data-required-message="{{ t('Please choose a medical center from the list.') }}">
                         <input type="text"
                                id="modal_center_search"
                                class="searchable-select-input"
-                               placeholder="Choose center"
+                               placeholder="{{ t('Choose center') }}"
                                autocomplete="off"
                                required>
                         <input type="hidden"
@@ -191,17 +191,17 @@
                                 </button>
                             {% endfor %}
                             <div class="searchable-select-empty">
-                                No medical centers found.
+                                {{ t('No medical centers found.') }}
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Active</label>
+                    <label>{{ t('Active') }}</label>
                     <select id="modal_is_active" name="is_active">
-                        <option value="1">Yes</option>
-                        <option value="0">No</option>
+                        <option value="1">{{ t('Yes') }}</option>
+                        <option value="0">{{ t('No') }}</option>
                     </select>
                 </div>
 
@@ -209,13 +209,13 @@
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t('Save') }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeAssignmentModal()">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t('Cancel') }}
                 </button>
             </div>
 
@@ -227,7 +227,7 @@
     <div class="modal-content">
 
         <div class="modal-header">
-            <h2><i class="fas fa-plus"></i> Add Assignment</h2>
+            <h2><i class="fas fa-plus"></i> {{ t('Add Assignment') }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeAddAssignmentModal(true)">
                 <i class="fas fa-times"></i>
             </button>
@@ -241,13 +241,13 @@
             <div class="form-grid two-column-grid">
 
                 <div class="form-group">
-                    <label>Doctor</label>
+                    <label>{{ t('Doctor') }}</label>
                     <div class="searchable-select"
                          data-searchable-select
-                         data-required-message="Please choose a doctor from the list.">
+                         data-required-message="{{ t('Please choose a doctor from the list.') }}">
                         <input type="text"
                                class="searchable-select-input"
-                               placeholder="Choose doctor"
+                               placeholder="{{ t('Choose doctor') }}"
                                autocomplete="off"
                                required>
                         <input type="hidden"
@@ -263,20 +263,20 @@
                                 </button>
                             {% endfor %}
                             <div class="searchable-select-empty">
-                                No doctors found.
+                                {{ t('No doctors found.') }}
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Medical Center</label>
+                    <label>{{ t('Medical Center') }}</label>
                     <div class="searchable-select"
                          data-searchable-select
-                         data-required-message="Please choose a medical center from the list.">
+                         data-required-message="{{ t('Please choose a medical center from the list.') }}">
                         <input type="text"
                                class="searchable-select-input"
-                               placeholder="Choose center"
+                               placeholder="{{ t('Choose center') }}"
                                autocomplete="off"
                                required>
                         <input type="hidden"
@@ -292,7 +292,7 @@
                                 </button>
                             {% endfor %}
                             <div class="searchable-select-empty">
-                                No medical centers found.
+                                {{ t('No medical centers found.') }}
                             </div>
                         </div>
                     </div>
@@ -302,19 +302,19 @@
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t('Save') }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-save-btn"
                         onclick="saveAssignmentAndNext()">
-                    <i class="fas fa-forward"></i> Next
+                    <i class="fas fa-forward"></i> {{ t('Next') }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeAddAssignmentModal(true)">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t('Cancel') }}
                 </button>
             </div>
 
@@ -340,6 +340,8 @@ document.addEventListener("DOMContentLoaded", function(){
         });
     }
 });
+
+const errorSavingAssignmentMessage = {{ t('Error saving assignment.')|tojson }};
 
 function setSearchableSelectValue(valueInputId, value) {
     const valueInput = document.getElementById(valueInputId);
@@ -497,7 +499,7 @@ function saveAssignmentAndNext() {
         const data = result.data;
 
         if (!result.ok || !data.success) {
-            alert(data.message || "Error saving assignment.");
+            alert(data.message || errorSavingAssignmentMessage);
             return;
         }
 
@@ -506,7 +508,7 @@ function saveAssignmentAndNext() {
         form.querySelector(".searchable-select-input").focus();
     })
     .catch(error => {
-        alert("Error saving assignment.");
+        alert(errorSavingAssignmentMessage);
         console.error(error);
     });
 }

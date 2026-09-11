@@ -5,7 +5,7 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-prescription-bottle-alt"></i> Prescription</h1>
+        <h1><i class="fas fa-prescription-bottle-alt"></i> {{ t("Prescription") }}</h1>
     </div>
 
     <div class="details-card">
@@ -19,13 +19,13 @@
 
             <div class="prescription-order-header-grid">
                 <div class="form-group">
-                    <label>Patient</label>
+                    <label>{{ t("Patient") }}</label>
                     <div class="searchable-select"
                          data-searchable-select
-                         data-required-message="Please choose a patient from the list.">
+                         data-required-message="{{ t('Please choose a patient from the list.') }}">
                         <input type="text"
                                class="searchable-select-input"
-                               placeholder="Choose patient"
+                               placeholder="{{ t('Choose patient') }}"
                                autocomplete="off"
                                required
                                value="{% for patient in patients %}{% if prescription and prescription.patient_id == patient.id %}{{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}{% endif %}{% endfor %}">
@@ -44,20 +44,20 @@
                                 </button>
                             {% endfor %}
                             <div class="searchable-select-empty">
-                                No patients found.
+                                {{ t("No patients found.") }}
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Doctor</label>
+                    <label>{{ t("Doctor") }}</label>
                     <div class="searchable-select"
                          data-searchable-select
-                         data-required-message="Please choose a doctor from the list.">
+                         data-required-message="{{ t('Please choose a doctor from the list.') }}">
                         <input type="text"
                                class="searchable-select-input"
-                               placeholder="Choose doctor"
+                               placeholder="{{ t('Choose doctor') }}"
                                autocomplete="off"
                                required
                                value="{% for doctor in doctors %}{% if selected_doctor_id and selected_doctor_id == doctor.id %}{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}{% endif %}{% endfor %}">
@@ -76,7 +76,7 @@
                                 </button>
                             {% endfor %}
                             <div class="searchable-select-empty">
-                                No doctors found.
+                                {{ t("No doctors found.") }}
                             </div>
                         </div>
                     </div>
@@ -86,12 +86,12 @@
                     <button type="button"
                             class="standard-btn form-save-btn"
                             onclick="openMedicationModal()">
-                        <i class="fas fa-plus"></i> Add Medication
+                        <i class="fas fa-plus"></i> {{ t("Add Medication") }}
                     </button>
 
                     <a href="{% if return_to_patient and prescription and prescription.patient_id %}{{ url_for('patient_details', patient_id=prescription.patient_id, doctor_id=selected_doctor_id) }}{% else %}{{ url_for('manage_prescriptions') }}{% endif %}"
                        class="standard-btn form-cancel-btn">
-                        <i class="fas fa-ban"></i> Cancel
+                        <i class="fas fa-ban"></i> {{ t("Cancel") }}
                     </a>
                 </div>
             </div>
@@ -100,18 +100,18 @@
                 <table class="app-table">
                     <thead>
                         <tr>
-                            <th>Medication</th>
-                            <th>Dose</th>
-                            <th>Frequency</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Notes</th>
-                            <th class="actions-header">Actions</th>
+                            <th>{{ t("Medication") }}</th>
+                            <th>{{ t("Dose") }}</th>
+                            <th>{{ t("Frequency") }}</th>
+                            <th>{{ t("Start Date") }}</th>
+                            <th>{{ t("End Date") }}</th>
+                            <th>{{ t("Notes") }}</th>
+                            <th class="actions-header">{{ t("Actions") }}</th>
                         </tr>
                     </thead>
                     <tbody id="temporaryMedicationsBody">
                         <tr id="emptyTemporaryMedicationsRow">
-                            <td colspan="7" class="empty-row">No medications added.</td>
+                            <td colspan="7" class="empty-row">{{ t("No medications added.") }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -122,14 +122,14 @@
                         name="save_type"
                         value="draft"
                         class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save Draft
+                    <i class="fas fa-save"></i> {{ t("Save Draft") }}
                 </button>
 
                 <button type="submit"
                         name="save_type"
                         value="final"
                         class="standard-btn primary-btn">
-                    <i class="fas fa-lock"></i> Final Save
+                    <i class="fas fa-lock"></i> {{ t("Final Save") }}
                 </button>
 
                 {% if show_final_print_button %}
@@ -138,7 +138,7 @@
                             value="final_print"
                             formtarget="_blank"
                             class="standard-btn primary-btn">
-                        <i class="fas fa-print"></i> Print
+                        <i class="fas fa-print"></i> {{ t("Print") }}
                     </button>
                 {% endif %}
             </div>
@@ -150,7 +150,7 @@
 <div id="medicationModal" class="modal">
     <div class="modal-content large-modal">
         <div class="modal-header">
-            <h2><i class="fas fa-prescription-bottle-alt"></i> Choose Medication</h2>
+            <h2><i class="fas fa-prescription-bottle-alt"></i> {{ t("Choose Medication") }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeMedicationModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -159,9 +159,9 @@
         <div class="modal-form">
             <div class="form-grid">
                 <div class="form-group form-group-wide">
-                    <label>Medication</label>
+                    <label>{{ t("Medication") }}</label>
                     <select id="modal_medication_id" required>
-                        <option value="">Choose medication</option>
+                        <option value="">{{ t("Choose medication") }}</option>
                         {% for medication in medications %}
                             <option value="{{ medication.id }}">
                                 {{ medication.medication_name }}{% if medication.strength %} - {{ medication.strength }}{% endif %}{% if medication.dosage_form %} - {{ medication.dosage_form }}{% endif %}
@@ -171,27 +171,27 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Dose</label>
-                    <input type="text" id="modal_dose" placeholder="Dose">
+                    <label>{{ t("Dose") }}</label>
+                    <input type="text" id="modal_dose" placeholder="{{ t('Dose') }}">
                 </div>
 
                 <div class="form-group">
-                    <label>Frequency</label>
-                    <input type="text" id="modal_frequency" placeholder="Frequency">
+                    <label>{{ t("Frequency") }}</label>
+                    <input type="text" id="modal_frequency" placeholder="{{ t('Frequency') }}">
                 </div>
 
                 <div class="form-group">
-                    <label>Start Date</label>
+                    <label>{{ t("Start Date") }}</label>
                     <input type="date" id="modal_start_date" value="{{ default_start_date }}">
                 </div>
 
                 <div class="form-group">
-                    <label>End Date</label>
+                    <label>{{ t("End Date") }}</label>
                     <input type="date" id="modal_end_date">
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Notes</label>
+                    <label>{{ t("Notes") }}</label>
                     <textarea id="modal_notes"></textarea>
                 </div>
             </div>
@@ -200,13 +200,13 @@
                 <button type="button"
                         class="standard-btn form-save-btn"
                         onclick="saveTemporaryMedication()">
-                    <i class="fas fa-forward"></i> Next
+                    <i class="fas fa-forward"></i> {{ t("Next") }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeMedicationModal()">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t("Cancel") }}
                 </button>
             </div>
         </div>
@@ -242,6 +242,13 @@
 <script>
 const medications = {{ medications|tojson }};
 const initialTemporaryMedications = {{ prescription['items']|tojson if prescription else '[]' }};
+const prescriptionOrderText = {
+    noMedicationsAdded: {{ t("No medications added.")|tojson }},
+    edit: {{ t("Edit")|tojson }},
+    delete: {{ t("Delete")|tojson }},
+    medicationAlreadyAdded: {{ t("This medication is already added.")|tojson }},
+    addAtLeastOneMedication: {{ t("Add at least one medication.")|tojson }}
+};
 const medicationLookup = {};
 let temporaryMedications = initialTemporaryMedications.map(function(item){
     return {
@@ -361,7 +368,7 @@ function renderTemporaryMedications() {
     body.innerHTML = "";
 
     if (temporaryMedications.length === 0) {
-        body.innerHTML = '<tr id="emptyTemporaryMedicationsRow"><td colspan="7" class="empty-row">No medications added.</td></tr>';
+        body.innerHTML = '<tr id="emptyTemporaryMedicationsRow"><td colspan="7" class="empty-row">' + prescriptionOrderText.noMedicationsAdded + '</td></tr>';
         return;
     }
 
@@ -394,7 +401,7 @@ function renderTemporaryMedications() {
 
         editButton.type = "button";
         editButton.className = "table-action edit-action";
-        editButton.title = "Edit";
+        editButton.title = prescriptionOrderText.edit;
         editButton.innerHTML = '<i class="fas fa-pen"></i>';
         editButton.addEventListener("click", function(){
             editTemporaryMedication(index);
@@ -402,7 +409,7 @@ function renderTemporaryMedications() {
 
         deleteButton.type = "button";
         deleteButton.className = "table-action delete-action";
-        deleteButton.title = "Delete";
+        deleteButton.title = prescriptionOrderText.delete;
         deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
         deleteButton.addEventListener("click", function(){
             deleteTemporaryMedication(index);
@@ -454,7 +461,7 @@ function saveTemporaryMedication() {
     });
 
     if (duplicateIndex !== -1) {
-        alert("This medication is already added.");
+        alert(prescriptionOrderText.medicationAlreadyAdded);
         return;
     }
 
@@ -490,7 +497,7 @@ function deleteTemporaryMedication(index) {
 document.getElementById("prescriptionOrderForm").addEventListener("submit", function(event){
     if (temporaryMedications.length === 0) {
         event.preventDefault();
-        alert("Add at least one medication.");
+        alert(prescriptionOrderText.addAtLeastOneMedication);
     }
 });
 

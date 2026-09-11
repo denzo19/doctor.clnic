@@ -3,16 +3,20 @@ import mimetypes
 import os
 import uuid
 
-from flask import flash, redirect, render_template, request, url_for
+from flask import flash, redirect, render_template, request, session, url_for
 from werkzeug.utils import secure_filename
 
 from auth import login_required, permission_required
+from i18n import translate
 
 
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "bmp", "tif", "tiff"}
 
 
 def register_id_card_routes(app):
+    def flash_t(message, category="success"):
+        flash(translate(message, session.get("language", "en")), category)
+
     def allowed_image(filename):
         return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
 
@@ -90,27 +94,27 @@ def register_id_card_routes(app):
             image_file = request.files.get("id_card_image")
 
             if not image_file or not image_file.filename:
-                flash("Choose an image first.", "error")
+                flash_t("Choose an image first.", "error")
                 return redirect(url_for("id_card"))
 
             if not allowed_image(image_file.filename):
-                flash("Upload a valid image file.", "error")
+                flash_t("Upload a valid image file.", "error")
                 return redirect(url_for("id_card"))
 
             try:
                 absolute_path, image_path = save_uploaded_image(image_file)
             except ValueError as error:
-                flash(str(error), "error")
+                flash_t(str(error), "error")
                 return redirect(url_for("id_card"))
 
             extracted_text, warning = extract_visible_text_with_openai(absolute_path)
 
             if warning:
-                flash(warning, "error")
+                flash_t(warning, "error")
             elif extracted_text:
-                flash("Image text extracted by OpenAI.", "success")
+                flash_t("Image text extracted by OpenAI.", "success")
             else:
-                flash("No readable text was extracted from this image.", "error")
+                flash_t("No readable text was extracted from this image.", "error")
 
         return render_template(
             "id_card.html",

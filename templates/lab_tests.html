@@ -5,7 +5,7 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-vials"></i> Lab Tests</h1>
+        <h1><i class="fas fa-vials"></i> {{ t("Lab Tests") }}</h1>
     </div>
 
     <div class="details-card">
@@ -14,10 +14,10 @@
                     id="labTestSearchMode"
                     class="toolbar-search-input">
                 <option value="category" {% if search_mode == 'category' %}selected{% endif %}>
-                    Category Search
+                    {{ t("Category Search") }}
                 </option>
                 <option value="text" {% if search_mode == 'text' %}selected{% endif %}>
-                    Text Search
+                    {{ t("Text Search") }}
                 </option>
             </select>
 
@@ -27,7 +27,7 @@
                  {% if search_mode != 'category' %}hidden{% endif %}>
                 <input type="text"
                        class="toolbar-search-input searchable-select-input"
-                       placeholder="Choose category"
+                       placeholder="{{ t('Choose category') }}"
                        autocomplete="off"
                        value="{% for category in categories %}{% if selected_category == category.category %}{{ category.category }}{% endif %}{% endfor %}">
                 <input type="hidden"
@@ -44,7 +44,7 @@
                         </button>
                     {% endfor %}
                     <div class="searchable-select-empty">
-                        No categories found.
+                        {{ t("No categories found.") }}
                     </div>
                 </div>
             </div>
@@ -55,27 +55,27 @@
                        name="search"
                        value="{{ search or '' }}"
                        class="toolbar-search-input"
-                       placeholder="Search text">
+                       placeholder="{{ t('Search text') }}">
             </div>
 
-            <button type="submit" class="toolbar-btn search-btn" title="Search">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
-            <a href="{{ url_for('lab_tests_page') }}" class="toolbar-btn clear-btn" title="Clear">
+            <a href="{{ url_for('lab_tests_page') }}" class="toolbar-btn clear-btn" title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </a>
 
             <button type="button"
                     class="toolbar-btn add-btn"
-                    title="Add Lab Test"
+                    title="{{ t('Add Lab Test') }}"
                     onclick="openAddLabTestModal()">
                 <i class="fas fa-plus"></i>
             </button>
 
             <a href="{{ url_for('lab_tests_report', search_mode=search_mode, category=selected_category, search=search) }}"
                class="toolbar-btn search-btn"
-               title="Lab Tests Report"
+               title="{{ t('Lab Tests Report') }}"
                target="_blank">
                 <i class="fas fa-file-pdf"></i>
             </a>
@@ -86,14 +86,14 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Test Name</th>
-                    <th>LOINC Code</th>
-                    <th>Unit</th>
-                    <th>Normal Low</th>
-                    <th>Normal High</th>
-                    <th>Category</th>
-                    <th class="actions-header">Actions</th>
+                    <th>{{ t("ID") }}</th>
+                    <th>{{ t("Test Name") }}</th>
+                    <th>{{ t("LOINC Code") }}</th>
+                    <th>{{ t("Unit") }}</th>
+                    <th>{{ t("Normal Low") }}</th>
+                    <th>{{ t("Normal High") }}</th>
+                    <th>{{ t("Category") }}</th>
+                    <th class="actions-header">{{ t("Actions") }}</th>
                 </tr>
             </thead>
 
@@ -111,7 +111,7 @@
                     <td class="action-cell" onclick="event.stopPropagation();">
                         <button type="button"
                                 class="table-action edit-action"
-                                title="Edit"
+                                title="{{ t('Edit') }}"
                                 onclick='openLabTestModal({{ test|tojson }})'>
                             <i class="fas fa-pen"></i>
                         </button>
@@ -119,10 +119,10 @@
                         <form method="POST"
                               action="{{ url_for('delete_lab_test', test_id=test.id) }}"
                               class="inline-delete-form"
-                              onsubmit="return confirm('Delete this lab test?');">
+                              onsubmit="return confirm({{ t('Delete this lab test?')|tojson }});">
                             <button type="submit"
                                     class="table-action delete-action"
-                                    title="Delete">
+                                    title="{{ t('Delete') }}">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </form>
@@ -130,7 +130,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="8" class="empty-row">No lab tests found.</td>
+                    <td colspan="8" class="empty-row">{{ t("No lab tests found.") }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -143,7 +143,7 @@
     <div class="modal-content">
 
         <div class="modal-header">
-            <h2><i class="fas fa-pen"></i> Lab Test Information</h2>
+            <h2><i class="fas fa-pen"></i> {{ t("Lab Test Information") }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeLabTestModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -152,50 +152,50 @@
         <form id="labTestEditForm" method="POST" class="modal-form">
             <div class="form-grid two-column-grid">
                 <div class="form-group form-group-wide">
-                    <label>Test Name</label>
+                    <label>{{ t("Test Name") }}</label>
                     <input type="text" id="modal_test_name" name="test_name" required>
                 </div>
 
                 <div class="form-group">
-                    <label>LOINC Code</label>
+                    <label>{{ t("LOINC Code") }}</label>
                     <input type="text" id="modal_loinc_code" name="loinc_code">
                 </div>
 
                 <div class="form-group">
-                    <label>Unit</label>
+                    <label>{{ t("Unit") }}</label>
                     <input type="text" id="modal_unit" name="unit">
                 </div>
 
                 <div class="form-group">
-                    <label>Normal Low</label>
+                    <label>{{ t("Normal Low") }}</label>
                     <input type="number" id="modal_normal_low" name="normal_low" step="0.01">
                 </div>
 
                 <div class="form-group">
-                    <label>Normal High</label>
+                    <label>{{ t("Normal High") }}</label>
                     <input type="number" id="modal_normal_high" name="normal_high" step="0.01">
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Category</label>
+                    <label>{{ t("Category") }}</label>
                     <input type="text" id="modal_category" name="category">
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Group</label>
+                    <label>{{ t("Group") }}</label>
                     <input type="text" id="modal_group" name="group">
                 </div>
             </div>
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t("Save") }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeLabTestModal()">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t("Cancel") }}
                 </button>
             </div>
         </form>
@@ -206,7 +206,7 @@
     <div class="modal-content">
 
         <div class="modal-header">
-            <h2><i class="fas fa-plus"></i> Add Lab Test</h2>
+            <h2><i class="fas fa-plus"></i> {{ t("Add Lab Test") }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeAddLabTestModal(true)">
                 <i class="fas fa-times"></i>
             </button>
@@ -218,56 +218,56 @@
               class="modal-form">
             <div class="form-grid two-column-grid">
                 <div class="form-group form-group-wide">
-                    <label>Test Name</label>
+                    <label>{{ t("Test Name") }}</label>
                     <input type="text" name="test_name" required>
                 </div>
 
                 <div class="form-group">
-                    <label>LOINC Code</label>
+                    <label>{{ t("LOINC Code") }}</label>
                     <input type="text" name="loinc_code">
                 </div>
 
                 <div class="form-group">
-                    <label>Unit</label>
+                    <label>{{ t("Unit") }}</label>
                     <input type="text" name="unit">
                 </div>
 
                 <div class="form-group">
-                    <label>Normal Low</label>
+                    <label>{{ t("Normal Low") }}</label>
                     <input type="number" name="normal_low" step="0.01">
                 </div>
 
                 <div class="form-group">
-                    <label>Normal High</label>
+                    <label>{{ t("Normal High") }}</label>
                     <input type="number" name="normal_high" step="0.01">
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Category</label>
+                    <label>{{ t("Category") }}</label>
                     <input type="text" name="category">
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Group</label>
+                    <label>{{ t("Group") }}</label>
                     <input type="text" name="group">
                 </div>
             </div>
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t("Save") }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-save-btn"
                         onclick="saveLabTestAndNext()">
-                    <i class="fas fa-forward"></i> Next
+                    <i class="fas fa-forward"></i> {{ t("Next") }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeAddLabTestModal(true)">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t("Cancel") }}
                 </button>
             </div>
         </form>
@@ -275,6 +275,10 @@
 </div>
 
 <script>
+const labTestsPageText = {
+    errorSavingLabTest: {{ t("Error saving lab test.")|tojson }}
+};
+
 function emptyValue(value) {
     return value === null || value === undefined ? "" : value;
 }
@@ -326,11 +330,11 @@ function saveLabTestAndNext() {
             form.reset();
             form.querySelector("input[name='test_name']").focus();
         } else {
-            alert(data.message || "Error saving lab test.");
+            alert(data.message || labTestsPageText.errorSavingLabTest);
         }
     })
     .catch(error => {
-        alert("Error saving lab test.");
+        alert(labTestsPageText.errorSavingLabTest);
         console.error(error);
     });
 }

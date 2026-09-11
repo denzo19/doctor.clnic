@@ -2,23 +2,23 @@
 
 {% block content %}
 
-<section class="app-page">
+<section class="app-page patients-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-hospital-user"></i> Patients</h1>
+        <h1><i class="fas fa-hospital-user"></i> {{ t("Patients") }}</h1>
     </div>
     <div class="details-card">
 
         <form method="GET" action="{{ url_for('patients') }}" class="toolbar-form">
             <div class="searchable-select"
                  data-searchable-select
-                 data-required-message="Please choose a patient from the list.">
+                 data-required-message="{{ t('Please choose a patient from the list.') }}">
                 <input type="text"
                        id="patientSearch"
                        class="toolbar-search-input searchable-select-input"
-                       placeholder="Choose patient"
+                       placeholder="{{ t('Choose patient') }}"
                        autocomplete="off"
-                       value="{% for item in patient_options %}{% if selected_patient_id|string == item.id|string %}{{ item.patient_code }} - {{ item.first_name }} {{ item.middle_name or '' }} {{ item.last_name }}{% if item.phone_number %} - {{ item.phone_number }}{% endif %}{% endif %}{% endfor %}">
+                       value="{% for item in patient_options %}{% if selected_patient_id|string == item.id|string %}{{ item.patient_code }} - {{ item.first_name }}{% if item.middle_name %} {{ item.middle_name }}{% endif %} {{ item.last_name }}{% if item.phone_number %} - {{ item.phone_number }}{% endif %}{% endif %}{% endfor %}">
                 <input type="hidden"
                        name="patient_id"
                        class="searchable-select-value"
@@ -26,9 +26,7 @@
                 <div class="searchable-select-options">
                     {% for item in patient_options %}
                         {% set patient_label %}
-                            {{ item.patient_code }} -
-                            {{ item.first_name }} {{ item.middle_name or '' }} {{ item.last_name }}
-                            {% if item.phone_number %} - {{ item.phone_number }}{% endif %}
+                            {{ item.patient_code }} - {{ item.first_name }}{% if item.middle_name %} {{ item.middle_name }}{% endif %} {{ item.last_name }}{% if item.phone_number %} - {{ item.phone_number }}{% endif %}
                         {% endset %}
                         <button type="button"
                                 class="searchable-select-option"
@@ -38,28 +36,28 @@
                         </button>
                     {% endfor %}
                     <div class="searchable-select-empty">
-                        No patients found.
+                        {{ t("No patients found.") }}
                     </div>
                 </div>
             </div>
 
-            <button type="submit" class="toolbar-btn search-btn" title="Search">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
-            <a href="{{ url_for('patients') }}" class="toolbar-btn clear-btn" title="Clear">
+            <a href="{{ url_for('patients') }}" class="toolbar-btn clear-btn" title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </a>
             <button type="button"
                     class="toolbar-btn add-btn"
-                    title="Add Patient"
+                    title="{{ t('Add Patient') }}"
                     onclick="openAddPatientModal()">
                 <i class="fas fa-plus"></i>
             </button>
             <button type="button"
                     id="patientReportBtn"
                     class="toolbar-btn search-btn"
-                    title="Patients Report">
+                    title="{{ t('Patients Report') }}">
                 <i class="fas fa-file-pdf"></i>
             </button>
         </form>
@@ -71,13 +69,13 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>Code</th>
-                    <th>Full Name</th>
-                    <th>DOB</th>
-                    <th>Gender</th>
-                    <th>Phone</th>
-                    <th>Active</th>
-                    <th class="actions-header">Actions</th>
+                    <th>{{ t("Code") }}</th>
+                    <th>{{ t("Full Name") }}</th>
+                    <th>{{ t("DOB") }}</th>
+                    <th>{{ t("Gender") }}</th>
+                    <th>{{ t("Phone") }}</th>
+                    <th>{{ t("Active") }}</th>
+                    <th class="actions-header">{{ t("Actions") }}</th>
                 </tr>
             </thead>
 
@@ -101,13 +99,13 @@
                     <td>{{ patient.patient_code }}</td>
                     <td>{{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}</td>
                     <td>{{ patient.date_of_birth or '' }}</td>
-                    <td>{{ patient.gender or '' }}</td>
+                    <td>{{ t(patient.gender) if patient.gender else '' }}</td>
                     <td>{{ patient.phone_number or '' }}</td>
                     <td>
                         {% if patient.is_active %}
-                            Yes
+                            {{ t("Yes") }}
                         {% else %}
-                            No
+                            {{ t("No") }}
                         {% endif %}
                     </td>
                 
@@ -115,7 +113,7 @@
 
                         <button type="button"
                                 class="table-action edit-action"
-                                title="Edit"
+                                title="{{ t('Edit') }}"
                                 onclick="openPatientModal(
                                     '{{ patient.id }}',
                                     '{{ patient.patient_code }}',
@@ -136,15 +134,15 @@
                             <form method="POST"
                                   action="{{ url_for('stop_patient', patient_id=patient.id) }}"
                                   class="inline-delete-form"
-                                  onsubmit="return confirm('Stop this patient?');">
+                                  onsubmit="return confirm({{ t('Stop this patient?')|tojson }});">
                                 <button type="submit"
                                         class="table-action delete-action"
-                                        title="Stop Patient">
+                                        title="{{ t('Stop Patient') }}">
                                     <i class="fas fa-ban"></i>
                                 </button>
                             </form>
                         {% else %}
-                            <span class="locked-label" title="Inactive patient">
+                            <span class="locked-label" title="{{ t('Inactive patient') }}">
                                 <i class="fas fa-lock"></i>
                             </span>
                         {% endif %}
@@ -152,7 +150,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="7" class="empty-row">No patients found.</td>
+                    <td colspan="7" class="empty-row">{{ t("No patients found.") }}</td>
                 </tr>
                 {% endfor %}
 
@@ -166,7 +164,7 @@
     <div class="modal-content">
 
         <div class="modal-header">
-            <h2><i class="fas fa-pen"></i> Patient Information</h2>
+            <h2><i class="fas fa-pen"></i> {{ t("Patient Information") }}</h2>
             <button type="button" class="modal-close-btn" onclick="closePatientModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -177,59 +175,59 @@
             <div class="form-grid two-column-grid">
 
                 <div class="form-group">
-                    <label>Patient Code</label>
+                    <label>{{ t("Patient Code") }}</label>
                     <input type="text" id="modal_patient_code" name="patient_code" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Date of Birth</label>
+                    <label>{{ t("Date of Birth") }}</label>
                     <input type="date" id="modal_date_of_birth" name="date_of_birth" required>
                 </div>
 
                 <div class="form-group">
-                    <label>First Name</label>
+                    <label>{{ t("First Name") }}</label>
                     <input type="text" id="modal_first_name" name="first_name" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Middle Name</label>
+                    <label>{{ t("Middle Name") }}</label>
                     <input type="text" id="modal_middle_name" name="middle_name">
                 </div>
 
                 <div class="form-group">
-                    <label>Last Name</label>
+                    <label>{{ t("Last Name") }}</label>
                     <input type="text" id="modal_last_name" name="last_name" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Gender</label>
+                    <label>{{ t("Gender") }}</label>
                     <select id="modal_gender" name="gender">
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
+                        <option value="Male">{{ t("Male") }}</option>
+                        <option value="Female">{{ t("Female") }}</option>
+                        <option value="Other">{{ t("Other") }}</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Phone</label>
+                    <label>{{ t("Phone") }}</label>
                     <input type="text" id="modal_phone_number" name="phone_number" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Email</label>
+                    <label>{{ t("Email") }}</label>
                     <input type="email" id="modal_email" name="email" required>
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Address</label>
+                    <label>{{ t("Address") }}</label>
                     <input type="text" id="modal_address" name="address">
                 </div>
 
                 <div class="form-group">
-                    <label>Active</label>
+                    <label>{{ t("Active") }}</label>
                     <select id="modal_is_active" name="is_active">
-                        <option value="1">Yes</option>
-                        <option value="0">No</option>
+                        <option value="1">{{ t("Yes") }}</option>
+                        <option value="0">{{ t("No") }}</option>
                     </select>
                 </div>
 
@@ -237,12 +235,12 @@
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t("Save") }}
                 </button>
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeAddPatientModal(true)">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t("Cancel") }}
                 </button>
             </div>
 
@@ -254,7 +252,7 @@
     <div class="modal-content">
 
         <div class="modal-header">
-            <h2><i class="fas fa-plus"></i> Add Patient</h2>
+            <h2><i class="fas fa-plus"></i> {{ t("Add Patient") }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeAddPatientModal(true)">
                 <i class="fas fa-times"></i>
             </button>
@@ -264,70 +262,70 @@
 
             <div class="form-grid two-column-grid">
                 <div class="form-group">
-                    <label>Patient Code</label>
+                    <label>{{ t("Patient Code") }}</label>
                     <input type="text" name="patient_code" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Date of Birth</label>
+                    <label>{{ t("Date of Birth") }}</label>
                     <input type="date" name="date_of_birth" required>
                 </div>
 
                 <div class="form-group">
-                    <label>First Name</label>
+                    <label>{{ t("First Name") }}</label>
                     <input type="text" name="first_name" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Middle Name</label>
+                    <label>{{ t("Middle Name") }}</label>
                     <input type="text" name="middle_name">
                 </div>
 
                 <div class="form-group">
-                    <label>Last Name</label>
+                    <label>{{ t("Last Name") }}</label>
                     <input type="text" name="last_name" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Gender</label>
+                    <label>{{ t("Gender") }}</label>
                     <select name="gender">
 
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
+                        <option value="Male">{{ t("Male") }}</option>
+                        <option value="Female">{{ t("Female") }}</option>
+                        <option value="Other">{{ t("Other") }}</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Phone</label>
+                    <label>{{ t("Phone") }}</label>
                     <input type="text" name="phone_number" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Email</label>
+                    <label>{{ t("Email") }}</label>
                     <input type="email" name="email" required>
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Address</label>
+                    <label>{{ t("Address") }}</label>
                     <input type="text" name="address">
                 </div>
             </div>
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t("Save") }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-save-btn"
                         onclick="savePatientAndNext()">
-                    <i class="fas fa-forward"></i> Next
+                    <i class="fas fa-forward"></i> {{ t("Next") }}
                 </button>
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeAddPatientModal(true)">   
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t("Cancel") }}
                 </button>
             </div>
 
@@ -336,6 +334,10 @@
 </div>
 
 <script>
+const patientsPageText = {
+    errorSavingPatient: {{ t("Error saving patient.")|tojson }}
+};
+
 document.addEventListener("DOMContentLoaded", function(){
     const patientValue = document.querySelector(".searchable-select-value[name='patient_id']");
     const patientReportBtn = document.getElementById("patientReportBtn");
@@ -489,7 +491,7 @@ function savePatientAndNext() {
         }
     })
     .catch(error => {
-        alert("Error saving patient.");
+        alert(patientsPageText.errorSavingPatient);
         console.error(error);
     });
 }

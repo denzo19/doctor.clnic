@@ -7,7 +7,7 @@
     <div class="page-header">
         <h1>
             <i class="fas fa-stethoscope"></i>
-            Diagnosis ICD Setup
+            {{ t('Diagnosis ICD Setup') }}
         </h1>
     </div>
 
@@ -15,7 +15,7 @@
         <form method="GET"
               action="{{ url_for('diagnosis_icd_setup') }}"
               class="toolbar-form">
-            <label class="toolbar-filter-label" for="specialtyFilter">Specialty</label>
+            <label class="toolbar-filter-label" for="specialtyFilter">{{ t('Specialty') }}</label>
             <select id="specialtyFilter"
                     name="specialty"
                     class="toolbar-search-input"
@@ -28,7 +28,7 @@
                 {% endfor %}
             </select>
 
-            <button type="submit" class="toolbar-btn search-btn" title="Load">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Load') }}">
                 <i class="fas fa-search"></i>
             </button>
         </form>
@@ -37,29 +37,29 @@
     <div class="details-card diagnosis-icd-summary">
         <div class="patient-profile-grid">
             <div class="patient-profile-item">
-                <span>Active Version</span>
+                <span>{{ t('Active Version') }}</span>
                 <strong>
                     {% if active_version %}
                         {{ active_version.version_year }}
                     {% else %}
-                        Not imported
+                        {{ t('Not imported') }}
                     {% endif %}
                 </strong>
             </div>
             <div class="patient-profile-item">
-                <span>Chapters</span>
+                <span>{{ t('Chapters') }}</span>
                 <strong>{{ counts.chapters }}</strong>
             </div>
             <div class="patient-profile-item">
-                <span>Blocks</span>
+                <span>{{ t('Blocks') }}</span>
                 <strong>{{ counts.blocks }}</strong>
             </div>
             <div class="patient-profile-item">
-                <span>Codes</span>
+                <span>{{ t('Codes') }}</span>
                 <strong>{{ counts.codes }}</strong>
             </div>
             <div class="patient-profile-item">
-                <span>Selected Codes</span>
+                <span>{{ t('Selected Codes') }}</span>
                 <strong>{{ enabled_code_count }}</strong>
             </div>
         </div>
@@ -67,11 +67,11 @@
 
     {% if not active_version %}
         <div class="details-card">
-            <p class="empty-row">Import an ICD-10-CM version before selecting specialty diagnosis groups.</p>
+            <p class="empty-row">{{ t('Import an ICD-10-CM version before selecting specialty diagnosis groups.') }}</p>
         </div>
     {% elif not specialties %}
         <div class="details-card">
-            <p class="empty-row">No doctor specialties found.</p>
+            <p class="empty-row">{{ t('No doctor specialties found.') }}</p>
         </div>
     {% else %}
         <form method="POST"
@@ -82,24 +82,24 @@
             <div class="details-card diagnosis-icd-actions">
                 <div>
                     <strong>{{ selected_specialty }}</strong>
-                    <span class="diagnosis-icd-muted">chapter and block selection</span>
+                    <span class="diagnosis-icd-muted">{{ t('chapter and block selection') }}</span>
                 </div>
                 <button type="submit" class="standard-btn form-save-btn">
                     <i class="fas fa-save"></i>
-                    Save Selection
+                    {{ t('Save Selection') }}
                 </button>
                 <a href="{{ url_for('diagnosis_icd_fine_tuning', specialty=selected_specialty) }}"
                    class="standard-btn primary-btn">
                     <i class="fas fa-list-check"></i>
-                    Fine Tuning
+                    {{ t('Fine Tuning') }}
                 </a>
                 <button type="submit"
                         name="action"
                         value="clear"
                         class="standard-btn form-cancel-btn"
-                        onclick="return confirm('Clear all ICD selections for this specialty?');">
+                        onclick="return confirm({{ t('Clear all ICD selections for this specialty?')|tojson }});">
                     <i class="fas fa-times"></i>
-                    Clear
+                    {{ t('Clear') }}
                 </button>
             </div>
 
@@ -128,7 +128,7 @@
                                 <span>
                                     <strong>{{ block.block_code_range }}</strong>
                                     {{ block.title }}
-                                    <em>{{ block.code_count }} codes</em>
+                                    <em>{{ block.code_count }} {{ t('codes') }}</em>
                                 </span>
                             </label>
                         {% endfor %}
@@ -139,20 +139,20 @@
             <div class="details-card diagnosis-icd-actions">
                 <button type="submit" class="standard-btn form-save-btn">
                     <i class="fas fa-save"></i>
-                    Save Selection
+                    {{ t('Save Selection') }}
                 </button>
                 <a href="{{ url_for('diagnosis_icd_fine_tuning', specialty=selected_specialty) }}"
                    class="standard-btn primary-btn">
                     <i class="fas fa-list-check"></i>
-                    Fine Tuning
+                    {{ t('Fine Tuning') }}
                 </a>
                 <button type="submit"
                         name="action"
                         value="clear"
                         class="standard-btn form-cancel-btn"
-                        onclick="return confirm('Clear all ICD selections for this specialty?');">
+                        onclick="return confirm({{ t('Clear all ICD selections for this specialty?')|tojson }});">
                     <i class="fas fa-times"></i>
-                    Clear
+                    {{ t('Clear') }}
                 </button>
             </div>
         </form>

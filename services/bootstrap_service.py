@@ -24,6 +24,7 @@ _icd_setup_menu_bootstrapped = False
 _doctor_specialties_schema_bootstrapped = False
 _doctor_specialties_menu_bootstrapped = False
 _visit_diagnosis_schema_bootstrapped = False
+_menu_translation_schema_bootstrapped = False
 
 def ensure_column(table_name, column_name, ddl):
     existing_column = execute_query(
@@ -40,6 +41,100 @@ def ensure_column(table_name, column_name, ddl):
 
     if not existing_column:
         execute_query(ddl)
+
+
+def ensure_menu_translation_schema():
+    global _menu_translation_schema_bootstrapped
+
+    if _menu_translation_schema_bootstrapped:
+        return
+
+    try:
+        ensure_column(
+            "menu_options",
+            "option_name_ar",
+            "ALTER TABLE menu_options ADD COLUMN option_name_ar VARCHAR(255) NULL AFTER option_name"
+        )
+
+        menu_translations = {
+            "home": "الرئيسية",
+            "manage_employees": "إدارة الموظفين",
+            "manage_users": "إدارة المستخدمين",
+            "manage_groups": "إدارة المجموعات",
+            "manage_permissions": "إدارة الصلاحيات",
+            "admin_menu_options": "إدارة القوائم",
+            "patients": "إدارة المرضى",
+            "checkin_patient": "تسجيل حضور المرضى",
+            "appointment_checkin": "استعلام المواعيد وتسجيل الحضور",
+            "checked_in_patients": "المرضى المسجل حضورهم",
+            "checkin_lists": "قوائم الحضور",
+            "patient_history": "المرضى غير المفحوصين",
+            "manage_appointments": "إدارة المواعيد",
+            "search_book_appointment": "بحث وحجز موعد",
+            "search_cancel_appointment": "بحث وإلغاء موعد",
+            "doctor_appointments": "مواعيد الطبيب",
+            "manage_medical_centers": "إدارة المراكز الطبية",
+            "manage_doctor_center_assignments": "ربط الأطباء بالمراكز",
+            "manage_doctor_weekly_programs": "برنامج الطبيب الأسبوعي",
+            "manage_doctor_absences": "غيابات الطبيب",
+            "generate_appointment_slots": "إنشاء جدول المواعيد",
+            "extend_schedule": "تمديد الجدول",
+            "doctor_favorite_medications": "الأدوية المفضلة",
+            "manage_prescriptions": "إدارة الوصفات",
+            "medications": "الأدوية",
+            "laboratory": "المختبر",
+            "lab_results": "نتائج المختبر",
+            "lab_tests": "الفحوصات المخبرية",
+            "lab_order": "طلب فحص مخبري",
+            "lab_result": "نتائج المختبر",
+            "vital_signs": "العلامات الحيوية",
+            "id_card": "بطاقة التعريف",
+            "doctor_specialties": "اختصاصات الأطباء",
+            "diagnosis_icd_setup": "إعداد تشخيصات ICD",
+            "diagnosis_icd_fine_tuning": "ضبط تشخيصات ICD"
+        }
+
+        parent_translations = {
+            "admin": "الإدارة",
+            "basic setings": "الإعدادات الأساسية",
+            "basic settings": "الإعدادات الأساسية",
+            "clinic management": "إدارة العيادة",
+            "secretary": "السكرتارية",
+            "doctor": "الطبيب",
+            "doctors": "الأطباء",
+            "patients": "المرضى",
+            "medications": "الأدوية",
+            "lab & vital signs": "المختبر والعلامات الحيوية",
+            "medical setings": "الإعدادات الطبية",
+            "medical settings": "الإعدادات الطبية",
+            "laboratory": "المختبر"
+        }
+
+        for endpoint_name, option_name_ar in menu_translations.items():
+            execute_query(
+                """
+                UPDATE menu_options
+                SET option_name_ar = %s
+                WHERE endpoint_name = %s
+                """,
+                (option_name_ar, endpoint_name)
+            )
+
+        for option_name, option_name_ar in parent_translations.items():
+            execute_query(
+                """
+                UPDATE menu_options
+                SET option_name_ar = %s
+                WHERE LOWER(option_name) = %s
+                  AND endpoint_name IS NULL
+                """,
+                (option_name_ar, option_name)
+            )
+
+        _menu_translation_schema_bootstrapped = True
+
+    except Exception as error:
+        print("Menu translation schema bootstrap error:", error)
 
 def ensure_patient_workflow_schema():
     global _patient_workflow_schema_bootstrapped
@@ -2560,6 +2655,7 @@ def ensure_icd_setup_menu():
 
 def run_runtime_bootstrap():
     ensure_home_menu()
+    ensure_menu_translation_schema()
     ensure_patient_workflow_schema()
     ensure_visit_diagnosis_schema()
     ensure_medications_schema()

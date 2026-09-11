@@ -5,7 +5,7 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-pills"></i> Medications</h1>
+        <h1><i class="fas fa-pills"></i> {{ t("Medications") }}</h1>
     </div>
 
     <div class="details-card">
@@ -15,19 +15,19 @@
                    name="search"
                    value="{{ search or '' }}"
                    class="toolbar-search-input"
-                   placeholder="Search medication">
+                   placeholder="{{ t('Search medication') }}">
 
-            <button type="submit" class="toolbar-btn search-btn" title="Search">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
-            <a href="{{ url_for('medications') }}" class="toolbar-btn clear-btn" title="Clear">
+            <a href="{{ url_for('medications') }}" class="toolbar-btn clear-btn" title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </a>
 
             <button type="button"
                     class="toolbar-btn add-btn"
-                    title="Add Medication"
+                    title="{{ t('Add Medication') }}"
                     onclick="openAddMedicationModal()">
                 <i class="fas fa-plus"></i>
             </button>
@@ -35,7 +35,7 @@
             <button type="button"
                     id="medicationReportBtn"
                     class="toolbar-btn search-btn"
-                    title="Medications Report">
+                    title="{{ t('Medications Report') }}">
                 <i class="fas fa-file-pdf"></i>
             </button>
         </form>
@@ -45,12 +45,12 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>Medication</th>
-                    <th>Strength</th>
-                    <th>Dosage Form</th>
-                    <th>Notes</th>
-                    <th>Active</th>
-                    <th class="actions-header">Actions</th>
+                    <th>{{ t("Medication") }}</th>
+                    <th>{{ t("Strength") }}</th>
+                    <th>{{ t("Dosage Form") }}</th>
+                    <th>{{ t("Notes") }}</th>
+                    <th>{{ t("Active") }}</th>
+                    <th class="actions-header">{{ t("Actions") }}</th>
                 </tr>
             </thead>
 
@@ -62,11 +62,11 @@
                     <td>{{ medication.strength or '' }}</td>
                     <td>{{ medication.dosage_form or '' }}</td>
                     <td>{{ medication.notes or '' }}</td>
-                    <td>{{ 'Yes' if medication.is_active else 'No' }}</td>
+                    <td>{{ t("Yes") if medication.is_active else t("No") }}</td>
                     <td class="action-cell" onclick="event.stopPropagation();">
                         <button type="button"
                                 class="table-action edit-action"
-                                title="Edit"
+                                title="{{ t('Edit') }}"
                                 onclick='openMedicationModal({{ medication|tojson }})'>
                             <i class="fas fa-pen"></i>
                         </button>
@@ -75,15 +75,15 @@
                             <form method="POST"
                                   action="{{ url_for('stop_medication', medication_id=medication.id) }}"
                                   class="inline-delete-form"
-                                  onsubmit="return confirm('Stop this medication?');">
+                                  onsubmit="return confirm({{ t('Stop this medication?')|tojson }});">
                                 <button type="submit"
                                         class="table-action delete-action"
-                                        title="Stop Medication">
+                                        title="{{ t('Stop Medication') }}">
                                     <i class="fas fa-ban"></i>
                                 </button>
                             </form>
                         {% else %}
-                            <span class="locked-label" title="Inactive medication">
+                            <span class="locked-label" title="{{ t('Inactive medication') }}">
                                 <i class="fas fa-lock"></i>
                             </span>
                         {% endif %}
@@ -91,7 +91,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" class="empty-row">No medications found.</td>
+                    <td colspan="6" class="empty-row">{{ t("No medications found.") }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -103,7 +103,7 @@
 <div id="medicationEditModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2><i class="fas fa-pen"></i> Medication Information</h2>
+            <h2><i class="fas fa-pen"></i> {{ t("Medication Information") }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeMedicationModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -112,42 +112,42 @@
         <form id="medicationEditForm" method="POST" class="modal-form">
             <div class="form-grid two-column-grid">
                 <div class="form-group form-group-wide">
-                    <label>Medication Name</label>
+                    <label>{{ t("Medication Name") }}</label>
                     <input type="text" id="modal_medication_name" name="medication_name" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Strength</label>
+                    <label>{{ t("Strength") }}</label>
                     <input type="text" id="modal_strength" name="strength">
                 </div>
 
                 <div class="form-group">
-                    <label>Dosage Form</label>
+                    <label>{{ t("Dosage Form") }}</label>
                     <input type="text" id="modal_dosage_form" name="dosage_form">
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Notes</label>
+                    <label>{{ t("Notes") }}</label>
                     <textarea id="modal_notes" name="notes"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>Active</label>
+                    <label>{{ t("Active") }}</label>
                     <select id="modal_is_active" name="is_active">
-                        <option value="1">Yes</option>
-                        <option value="0">No</option>
+                        <option value="1">{{ t("Yes") }}</option>
+                        <option value="0">{{ t("No") }}</option>
                     </select>
                 </div>
             </div>
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t("Save") }}
                 </button>
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeMedicationModal()">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t("Cancel") }}
                 </button>
             </div>
         </form>
@@ -157,7 +157,7 @@
 <div id="addMedicationModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2><i class="fas fa-plus"></i> Add Medication</h2>
+            <h2><i class="fas fa-plus"></i> {{ t("Add Medication") }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeAddMedicationModal(true)">
                 <i class="fas fa-times"></i>
             </button>
@@ -169,41 +169,41 @@
               class="modal-form">
             <div class="form-grid two-column-grid">
                 <div class="form-group form-group-wide">
-                    <label>Medication Name</label>
+                    <label>{{ t("Medication Name") }}</label>
                     <input type="text" name="medication_name" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Strength</label>
+                    <label>{{ t("Strength") }}</label>
                     <input type="text" name="strength">
                 </div>
 
                 <div class="form-group">
-                    <label>Dosage Form</label>
+                    <label>{{ t("Dosage Form") }}</label>
                     <input type="text" name="dosage_form">
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Notes</label>
+                    <label>{{ t("Notes") }}</label>
                     <textarea name="notes"></textarea>
                 </div>
             </div>
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t("Save") }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-save-btn"
                         onclick="saveMedicationAndNext()">
-                    <i class="fas fa-forward"></i> Next
+                    <i class="fas fa-forward"></i> {{ t("Next") }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeAddMedicationModal(true)">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t("Cancel") }}
                 </button>
             </div>
         </form>
@@ -211,6 +211,10 @@
 </div>
 
 <script>
+const medicationPageText = {
+    errorSavingMedication: {{ t("Error saving medication.")|tojson }}
+};
+
 document.addEventListener("DOMContentLoaded", function(){
     const medicationSearch = document.getElementById("medicationSearch");
     const medicationReportBtn = document.getElementById("medicationReportBtn");
@@ -278,11 +282,11 @@ function saveMedicationAndNext() {
             form.reset();
             form.querySelector("input[name='medication_name']").focus();
         } else {
-            alert(data.message || "Error saving medication.");
+            alert(data.message || medicationPageText.errorSavingMedication);
         }
     })
     .catch(error => {
-        alert("Error saving medication.");
+        alert(medicationPageText.errorSavingMedication);
         console.error(error);
     });
 }

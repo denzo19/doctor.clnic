@@ -2,12 +2,12 @@
 
 {% block content %}
 
-<section class="app-page">
+<section class="app-page appointment-checkin-page">
 
     <div class="page-header">
         <h1>
             <i class="fas fa-calendar-check"></i>
-            Appointments Query & Check-in
+            {{ t("Appointments Query & Check-in") }}
         </h1>
     </div>
 
@@ -19,9 +19,7 @@
             {% if selected_patient_id %}
                 {% for patient in appointment_patients %}
                     {% set patient_label %}
-                        {{ patient.patient_code }} -
-                        {{ patient.patient_name }}
-                        {% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}
+                        {{ patient.patient_code }} - {{ patient.patient_name }}{% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}
                     {% endset %}
                     {% if selected_patient_id|string == patient.id|string %}
                         {% set selected_patient.label = patient_label|trim %}
@@ -31,10 +29,10 @@
 
             <div class="searchable-select"
                  data-searchable-select
-                 data-required-message="Please choose a patient from the list.">
+                 data-required-message="{{ t('Please choose a patient from the list.') }}">
                 <input type="text"
                        class="toolbar-search-input searchable-select-input"
-                       placeholder="Choose patient"
+                       placeholder="{{ t('Choose patient') }}"
                        autocomplete="off"
                        value="{{ selected_patient.label }}">
                 <input type="hidden"
@@ -44,9 +42,7 @@
                 <div class="searchable-select-options">
                     {% for patient in appointment_patients %}
                         {% set patient_label %}
-                            {{ patient.patient_code }} -
-                            {{ patient.patient_name }}
-                            {% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}
+                            {{ patient.patient_code }} - {{ patient.patient_name }}{% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}
                         {% endset %}
                         <button type="button"
                                 class="searchable-select-option"
@@ -56,7 +52,7 @@
                         </button>
                     {% endfor %}
                     <div class="searchable-select-empty">
-                        No patients found.
+                        {{ t("No patients found.") }}
                     </div>
                 </div>
             </div>
@@ -66,13 +62,13 @@
                    class="toolbar-search-input"
                    value="{{ selected_date or today_date }}">
 
-            <button type="submit" class="toolbar-btn search-btn" title="Search">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
             <a href="{{ url_for('appointment_checkin') }}"
                class="toolbar-btn clear-btn"
-               title="Clear">
+               title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </a>
         </form>
@@ -82,15 +78,15 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>Time</th>
-                    <th>Patient Code</th>
-                    <th>Patient Name</th>
-                    <th>DOB</th>
-                    <th>Phone</th>
-                    <th>Doctor</th>
-                    <th>Medical Center</th>
-                    <th>Status</th>
-                    <th class="actions-header">Actions</th>
+                    <th>{{ t("Time") }}</th>
+                    <th>{{ t("Patient Code") }}</th>
+                    <th>{{ t("Patient Name") }}</th>
+                    <th>{{ t("DOB") }}</th>
+                    <th>{{ t("Phone") }}</th>
+                    <th>{{ t("Doctor") }}</th>
+                    <th>{{ t("Medical Center") }}</th>
+                    <th>{{ t("Status") }}</th>
+                    <th class="actions-header">{{ t("Actions") }}</th>
                 </tr>
             </thead>
 
@@ -110,21 +106,21 @@
                     <td>
                         {% if appt.check_in_item_id %}
                             <span class="status-badge status-{{ appt.check_in_status }}">
-                                {{ appt.check_in_status }}
+                                {{ t(appt.check_in_status) }}
                             </span>
                         {% else %}
-                            <span class="status-badge status-booked">booked</span>
+                            <span class="status-badge status-booked">{{ t("booked") }}</span>
                         {% endif %}
                     </td>
                     <td class="action-cell">
                         {% if appt.check_in_item_id %}
-                            <span class="locked-label" title="Already checked in">
+                            <span class="locked-label" title="{{ t('Already checked in') }}">
                                 <i class="fas fa-lock"></i>
                             </span>
                         {% elif not can_check_in %}
                             <button type="button"
                                     class="table-action edit-action"
-                                    title="Check-in is available only for today's appointments"
+                                    title='{{ t("Check-in is available only for today\'s appointments") }}'
                                     disabled>
                                 <i class="fas fa-user-check"></i>
                             </button>
@@ -137,7 +133,7 @@
                                 <input type="hidden" name="appointment_date" value="{{ selected_date }}">
                                 <button type="submit"
                                         class="table-action edit-action"
-                                        title="Check-in Patient">
+                                        title="{{ t('Check-in Patient') }}">
                                     <i class="fas fa-user-check"></i>
                                 </button>
                             </form>
@@ -147,7 +143,7 @@
                 {% else %}
                 <tr>
                     <td colspan="9" class="empty-row">
-                        No appointments found for the selected date.
+                        {{ t("No appointments found for the selected date.") }}
                     </td>
                 </tr>
                 {% endfor %}

@@ -5,7 +5,7 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-clipboard-check"></i> Lab Result</h1>
+        <h1><i class="fas fa-clipboard-check"></i> {{ t("Lab Result") }}</h1>
     </div>
 
     <div class="details-card">
@@ -13,7 +13,7 @@
             <div class="searchable-select" data-searchable-select>
                 <input type="text"
                        class="toolbar-search-input searchable-select-input"
-                       placeholder="All doctors"
+                       placeholder="{{ t('All doctors') }}"
                        autocomplete="off"
                        value="{% for doctor in doctors %}{% if selected_doctor_id == doctor.id %}{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}{% endif %}{% endfor %}">
                 <input type="hidden"
@@ -30,7 +30,7 @@
                         </button>
                     {% endfor %}
                     <div class="searchable-select-empty">
-                        No doctors found.
+                        {{ t("No doctors found.") }}
                     </div>
                 </div>
             </div>
@@ -38,7 +38,7 @@
             <div class="searchable-select" data-searchable-select>
                 <input type="text"
                        class="toolbar-search-input searchable-select-input"
-                       placeholder="Search ordered lab order"
+                       placeholder="{{ t('Search ordered lab order') }}"
                        autocomplete="off"
                        value="{% for order in orders %}{% if selected_order_key == order.order_key|string %}#{{ order.first_order_id }} - {{ order.result_date }} - {{ order.patient_code }} - {{ order.patient_name }}{% endif %}{% endfor %}">
                 <input type="hidden"
@@ -57,16 +57,16 @@
                         </button>
                     {% endfor %}
                     <div class="searchable-select-empty">
-                        No lab orders found.
+                        {{ t("No lab orders found.") }}
                     </div>
                 </div>
             </div>
 
-            <button type="submit" class="toolbar-btn search-btn" title="Search">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
-            <a href="{{ url_for('lab_result') }}" class="toolbar-btn clear-btn" title="Clear">
+            <a href="{{ url_for('lab_result') }}" class="toolbar-btn clear-btn" title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </a>
 
@@ -74,7 +74,7 @@
                     form="finalSaveLabResultForm"
                     class="standard-btn primary-btn lab-final-save-btn"
                     {% if not selected_order %}disabled{% endif %}>
-                <i class="fas fa-lock"></i> Final Save
+                <i class="fas fa-lock"></i> {{ t("Final Save") }}
             </button>
         </form>
 
@@ -91,7 +91,7 @@
     {% if selected_order %}
     <div class="details-card selected-lab-order-card">
         <div>
-            <strong>Selected Order #{{ selected_order.first_order_id }}</strong>
+            <strong>{{ t("Selected Order") }} #{{ selected_order.first_order_id }}</strong>
             <span>
                 {{ selected_order.result_date }} -
                 {{ selected_order.patient_code }} - {{ selected_order.patient_name }}
@@ -101,7 +101,7 @@
             </span>
         </div>
         <span class="status-badge status-{{ selected_order.order_status }}">
-            {{ selected_order.order_status }}
+            {{ t(selected_order.order_status) }}
         </span>
     </div>
     {% endif %}
@@ -110,14 +110,14 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>Test</th>
-                    <th>LOINC Code</th>
-                    <th>Result</th>
-                    <th>Unit</th>
-                    <th>Normal Range</th>
-                    <th>Status</th>
-                    <th>Note</th>
-                    <th class="actions-header">Actions</th>
+                    <th>{{ t("Test") }}</th>
+                    <th>{{ t("LOINC Code") }}</th>
+                    <th>{{ t("Result") }}</th>
+                    <th>{{ t("Unit") }}</th>
+                    <th>{{ t("Normal Range") }}</th>
+                    <th>{{ t("Status") }}</th>
+                    <th>{{ t("Note") }}</th>
+                    <th class="actions-header">{{ t("Actions") }}</th>
                 </tr>
             </thead>
 
@@ -151,7 +151,7 @@
                     <td>{{ result.normal_range or '' }}</td>
                     <td>
                         <span class="status-badge status-{{ result.order_status }}">
-                            {{ result.order_status }}
+                            {{ t(result.order_status) }}
                         </span>
                     </td>
                     <td>{{ result.notes or '' }}</td>
@@ -162,23 +162,23 @@
                                     name="save_type"
                                     value="draft"
                                     class="table-action edit-action"
-                                    title="Save Result">
+                                    title="{{ t('Save Result') }}">
                                 <i class="fas fa-pen"></i>
                             </button>
                         {% else %}
-                            <span class="locked-label">Locked</span>
+                            <span class="locked-label">{{ t("Locked") }}</span>
                         {% endif %}
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="8" class="empty-row">No active lab tests found for result entry.</td>
+                    <td colspan="8" class="empty-row">{{ t("No active lab tests found for result entry.") }}</td>
                 </tr>
                     {% endfor %}
                 {% else %}
                 <tr>
                     <td colspan="8" class="empty-row">
-                        Choose a lab order first to enter results for its tests.
+                        {{ t("Choose a lab order first to enter results for its tests.") }}
                     </td>
                 </tr>
                 {% endif %}

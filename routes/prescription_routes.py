@@ -1,11 +1,16 @@
 from datetime import date
 import uuid
 
-from flask import Response, flash, redirect, render_template, request, url_for
+from flask import Response, flash, redirect, render_template, request, session, url_for
 
 from auth import login_required, permission_required
 from database import execute_query
+from i18n import translate
 import prescription_pdf as prescription_pdf_helpers
+
+
+def flash_t(message, category="success"):
+    flash(translate(message, session.get("language", "en")), category)
 
 
 def register_prescription_routes(app, get_logged_doctor_id):
@@ -46,7 +51,7 @@ def register_prescription_routes(app, get_logged_doctor_id):
             )
         )
 
-        flash("Prescription saved successfully.", "success")
+        flash_t("Prescription saved successfully.", "success")
         return redirect(url_for("checked_in_patients", doctor_id=doctor_id))
 
     @app.route("/prescription/edit/<int:prescription_id>", methods=["GET", "POST"])
@@ -65,11 +70,11 @@ def register_prescription_routes(app, get_logged_doctor_id):
         )
 
         if not prescription:
-            flash("Prescription not found.", "error")
+            flash_t("Prescription not found.", "error")
             return redirect(url_for("checked_in_patients", doctor_id=doctor_id))
 
         if prescription["prescription_status"] in ("active", "stopped"):
-            flash("This prescription is finalized and cannot be edited.", "error")
+            flash_t("This prescription is finalized and cannot be edited.", "error")
             return redirect(url_for(
                 "patient_details",
                 patient_id=prescription["patient_id"],
@@ -114,7 +119,7 @@ def register_prescription_routes(app, get_logged_doctor_id):
                 )
             )
 
-            flash("Prescription updated successfully.", "success")
+            flash_t("Prescription updated successfully.", "success")
             return redirect(url_for(
                 "patient_details",
                 patient_id=prescription["patient_id"],
@@ -139,11 +144,11 @@ def register_prescription_routes(app, get_logged_doctor_id):
         )
 
         if not prescription:
-            flash("Prescription not found.", "error")
+            flash_t("Prescription not found.", "error")
             return redirect(url_for("checked_in_patients", doctor_id=doctor_id))
 
         if prescription["prescription_status"] != "draft":
-            flash("Only draft prescriptions can be deleted.", "error")
+            flash_t("Only draft prescriptions can be deleted.", "error")
             return redirect(url_for(
                 "patient_details",
                 patient_id=prescription["patient_id"],
@@ -155,7 +160,7 @@ def register_prescription_routes(app, get_logged_doctor_id):
             (prescription_id,)
         )
 
-        flash("Draft prescription deleted successfully.,", "success")
+        flash_t("Draft prescription deleted successfully.", "success")
         return redirect(url_for(
             "patient_details",
             patient_id=prescription["patient_id"],
@@ -173,11 +178,11 @@ def register_prescription_routes(app, get_logged_doctor_id):
         )
 
         if not prescription:
-            flash("Prescription not found.", "error")
+            flash_t("Prescription not found.", "error")
             return redirect(url_for("checked_in_patients", doctor_id=doctor_id))
 
         if prescription["prescription_status"] != "active":
-            flash("Only active prescriptions can be stopped.", "error")
+            flash_t("Only active prescriptions can be stopped.", "error")
             return redirect(url_for(
                 "patient_details",
                 patient_id=prescription["patient_id"],
@@ -196,7 +201,7 @@ def register_prescription_routes(app, get_logged_doctor_id):
             (prescription_id,)
         )
 
-        flash("Medication stopped successfully.", "success")
+        flash_t("Medication stopped successfully.", "success")
         return redirect(url_for(
             "patient_details",
             patient_id=prescription["patient_id"],
@@ -360,7 +365,7 @@ def register_prescription_routes(app, get_logged_doctor_id):
         if not rows:
             return {
                 "success": False,
-                "message": "Prescription not found."
+                "message": translate("Prescription not found.", session.get("language", "en"))
             }, 404
 
         first_row = rows[0]
@@ -443,7 +448,7 @@ def register_prescription_routes(app, get_logged_doctor_id):
         )
 
         if not rows:
-            flash("Prescription not found.", "error")
+            flash_t("Prescription not found.", "error")
             return redirect(url_for("manage_prescriptions"))
 
         first_row = rows[0]
@@ -507,7 +512,7 @@ def register_prescription_routes(app, get_logged_doctor_id):
             prescription_status = "active" if save_type in ("final", "final_print") else "draft"
 
             if not patient_id or not doctor_id or not medication_ids:
-                flash("Choose patient, doctor, and at least one medication.", "error")
+                flash_t("Choose patient, doctor, and at least one medication.", "error")
                 return redirect(url_for(
                     "new_managed_prescription",
                     patient_id=patient_id,
@@ -542,7 +547,7 @@ def register_prescription_routes(app, get_logged_doctor_id):
                     )
                 )
 
-            flash("Prescription saved successfully.", "success")
+            flash_t("Prescription saved successfully.", "success")
             if save_type == "final_print":
                 return redirect(url_for(
                     "print_managed_prescription",
@@ -598,11 +603,11 @@ def register_prescription_routes(app, get_logged_doctor_id):
         )
 
         if not rows:
-            flash("Prescription not found.", "error")
+            flash_t("Prescription not found.", "error")
             return redirect(url_for("manage_prescriptions"))
 
         if any(row["prescription_status"] != "draft" for row in rows):
-            flash("Only draft prescriptions can be edited.", "error")
+            flash_t("Only draft prescriptions can be edited.", "error")
             return redirect(url_for("manage_prescriptions"))
 
         doctors, patients, medications = fetch_prescription_form_lists()
@@ -648,7 +653,7 @@ def register_prescription_routes(app, get_logged_doctor_id):
         prescription_status = "active" if save_type == "final" else "draft"
 
         if not patient_id or not doctor_id or not medication_ids:
-            flash("Choose patient, doctor, and at least one medication.", "error")
+            flash_t("Choose patient, doctor, and at least one medication.", "error")
             return redirect(url_for("update_managed_prescription", order_key=order_key))
 
         prescription_order_code = rows[0].get("prescription_order_code") or uuid.uuid4().hex
@@ -687,7 +692,7 @@ def register_prescription_routes(app, get_logged_doctor_id):
                 )
             )
 
-        flash("Prescription updated successfully.", "success")
+        flash_t("Prescription updated successfully.", "success")
         return redirect(url_for("manage_prescriptions"))
 
     @app.route("/prescriptions/manage/delete/<order_key>", methods=["POST"])
@@ -707,11 +712,11 @@ def register_prescription_routes(app, get_logged_doctor_id):
         )
 
         if not rows:
-            flash("Prescription not found.", "error")
+            flash_t("Prescription not found.", "error")
             return redirect(url_for("manage_prescriptions"))
 
         if any(row["prescription_status"] != "draft" for row in rows):
-            flash("Only draft prescriptions can be deleted.", "error")
+            flash_t("Only draft prescriptions can be deleted.", "error")
             return redirect(url_for("manage_prescriptions"))
 
         execute_query(
@@ -723,7 +728,7 @@ def register_prescription_routes(app, get_logged_doctor_id):
             (order_key, fallback_prescription_id)
         )
 
-        flash("Draft prescription deleted successfully.", "success")
+        flash_t("Draft prescription deleted successfully.", "success")
         return redirect(url_for("manage_prescriptions"))
 
     @app.route("/prescriptions/manage/stop/<order_key>", methods=["POST"])
@@ -743,11 +748,11 @@ def register_prescription_routes(app, get_logged_doctor_id):
         )
 
         if not rows:
-            flash("Prescription not found.", "error")
+            flash_t("Prescription not found.", "error")
             return redirect(url_for("manage_prescriptions"))
 
         if any(row["prescription_status"] != "active" for row in rows):
-            flash("Only active prescriptions can be stopped.", "error")
+            flash_t("Only active prescriptions can be stopped.", "error")
             return redirect(url_for("manage_prescriptions"))
 
         execute_query(
@@ -762,5 +767,5 @@ def register_prescription_routes(app, get_logged_doctor_id):
             (order_key, fallback_prescription_id)
         )
 
-        flash("Prescription stopped successfully.", "success")
+        flash_t("Prescription stopped successfully.", "success")
         return redirect(url_for("manage_prescriptions"))

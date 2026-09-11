@@ -7,7 +7,7 @@
     <div class="page-header">
         <h1>
             <i class="fas fa-users"></i>
-            Manage Users
+            {{ t('Manage Users') }}
         </h1>
     </div>
     <div class="details-card">
@@ -17,7 +17,7 @@
                  data-searchable-select>
                 <input type="text"
                        class="toolbar-search-input searchable-select-input"
-                       placeholder="Choose employee"
+                       placeholder="{{ t('Choose employee') }}"
                        autocomplete="off"
                        required>
                 <input type="hidden"
@@ -33,7 +33,7 @@
                         </button>
                     {% endfor %}
                     <div class="searchable-select-empty">
-                        No employees found.
+                        {{ t('No employees found.') }}
                     </div>
                 </div>
             </div>
@@ -41,25 +41,25 @@
             <input type="text"
                    name="username"
                    class="toolbar-search-input"
-                   placeholder="Username"
+                   placeholder="{{ t('Username') }}"
                    required>
 
             <input type="text"
                    name="password"
                    class="toolbar-search-input"
-                   placeholder="Password"
+                   placeholder="{{ t('Password') }}"
                    required>
 
             <button type="submit"
                     class="toolbar-btn add-btn"
-                    title="Add User">
+                    title="{{ t('Add User') }}">
                 <i class="fas fa-plus"></i>
             </button>
 
             <button type="button"
                     class="toolbar-btn clear-btn"
                     id="clearAddUserForm"
-                    title="Clear">
+                    title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </button>
 
@@ -73,27 +73,27 @@
             <input type="text"
                    id="userTableSearch"
                    class="toolbar-search-input table-search-input"
-                   placeholder="Search users table"
+                   placeholder="{{ t('Search users table') }}"
                    autocomplete="off">
 
             <button type="button"
                     id="userTableSearchBtn"
                     class="toolbar-btn search-btn"
-                    title="Search">
+                    title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
             <button type="button"
                     id="userTableClearBtn"
                     class="toolbar-btn clear-btn"
-                    title="Clear">
+                    title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </button>
 
             <button type="button"
                     id="userTableReportBtn"
                     class="toolbar-btn search-btn"
-                    title="Users Report">
+                    title="{{ t('Users Report') }}">
                 <i class="fas fa-file-pdf"></i>
             </button>
         </div>
@@ -103,12 +103,12 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>Username</th>
-                    <th>Employee</th>
-                    <th>Job Title</th>
-                    <th>Group</th>
-                    <th>Active</th>
-                    <th class="actions-header">Actions</th>
+                    <th>{{ t('Username') }}</th>
+                    <th>{{ t('Employee') }}</th>
+                    <th>{{ t('Job Title') }}</th>
+                    <th>{{ t('Group') }}</th>
+                    <th>{{ t('Active') }}</th>
+                    <th class="actions-header">{{ t('Actions') }}</th>
                 </tr>
             </thead>
 
@@ -136,15 +136,15 @@
 
                         <td>
                             <select name="is_active" class="table-input">
-                                <option value="1" {% if user.is_active %}selected{% endif %}>Yes</option>
-                                <option value="0" {% if not user.is_active %}selected{% endif %}>No</option>
+                                <option value="1" {% if user.is_active %}selected{% endif %}>{{ t('Yes') }}</option>
+                                <option value="0" {% if not user.is_active %}selected{% endif %}>{{ t('No') }}</option>
                             </select>
                         </td>
 
                         <td class="action-cell">
                             <button type="submit"
                                     class="table-action edit-action"
-                                    title="Update">
+                                    title="{{ t('Update') }}">
                                 <i class="fas fa-save"></i>
                             </button>
                     </form>
@@ -153,15 +153,15 @@
                                 <form method="POST"
                                       action="{{ url_for('stop_user', user_id=user.id) }}"
                                       class="inline-delete-form"
-                                      onsubmit="return confirm('Stop this user?');">
+                                      onsubmit="return confirm({{ t('Stop this user?')|tojson }});">
                                     <button type="submit"
                                             class="table-action delete-action"
-                                            title="Stop User">
+                                            title="{{ t('Stop User') }}">
                                         <i class="fas fa-ban"></i>
                                     </button>
                                 </form>
                             {% else %}
-                                <span class="locked-label" title="Inactive user">
+                                <span class="locked-label" title="{{ t('Inactive user') }}">
                                     <i class="fas fa-lock"></i>
                                 </span>
                             {% endif %}
@@ -170,17 +170,17 @@
                                 <form method="POST"
                                       action="{{ url_for('delete_user', user_id=user.id) }}"
                                       class="inline-delete-form"
-                                      onsubmit="return confirm('Delete this user permanently?');">
+                                      onsubmit="return confirm({{ t('Delete this user permanently?')|tojson }});">
                                     <button type="submit"
                                             class="table-action delete-action"
-                                            title="Delete User">
+                                            title="{{ t('Delete User') }}">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
                             {% else %}
                                 <button type="button"
                                         class="table-action delete-action"
-                                        title="{{ user.delete_block_reason }}"
+                                        title="{{ t(user.delete_block_reason) }}"
                                         disabled>
                                     <i class="fas fa-trash"></i>
                                 </button>
@@ -190,13 +190,13 @@
                 {% else %}
                 <tr>
                     <td colspan="6" class="empty-row">
-                        No users found.
+                        {{ t('No users found.') }}
                     </td>
                 </tr>
                 {% endfor %}
                 <tr id="userTableNoMatches" hidden>
                     <td colspan="6" class="empty-row">
-                        No matching users found.
+                        {{ t('No matching users found.') }}
                     </td>
                 </tr>
             </tbody>
@@ -359,7 +359,7 @@ document.addEventListener("DOMContentLoaded", function(){
             form.addEventListener("submit", function(event){
                 if(!valueInput.value){
                     event.preventDefault();
-                    input.setCustomValidity("Please choose an employee from the list.");
+                    input.setCustomValidity({{ t('Please choose an employee from the list.')|tojson }});
                     input.reportValidity();
                     openOptions();
                     filterOptions();

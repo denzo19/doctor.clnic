@@ -5,7 +5,7 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-star"></i> Favorite Medications</h1>
+        <h1><i class="fas fa-star"></i> {{ t("Favorite Medications") }}</h1>
     </div>
 
     <div class="details-card selected-lab-order-card">
@@ -24,21 +24,21 @@
                    name="favorite_search"
                    value="{{ favorite_search or '' }}"
                    class="toolbar-search-input"
-                   placeholder="Search favorites">
+                   placeholder="{{ t('Search favorites') }}">
 
-            <button type="submit" class="toolbar-btn search-btn" title="Search Favorites">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Search Favorites') }}">
                 <i class="fas fa-search"></i>
             </button>
 
             <a href="{{ url_for('doctor_favorite_medications', doctor_id=doctor_id) }}"
                class="toolbar-btn clear-btn"
-               title="Clear Favorites Search">
+               title="{{ t('Clear Favorites Search') }}">
                 <i class="fas fa-times"></i>
             </a>
 
             <button type="button"
                     class="toolbar-btn add-btn"
-                    title="Manage Favorites"
+                    title="{{ t('Manage Favorites') }}"
                     onclick="openMedicationSelectionModal()">
                 <i class="fas fa-plus"></i>
             </button>
@@ -49,11 +49,11 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>Medication</th>
-                    <th>Strength</th>
-                    <th>Dosage Form</th>
-                    <th>Favorite Notes</th>
-                    <th class="actions-header">Actions</th>
+                    <th>{{ t("Medication") }}</th>
+                    <th>{{ t("Strength") }}</th>
+                    <th>{{ t("Dosage Form") }}</th>
+                    <th>{{ t("Favorite Notes") }}</th>
+                    <th class="actions-header">{{ t("Actions") }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -79,7 +79,7 @@
                         <button type="submit"
                                 form="favoriteNoteForm{{ medication.favorite_id }}"
                                 class="table-action edit-action"
-                                title="Save Notes">
+                                title="{{ t('Save Notes') }}">
                             <i class="fas fa-pen"></i>
                         </button>
 
@@ -87,7 +87,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="5" class="empty-row">No favorite medications found.</td>
+                    <td colspan="5" class="empty-row">{{ t("No favorite medications found.") }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -99,7 +99,7 @@
 <div id="medicationSelectionModal" class="modal">
     <div class="modal-content medication-selection-modal-content">
         <div class="modal-header">
-            <h2><i class="fas fa-star"></i> Select Favorite Medications</h2>
+            <h2><i class="fas fa-star"></i> {{ t("Select Favorite Medications") }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeMedicationSelectionModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -109,7 +109,7 @@
             <input type="text"
                    id="medicationSelectionSearch"
                    class="toolbar-search-input"
-                   placeholder="Search medications"
+                   placeholder="{{ t('Search medications') }}"
                    autocomplete="off">
         </div>
 
@@ -122,11 +122,11 @@
                 <table class="app-table">
                     <thead>
                         <tr>
-                            <th>Select</th>
-                            <th>Medication</th>
-                            <th>Strength</th>
-                            <th>Dosage Form</th>
-                            <th>Notes</th>
+                            <th>{{ t("Select") }}</th>
+                            <th>{{ t("Medication") }}</th>
+                            <th>{{ t("Strength") }}</th>
+                            <th>{{ t("Dosage Form") }}</th>
+                            <th>{{ t("Notes") }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -146,7 +146,7 @@
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="5" class="empty-row">No medications available.</td>
+                            <td colspan="5" class="empty-row">{{ t("No medications available.") }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -155,12 +155,12 @@
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save Selection
+                    <i class="fas fa-save"></i> {{ t("Save Selection") }}
                 </button>
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeMedicationSelectionModal()">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t("Cancel") }}
                 </button>
             </div>
         </form>

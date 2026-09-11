@@ -2,20 +2,20 @@
 
 {% block content %}
 
-<section class="app-page">
+<section class="app-page patient-history-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-notes-medical"></i> Unchecked Patient</h1>
+        <h1><i class="fas fa-notes-medical"></i> {{ t("Unchecked Patient") }}</h1>
     </div>
 
     <div class="details-card">
         <form class="toolbar-form patient-history-form" onsubmit="openSelectedPatientHistory(event)">
             <div class="searchable-select"
                  data-searchable-select
-                 data-required-message="Please choose a patient from the list.">
+                 data-required-message="{{ t('Please choose a patient from the list.') }}">
                 <input type="text"
                        class="toolbar-search-input searchable-select-input"
-                       placeholder="Choose patient"
+                       placeholder="{{ t('Choose patient') }}"
                        autocomplete="off"
                        required>
                 <input type="hidden"
@@ -23,22 +23,24 @@
                        class="searchable-select-value">
                 <div class="searchable-select-options">
                     {% for patient in patients %}
+                        {% set patient_label %}
+                            {{ patient.patient_code }} - {{ patient.first_name }}{% if patient.middle_name %} {{ patient.middle_name }}{% endif %} {{ patient.last_name }}{% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}
+                        {% endset %}
                         <button type="button"
                                 class="searchable-select-option"
                                 data-value="{{ patient.id }}"
-                                data-label="{{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}{% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}">
-                            {{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}
-                            {% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}
+                                data-label="{{ patient_label|trim }}">
+                            {{ patient_label|trim }}
                         </button>
                     {% endfor %}
                     <div class="searchable-select-empty">
-                        No patients found.
+                        {{ t("No patients found.") }}
                     </div>
                 </div>
             </div>
 
             <button type="submit" class="standard-btn primary-btn">
-                <i class="fas fa-folder-open"></i> Open
+                <i class="fas fa-folder-open"></i> {{ t("Open") }}
             </button>
         </form>
     </div>

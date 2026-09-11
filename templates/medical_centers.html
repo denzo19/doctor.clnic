@@ -5,7 +5,7 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-hospital"></i> Manage Medical Centers</h1>
+        <h1><i class="fas fa-hospital"></i> {{ t('Manage Medical Centers') }}</h1>
     </div>
     <div class="details-card">
         <form method="GET"
@@ -17,21 +17,21 @@
                    name="search"
                    value="{{ search or '' }}"
                    class="toolbar-search-input"
-                   placeholder="Search medical center">
+                   placeholder="{{ t('Search medical center') }}">
 
-            <button type="submit" class="toolbar-btn search-btn" title="Search">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
             <a href="{{ url_for('manage_medical_centers') }}"
                class="toolbar-btn clear-btn"
-               title="Clear">
+               title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </a>
 
             <button type="button"
                     class="toolbar-btn add-btn"
-                    title="Add Medical Center"
+                    title="{{ t('Add Medical Center') }}"
                     onclick="openAddCenterModal()">
                 <i class="fas fa-plus"></i>
             </button>
@@ -39,7 +39,7 @@
             <button type="button"
                     id="medicalCenterReportBtn"
                     class="toolbar-btn search-btn"
-                    title="Medical Centers Report">
+                    title="{{ t('Medical Centers Report') }}">
                 <i class="fas fa-file-pdf"></i>
             </button>
 
@@ -50,10 +50,10 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>Center Name</th>
-                    <th>Phone</th>
-                    <th>Active</th>
-                    <th class="actions-header">Actions</th>
+                    <th>{{ t('Center Name') }}</th>
+                    <th>{{ t('Phone') }}</th>
+                    <th>{{ t('Active') }}</th>
+                    <th class="actions-header">{{ t('Actions') }}</th>
                 </tr>
             </thead>
 
@@ -70,13 +70,13 @@
 
                     <td>{{ center.center_name }}</td>
                     <td>{{ center.phone_number or '' }}</td>
-                    <td>{{ 'Yes' if center.is_active else 'No' }}</td>
+                    <td>{{ t('Yes') if center.is_active else t('No') }}</td>
 
                     <td class="action-cell" onclick="event.stopPropagation();">
 
                         <button type="button"
                                 class="table-action edit-action"
-                                title="Edit"
+                                title="{{ t('Edit') }}"
                                 onclick="openCenterModal(
                                     '{{ center.id }}',
                                     '{{ center.center_name }}',
@@ -91,15 +91,15 @@
                             <form method="POST"
                                   action="{{ url_for('stop_medical_center', center_id=center.id) }}"
                                   class="inline-delete-form"
-                                  onsubmit="return confirm('Stop this medical center?');">
+                                  onsubmit="return confirm({{ t('Stop this medical center?')|tojson }});">
                                 <button type="submit"
                                         class="table-action delete-action"
-                                        title="Stop Medical Center">
+                                        title="{{ t('Stop Medical Center') }}">
                                     <i class="fas fa-ban"></i>
                                 </button>
                             </form>
                         {% else %}
-                            <span class="locked-label" title="Inactive medical center">
+                            <span class="locked-label" title="{{ t('Inactive medical center') }}">
                                 <i class="fas fa-lock"></i>
                             </span>
                         {% endif %}
@@ -108,7 +108,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="4" class="empty-row">No medical centers found.</td>
+                    <td colspan="4" class="empty-row">{{ t('No medical centers found.') }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -122,7 +122,7 @@
     <div class="modal-content">
 
         <div class="modal-header">
-            <h2><i class="fas fa-pen"></i> Medical Center Information</h2>
+            <h2><i class="fas fa-pen"></i> {{ t('Medical Center Information') }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeCenterModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -133,25 +133,25 @@
             <div class="form-grid two-column-grid">
 
                 <div class="form-group">
-                    <label>Center Name</label>
+                    <label>{{ t('Center Name') }}</label>
                     <input type="text" id="modal_center_name" name="center_name" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Phone</label>
+                    <label>{{ t('Phone') }}</label>
                     <input type="text" id="modal_phone_number" name="phone_number" required>
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Address</label>
+                    <label>{{ t('Address') }}</label>
                     <input type="text" id="modal_address" name="address" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Active</label>
+                    <label>{{ t('Active') }}</label>
                     <select id="modal_is_active" name="is_active">
-                        <option value="1">Yes</option>
-                        <option value="0">No</option>
+                        <option value="1">{{ t('Yes') }}</option>
+                        <option value="0">{{ t('No') }}</option>
                     </select>
                 </div>
 
@@ -159,13 +159,13 @@
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t('Save') }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeCenterModal()">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t('Cancel') }}
                 </button>
             </div>
 
@@ -177,7 +177,7 @@
     <div class="modal-content">
 
         <div class="modal-header">
-            <h2><i class="fas fa-plus"></i> Add Medical Center</h2>
+            <h2><i class="fas fa-plus"></i> {{ t('Add Medical Center') }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeAddCenterModal(true)">
                 <i class="fas fa-times"></i>
             </button>
@@ -191,17 +191,17 @@
             <div class="form-grid two-column-grid">
 
                 <div class="form-group">
-                    <label>Center Name</label>
+                    <label>{{ t('Center Name') }}</label>
                     <input type="text" name="center_name" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Phone</label>
+                    <label>{{ t('Phone') }}</label>
                     <input type="text" name="phone_number" required>
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Address</label>
+                    <label>{{ t('Address') }}</label>
                     <input type="text" name="address" required>
                 </div>
 
@@ -209,19 +209,19 @@
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t('Save') }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-save-btn"
                         onclick="saveCenterAndNext()">
-                    <i class="fas fa-forward"></i> Next
+                    <i class="fas fa-forward"></i> {{ t('Next') }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeAddCenterModal(true)">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t('Cancel') }}
                 </button>
             </div>
 
@@ -247,6 +247,8 @@ document.addEventListener("DOMContentLoaded", function(){
         });
     }
 });
+
+const errorSavingMedicalCenterMessage = {{ t('Error saving medical center.')|tojson }};
 
 function openCenterModal(id, centerName, address, phone, active) {
     const form = document.getElementById("centerEditForm");
@@ -301,7 +303,7 @@ function saveCenterAndNext() {
         const data = result.data;
 
         if (!result.ok || !data.success) {
-            alert(data.message || "Error saving medical center.");
+            alert(data.message || errorSavingMedicalCenterMessage);
             return;
         }
 
@@ -309,7 +311,7 @@ function saveCenterAndNext() {
         form.querySelector("input[name='center_name']").focus();
     })
     .catch(error => {
-        alert("Error saving medical center.");
+        alert(errorSavingMedicalCenterMessage);
         console.error(error);
     });
 }

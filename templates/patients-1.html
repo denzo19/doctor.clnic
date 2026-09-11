@@ -7,7 +7,7 @@
     <div class="page-header">
         <h1>
             <i class="fas fa-hospital-user"></i>
-            Patients
+            {{ t('Patients') }}
         </h1>
     </div>
     <div class="details-card">
@@ -17,17 +17,17 @@
                    name="search"
                    value="{{ search or '' }}"
                    class="toolbar-search-input"
-                   placeholder="Search patient">
+                   placeholder="{{ t('Search patient') }}">
 
             <button type="submit"
                     class="toolbar-btn search-btn"
-                    title="Search">
+                    title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
             <a href="{{ url_for('patients') }}"
                class="toolbar-btn clear-btn"
-               title="Clear">
+               title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </a>
         </form>
@@ -37,24 +37,24 @@
             <input type="text"
                    name="patient_code"
                    class="toolbar-search-input"
-                   placeholder="Code"
+                   placeholder="{{ t('Code') }}"
                    required>
 
             <input type="text"
                    name="first_name"
                    class="toolbar-search-input"
-                   placeholder="First name"
+                   placeholder="{{ t('First name') }}"
                    required>
 
             <input type="text"
                    name="middle_name"
                    class="toolbar-search-input"
-                   placeholder="Middle name">
+                   placeholder="{{ t('Middle name') }}">
 
             <input type="text"
                    name="last_name"
                    class="toolbar-search-input"
-                   placeholder="Last name"
+                   placeholder="{{ t('Last name') }}"
                    required>
 
             <input type="date"
@@ -63,30 +63,30 @@
 
             <select name="gender"
                     class="toolbar-search-input">
-                <option value="">Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+                <option value="">{{ t('Gender') }}</option>
+                <option value="Male">{{ t('Male') }}</option>
+                <option value="Female">{{ t('Female') }}</option>
+                <option value="Other">{{ t('Other') }}</option>
             </select>
 
             <input type="text"
                    name="phone_number"
                    class="toolbar-search-input"
-                   placeholder="Phone">
+                   placeholder="{{ t('Phone') }}">
 
             <input type="email"
                    name="email"
                    class="toolbar-search-input"
-                   placeholder="Email">
+                   placeholder="{{ t('Email') }}">
 
             <input type="text"
                    name="address"
                    class="toolbar-search-input"
-                   placeholder="Address">
+                   placeholder="{{ t('Address') }}">
 
             <button type="submit"
                     class="toolbar-btn add-btn"
-                    title="Add Patient">
+                    title="{{ t('Add Patient') }}">
                 <i class="fas fa-plus"></i>
             </button>
 
@@ -98,18 +98,18 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Code</th>
-                    <th>First</th>
-                    <th>Middle</th>
-                    <th>Last</th>
-                    <th>DOB</th>
-                    <th>Gender</th>
-                    <th>Phone</th>
-                    <th>Email</th>
-                    <th>Address</th>
-                    <th>Active</th>
-                    <th class="actions-header">Actions</th>
+                    <th>{{ t('ID') }}</th>
+                    <th>{{ t('Code') }}</th>
+                    <th>{{ t('First') }}</th>
+                    <th>{{ t('Middle') }}</th>
+                    <th>{{ t('Last') }}</th>
+                    <th>{{ t('DOB') }}</th>
+                    <th>{{ t('Gender') }}</th>
+                    <th>{{ t('Phone') }}</th>
+                    <th>{{ t('Email') }}</th>
+                    <th>{{ t('Address') }}</th>
+                    <th>{{ t('Active') }}</th>
+                    <th class="actions-header">{{ t('Actions') }}</th>
                 </tr>
             </thead>
 
@@ -161,10 +161,10 @@
 
                         <td>
                             <select name="gender" class="table-input">
-                                <option value="">Gender</option>
-                                <option value="Male" {% if patient.gender == 'Male' %}selected{% endif %}>Male</option>
-                                <option value="Female" {% if patient.gender == 'Female' %}selected{% endif %}>Female</option>
-                                <option value="Other" {% if patient.gender == 'Other' %}selected{% endif %}>Other</option>
+                                <option value="">{{ t('Gender') }}</option>
+                                <option value="Male" {% if patient.gender == 'Male' %}selected{% endif %}>{{ t('Male') }}</option>
+                                <option value="Female" {% if patient.gender == 'Female' %}selected{% endif %}>{{ t('Female') }}</option>
+                                <option value="Other" {% if patient.gender == 'Other' %}selected{% endif %}>{{ t('Other') }}</option>
                             </select>
                         </td>
 
@@ -191,15 +191,15 @@
 
                         <td>
                             <select name="is_active" class="table-input">
-                                <option value="1" {% if patient.is_active %}selected{% endif %}>Yes</option>
-                                <option value="0" {% if not patient.is_active %}selected{% endif %}>No</option>
+                                <option value="1" {% if patient.is_active %}selected{% endif %}>{{ t('Yes') }}</option>
+                                <option value="0" {% if not patient.is_active %}selected{% endif %}>{{ t('No') }}</option>
                             </select>
                         </td>
 
                         <td class="action-cell">
                             <button type="submit"
                                     class="table-action edit-action"
-                                    title="Update">
+                                    title="{{ t('Update') }}">
                                 <i class="fas fa-save"></i>
                             </button>
                     </form>
@@ -208,17 +208,17 @@
                                 <form method="POST"
                                       action="{{ url_for('stop_patient', patient_id=patient.id) }}"
                                       class="inline-delete-form"
-                                      onsubmit="return confirm('Stop this patient?');">
+                                      onsubmit="return confirm({{ t('Stop this patient?')|tojson }});">
 
                                     <button type="submit"
                                             class="table-action delete-action"
-                                            title="Stop Patient">
+                                            title="{{ t('Stop Patient') }}">
                                         <i class="fas fa-ban"></i>
                                     </button>
 
                                 </form>
                             {% else %}
-                                <span class="locked-label" title="Inactive patient">
+                                <span class="locked-label" title="{{ t('Inactive patient') }}">
                                     <i class="fas fa-lock"></i>
                                 </span>
                             {% endif %}
@@ -228,7 +228,7 @@
                 {% else %}
                 <tr>
                     <td colspan="12" class="empty-row">
-                        No patients found.
+                        {{ t('No patients found.') }}
                     </td>
                 </tr>
                 {% endfor %}

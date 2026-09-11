@@ -7,7 +7,7 @@
     <div class="page-header">
         <h1>
             <i class="fas fa-user-clock"></i>
-            Checked-in Patients
+            {{ t("Checked-in Patients") }}
         </h1>
     </div>
 
@@ -15,10 +15,10 @@
         <form method="GET" action="{{ url_for('checked_in_patients') }}" class="toolbar-form">
             <div class="searchable-select"
                  data-searchable-select
-                 data-required-message="Please choose a doctor from the list.">
+                 data-required-message="{{ t('Please choose a doctor from the list.') }}">
                 <input type="text"
                        class="toolbar-search-input searchable-select-input"
-                       placeholder="Choose doctor"
+                       placeholder="{{ t('Choose doctor') }}"
                        autocomplete="off"
                        required
                        value="{% for doctor in doctors %}{% if doctor_id|string == doctor.id|string %}{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}{% endif %}{% endfor %}">
@@ -39,18 +39,18 @@
                         </button>
                     {% endfor %}
                     <div class="searchable-select-empty">
-                        No doctors found.
+                        {{ t("No doctors found.") }}
                     </div>
                 </div>
             </div>
 
-            <button type="submit" class="toolbar-btn search-btn" title="Show">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Show') }}">
                 <i class="fas fa-search"></i>
             </button>
 
             <a href="{{ url_for('checked_in_patients') }}"
                class="toolbar-btn clear-btn"
-               title="Clear">
+               title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </a>
         </form>
@@ -60,15 +60,15 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>Time</th>
-                    <th>Code</th>
-                    <th>Patient</th>
-                    <th>DOB</th>
-                    <th>Gender</th>
-                    <th>Phone</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                    <th>Open</th>
+                    <th>{{ t("Time") }}</th>
+                    <th>{{ t("Code") }}</th>
+                    <th>{{ t("Patient") }}</th>
+                    <th>{{ t("DOB") }}</th>
+                    <th>{{ t("Gender") }}</th>
+                    <th>{{ t("Phone") }}</th>
+                    <th>{{ t("Type") }}</th>
+                    <th>{{ t("Status") }}</th>
+                    <th>{{ t("Open") }}</th>
                 </tr>
             </thead>
 
@@ -83,18 +83,18 @@
                         {{ patient.last_name }}
                     </td>
                     <td>{{ patient.date_of_birth }}</td>
-                    <td>{{ patient.gender }}</td>
+                    <td>{{ t(patient.gender) }}</td>
                     <td>{{ patient.phone_number }}</td>
-                    <td>{{ patient.check_in_type }}</td>
+                    <td>{{ t(patient.check_in_type) }}</td>
                     <td>
                         <span class="status-badge status-{{ patient.check_in_status }}">
-                            {{ patient.check_in_status }}
+                            {{ t(patient.check_in_status) }}
                         </span>
                     </td>
                     <td>
                         <a class="table-action view-action"
                            href="{{ url_for('open_checked_in_patient', check_in_item_id=patient.check_in_item_id) }}"
-                           title="Open Patient">
+                           title="{{ t('Open Patient') }}">
                             <i class="fas fa-folder-open"></i>
                         </a>
                     </td>
@@ -102,7 +102,7 @@
                 {% else %}
                 <tr>
                     <td colspan="9" class="empty-row">
-                        No checked-in patients for this doctor today.
+                        {{ t("No checked-in patients for this doctor today.") }}
                     </td>
                 </tr>
                 {% endfor %}

@@ -1,10 +1,11 @@
 from datetime import date, datetime
 import uuid
 
-from flask import Response, flash, redirect, render_template, request, url_for
+from flask import Response, flash, redirect, render_template, request, session, url_for
 
 from auth import login_required, permission_required
 from database import execute_query
+from i18n import translate
 from pdf_utils import (
     add_standard_pdf_image_objects,
     escape_pdf_text,
@@ -16,6 +17,9 @@ from pdf_utils import (
 
 
 def register_lab_routes(app, get_logged_doctor_id):
+    def flash_t(message, category="success"):
+        flash(translate(message, session.get("language", "en")), category)
+
     def get_lab_test_filters():
         search_mode = request.args.get("search_mode", "category").strip()
         if search_mode not in ("category", "text"):
@@ -256,7 +260,7 @@ def register_lab_routes(app, get_logged_doctor_id):
             vital_status = "final" if save_type == "final" else "draft"
 
             if not patient_id or not mdate:
-                flash("Choose patient and date before saving vital signs.", "error")
+                flash_t("Choose patient and date before saving vital signs.", "error")
                 return redirect(url_for("vital_signs", patient_id=patient_id))
 
             if not any([
@@ -268,7 +272,7 @@ def register_lab_routes(app, get_logged_doctor_id):
                 weight,
                 height
             ]):
-                flash("Enter at least one vital sign value.", "error")
+                flash_t("Enter at least one vital sign value.", "error")
                 return redirect(url_for("vital_signs", patient_id=patient_id))
 
             execute_query(
@@ -305,7 +309,7 @@ def register_lab_routes(app, get_logged_doctor_id):
                 )
             )
 
-            flash("Vital signs saved successfully.", "success")
+            flash_t("Vital signs saved successfully.", "success")
             return redirect(url_for("vital_signs", patient_id=patient_id))
 
         return render_template(
@@ -331,11 +335,11 @@ def register_lab_routes(app, get_logged_doctor_id):
         )
 
         if not vital_record:
-            flash("Vital signs record not found.", "error")
+            flash_t("Vital signs record not found.", "error")
             return redirect(url_for("vital_signs"))
 
         if vital_record["vital_status"] != "draft":
-            flash("Only draft vital signs can be edited.", "error")
+            flash_t("Only draft vital signs can be edited.", "error")
             return redirect(url_for("vital_signs", patient_id=vital_record["patient_id"]))
 
         patient_id = request.form.get("patient_id", type=int) or vital_record["patient_id"]
@@ -351,7 +355,7 @@ def register_lab_routes(app, get_logged_doctor_id):
         vital_status = "final" if save_type == "final" else "draft"
 
         if not patient_id or not mdate:
-            flash("Choose patient and date before saving vital signs.", "error")
+            flash_t("Choose patient and date before saving vital signs.", "error")
             return redirect(url_for("vital_signs", patient_id=vital_record["patient_id"]))
 
         if not any([
@@ -363,7 +367,7 @@ def register_lab_routes(app, get_logged_doctor_id):
             weight,
             height
         ]):
-            flash("Enter at least one vital sign value.", "error")
+            flash_t("Enter at least one vital sign value.", "error")
             return redirect(url_for("vital_signs", patient_id=patient_id))
 
         execute_query(
@@ -398,7 +402,7 @@ def register_lab_routes(app, get_logged_doctor_id):
             )
         )
 
-        flash("Vital signs updated successfully.", "success")
+        flash_t("Vital signs updated successfully.", "success")
         return redirect(url_for("vital_signs", patient_id=patient_id))
 
     @app.route("/lab/tests")
@@ -463,7 +467,7 @@ def register_lab_routes(app, get_logged_doctor_id):
             )
 
             if existing_test:
-                flash("LOINC code already exists.", "error")
+                flash_t("LOINC code already exists.", "error")
                 return redirect(url_for("lab_tests_page"))
 
         execute_query(
@@ -484,7 +488,7 @@ def register_lab_routes(app, get_logged_doctor_id):
             )
         )
 
-        flash("Lab test added successfully.", "success")
+        flash_t("Lab test added successfully.", "success")
         return redirect(url_for("lab_tests_page"))
 
     @app.route("/lab/tests/add_ajax", methods=["POST"])
@@ -507,7 +511,7 @@ def register_lab_routes(app, get_logged_doctor_id):
             if existing_test:
                 return {
                     "success": False,
-                    "message": "LOINC code already exists."
+                    "message": translate("LOINC code already exists.", session.get("language", "en"))
                 }
 
         execute_query(
@@ -549,7 +553,7 @@ def register_lab_routes(app, get_logged_doctor_id):
             )
 
             if existing_test:
-                flash("LOINC code already exists.", "error")
+                flash_t("LOINC code already exists.", "error")
                 return redirect(url_for("lab_tests_page"))
 
         execute_query(
@@ -576,7 +580,7 @@ def register_lab_routes(app, get_logged_doctor_id):
             )
         )
 
-        flash("Lab test updated successfully.", "success")
+        flash_t("Lab test updated successfully.", "success")
         return redirect(url_for("lab_tests_page"))
 
     @app.route("/lab/tests/delete/<int:test_id>", methods=["POST"])
@@ -595,7 +599,7 @@ def register_lab_routes(app, get_logged_doctor_id):
         )
 
         if used_test:
-            flash("This lab test is used by patient lab results and cannot be deleted.", "error")
+            flash_t("This lab test is used by patient lab results and cannot be deleted.", "error")
             return redirect(url_for("lab_tests_page"))
 
         execute_query(
@@ -606,7 +610,7 @@ def register_lab_routes(app, get_logged_doctor_id):
             (test_id,)
         )
 
-        flash("Lab test deleted successfully.", "success")
+        flash_t("Lab test deleted successfully.", "success")
         return redirect(url_for("lab_tests_page"))
 
     @app.route("/secretary/lab_order", methods=["GET"])
@@ -748,7 +752,7 @@ def register_lab_routes(app, get_logged_doctor_id):
         if not rows:
             return {
                 "success": False,
-                "message": "Lab order not found."
+                "message": translate("Lab order not found.", session.get("language", "en"))
             }, 404
 
         first_row = rows[0]
@@ -966,7 +970,7 @@ def register_lab_routes(app, get_logged_doctor_id):
         )
 
         if not rows:
-            flash("Lab order not found.", "error")
+            flash_t("Lab order not found.", "error")
             return redirect(url_for("lab_order"))
 
         order_status = get_lab_order_status(rows)
@@ -976,15 +980,15 @@ def register_lab_routes(app, get_logged_doctor_id):
             print_mode = "with_results" if order_status == "completed" else "without_results"
 
         if print_mode not in ("with_results", "without_results"):
-            flash("Invalid print option.", "error")
+            flash_t("Invalid print option.", "error")
             return redirect(url_for("lab_order"))
 
         if print_mode == "with_results" and order_status != "completed":
-            flash("Only completed lab orders can be printed with results.", "error")
+            flash_t("Only completed lab orders can be printed with results.", "error")
             return redirect(url_for("lab_order"))
 
         if print_mode == "without_results" and order_status != "ordered":
-            flash("Only ordered lab orders can be printed without results.", "error")
+            flash_t("Only ordered lab orders can be printed without results.", "error")
             return redirect(url_for("lab_order"))
 
         include_results = print_mode == "with_results"
@@ -1070,7 +1074,7 @@ def register_lab_routes(app, get_logged_doctor_id):
             order_status = "ordered" if save_type in ("final", "final_print") else "draft"
 
             if not patient_id or not doctor_id or not result_date or not test_ids:
-                flash("Choose patient, doctor, order date, and at least one lab test.", "error")
+                flash_t("Choose patient, doctor, order date, and at least one lab test.", "error")
                 return redirect(url_for(
                     "new_lab_order",
                     patient_id=patient_id,
@@ -1102,7 +1106,7 @@ def register_lab_routes(app, get_logged_doctor_id):
                     )
                 )
 
-            flash("Lab order saved successfully.", "success")
+            flash_t("Lab order saved successfully.", "success")
             if save_type == "final_print":
                 return redirect(url_for(
                     "print_lab_order_group",
@@ -1159,11 +1163,11 @@ def register_lab_routes(app, get_logged_doctor_id):
         )
 
         if not rows:
-            flash("Lab order not found.", "error")
+            flash_t("Lab order not found.", "error")
             return redirect(url_for("lab_order"))
 
         if any(row["order_status"] != "draft" for row in rows):
-            flash("Only draft lab orders can be edited.", "error")
+            flash_t("Only draft lab orders can be edited.", "error")
             return redirect(url_for("lab_order"))
 
         doctors = execute_query(
@@ -1225,7 +1229,7 @@ def register_lab_routes(app, get_logged_doctor_id):
         order_status = "ordered" if save_type == "final" else "draft"
 
         if not patient_id or not doctor_id or not result_date or not test_ids:
-            flash("Choose patient, doctor, order date, and at least one lab test.", "error")
+            flash_t("Choose patient, doctor, order date, and at least one lab test.", "error")
             return redirect(url_for("update_lab_order_group", order_key=order_key))
 
         lab_order_code = rows[0].get("lab_order_code") or uuid.uuid4().hex
@@ -1261,7 +1265,7 @@ def register_lab_routes(app, get_logged_doctor_id):
                 )
             )
 
-        flash("Lab order updated successfully.", "success")
+        flash_t("Lab order updated successfully.", "success")
         return redirect(url_for("lab_order"))
 
     @app.route("/secretary/lab_order/delete/<order_key>", methods=["POST"])
@@ -1282,11 +1286,11 @@ def register_lab_routes(app, get_logged_doctor_id):
         )
 
         if not rows:
-            flash("Lab order not found.", "error")
+            flash_t("Lab order not found.", "error")
             return redirect(url_for("lab_order"))
 
         if any(row["order_status"] != "draft" for row in rows):
-            flash("Only draft lab orders can be deleted.", "error")
+            flash_t("Only draft lab orders can be deleted.", "error")
             return redirect(url_for("lab_order"))
 
         execute_query(
@@ -1298,7 +1302,7 @@ def register_lab_routes(app, get_logged_doctor_id):
             (order_key, fallback_order_id)
         )
 
-        flash("Draft lab order deleted successfully.", "success")
+        flash_t("Draft lab order deleted successfully.", "success")
         return redirect(url_for("lab_order"))
 
     @app.route("/secretary/lab_order/cancel/<order_key>", methods=["POST"])
@@ -1319,11 +1323,11 @@ def register_lab_routes(app, get_logged_doctor_id):
         )
 
         if not rows:
-            flash("Lab order not found.", "error")
+            flash_t("Lab order not found.", "error")
             return redirect(url_for("lab_order"))
 
         if any(row["order_status"] != "ordered" for row in rows):
-            flash("Only ordered lab orders can be cancelled.", "error")
+            flash_t("Only ordered lab orders can be cancelled.", "error")
             return redirect(url_for("lab_order"))
 
         execute_query(
@@ -1338,7 +1342,7 @@ def register_lab_routes(app, get_logged_doctor_id):
             (order_key, fallback_order_id)
         )
 
-        flash("Lab order cancelled successfully.", "success")
+        flash_t("Lab order cancelled successfully.", "success")
         return redirect(url_for("lab_order"))
 
     @app.route("/secretary/lab_result", methods=["GET"])
@@ -1417,7 +1421,7 @@ def register_lab_routes(app, get_logged_doctor_id):
         )
 
         if selected_order_key and selected_order_key not in valid_order_keys:
-            flash("Selected lab order was not found for the current filters.", "error")
+            flash_t("Selected lab order was not found for the current filters.", "error")
             selected_order_key = ""
             selected_order = None
 
@@ -1504,11 +1508,11 @@ def register_lab_routes(app, get_logged_doctor_id):
         )
 
         if not result:
-            flash("Lab result not found.", "error")
+            flash_t("Lab result not found.", "error")
             return redirect(url_for("lab_result"))
 
         if result["order_status"] != "ordered":
-            flash("Only ordered lab tests can receive results.", "error")
+            flash_t("Only ordered lab tests can receive results.", "error")
             return redirect(url_for("lab_result"))
 
         result_value = request.form.get("result_value", "").strip()
@@ -1522,7 +1526,7 @@ def register_lab_routes(app, get_logged_doctor_id):
         order_status = "completed" if save_type == "final" else "ordered"
 
         if not result_value or not result_date:
-            flash("Result value and result date are required.", "error")
+            flash_t("Result value and result date are required.", "error")
             return redirect(url_for("lab_result"))
 
         execute_query(
@@ -1554,7 +1558,7 @@ def register_lab_routes(app, get_logged_doctor_id):
         if request.form.get("selected_order_key"):
             redirect_args["order_key"] = request.form.get("selected_order_key")
 
-        flash("Lab result saved successfully.", "success")
+        flash_t("Lab result saved successfully.", "success")
         return redirect(url_for("lab_result", **redirect_args))
 
     @app.route("/secretary/lab_result/final_save/<int:first_order_id>", methods=["POST"])
@@ -1590,11 +1594,11 @@ def register_lab_routes(app, get_logged_doctor_id):
         )
 
         if not order_rows:
-            flash("Lab order not found.", "error")
+            flash_t("Lab order not found.", "error")
             return redirect(url_for("lab_result", **redirect_args))
 
         if any(row["order_status"] != "ordered" for row in order_rows):
-            flash("Only ordered lab orders can be final saved.", "error")
+            flash_t("Only ordered lab orders can be final saved.", "error")
             return redirect(url_for("lab_result", **redirect_args))
 
         missing_results = [
@@ -1603,7 +1607,7 @@ def register_lab_routes(app, get_logged_doctor_id):
         ]
 
         if missing_results:
-            flash("Enter all result values before final saving this lab order.", "error")
+            flash_t("Enter all result values before final saving this lab order.", "error")
             return redirect(url_for("lab_result", **redirect_args))
 
         order_row_ids = [row["id"] for row in order_rows]
@@ -1620,7 +1624,7 @@ def register_lab_routes(app, get_logged_doctor_id):
             tuple(order_row_ids)
         )
 
-        flash("Lab order final saved successfully.", "success")
+        flash_t("Lab order final saved successfully.", "success")
         return redirect(url_for("lab_result", doctor_id=selected_doctor_id) if selected_doctor_id else url_for("lab_result"))
 
     @app.route("/lab_order/edit/<int:order_id>", methods=["GET", "POST"])
@@ -1655,11 +1659,11 @@ def register_lab_routes(app, get_logged_doctor_id):
         )
 
         if not order:
-            flash("Lab order not found.", "error")
+            flash_t("Lab order not found.", "error")
             return redirect(url_for("checked_in_patients", doctor_id=doctor_id))
 
         if order["order_status"] in ("ordered", "cancelled"):
-            flash("This lab order is finalized and cannot be edited.", "error")
+            flash_t("This lab order is finalized and cannot be edited.", "error")
             return redirect(url_for(
                 "patient_details",
                 patient_id=order["patient_id"],
@@ -1700,7 +1704,7 @@ def register_lab_routes(app, get_logged_doctor_id):
                 )
             )
 
-            flash("Lab order updated successfully.", "success")
+            flash_t("Lab order updated successfully.", "success")
             return redirect(url_for(
                 "patient_details",
                 patient_id=order["patient_id"],
@@ -1725,7 +1729,7 @@ def register_lab_routes(app, get_logged_doctor_id):
         )
 
         if order["order_status"] != "draft":
-            flash("Only draft lab orders can be deleted.", "error")
+            flash_t("Only draft lab orders can be deleted.", "error")
             return redirect(url_for("patient_details", patient_id=order["patient_id"], doctor_id=doctor_id))
 
         execute_query(
@@ -1733,7 +1737,7 @@ def register_lab_routes(app, get_logged_doctor_id):
             (order_id,)
         )
 
-        flash("Draft lab order deleted successfully.", "success")
+        flash_t("Draft lab order deleted successfully.", "success")
         return redirect(url_for("patient_details", patient_id=order["patient_id"], doctor_id=doctor_id))
 
     @app.route("/lab_order/cancel/<int:order_id>", methods=["POST"])
@@ -1747,7 +1751,7 @@ def register_lab_routes(app, get_logged_doctor_id):
         )
 
         if order["order_status"] != "ordered":
-            flash("Only ordered lab tests can be cancelled.", "error")
+            flash_t("Only ordered lab tests can be cancelled.", "error")
             return redirect(url_for("patient_details", patient_id=order["patient_id"], doctor_id=doctor_id))
 
         execute_query(
@@ -1761,5 +1765,5 @@ def register_lab_routes(app, get_logged_doctor_id):
             (order_id,)
         )
 
-        flash("Lab order cancelled successfully.", "success")
+        flash_t("Lab order cancelled successfully.", "success")
         return redirect(url_for("patient_details", patient_id=order["patient_id"], doctor_id=doctor_id))

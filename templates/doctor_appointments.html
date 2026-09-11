@@ -8,7 +8,7 @@
 
         <h1>
             <i class="fas fa-calendar-day"></i>
-            Doctor Appointments
+            {{ t("Doctor Appointments") }}
         </h1>
 
     </div>
@@ -21,12 +21,12 @@
 
                 <div class="toolbar-field">
 
-                    <label>Doctor</label>
+                    <label>{{ t("Doctor") }}</label>
 
                     <select name="doctor_id" required>
 
                         <option value="">
-                            Choose doctor
+                            {{ t("Choose doctor") }}
                         </option>
 
                         {% for doctor in doctors %}
@@ -53,7 +53,7 @@
 
                 <div class="toolbar-field">
 
-                    <label>Search Mode</label>
+                    <label>{{ t("Search Mode") }}</label>
 
                     <select name="search_mode"
                             onchange="toggleDateFields(this.value)">
@@ -63,7 +63,7 @@
                                 selected
                             {% endif %}
                         >
-                            Today
+                            {{ t("Today") }}
                         </option>
 
                         <option value="range"
@@ -71,7 +71,7 @@
                                 selected
                             {% endif %}
                         >
-                            From Date / To Date
+                            {{ t("From Date / To Date") }}
                         </option>
 
                     </select>
@@ -86,7 +86,7 @@
                      {% endif %}
                 >
 
-                    <label>From Date</label>
+                    <label>{{ t("From Date") }}</label>
 
                     <input type="date"
                            name="from_date"
@@ -102,7 +102,7 @@
                      {% endif %}
                 >
 
-                    <label>To Date</label>
+                    <label>{{ t("To Date") }}</label>
 
                     <input type="date"
                            name="to_date"
@@ -150,12 +150,12 @@
 
                 <tr>
 
-                    <th>Date</th>
-                    <th>Start</th>
-                    <th>Patient</th>
-                    <th>Phone</th>
-                    <th>Medical Center</th>
-                    <th>Status</th>
+                    <th>{{ t("Date") }}</th>
+                    <th>{{ t("Start") }}</th>
+                    <th>{{ t("Patient") }}</th>
+                    <th>{{ t("Phone") }}</th>
+                    <th>{{ t("Medical Center") }}</th>
+                    <th>{{ t("Status") }}</th>
 
                 </tr>
 
@@ -196,7 +196,7 @@
 
                     <td>
 
-                        {{ appt.appointment_status }}
+                        {{ t(appt.appointment_status) }}
 
                     </td>
 
@@ -209,7 +209,7 @@
                     <td colspan="6"
                         class="empty-row">
 
-                        No appointments found.
+                        {{ t("No appointments found.") }}
 
                     </td>
 

@@ -5,7 +5,7 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-vial"></i> Lab Orders</h1>
+        <h1><i class="fas fa-vial"></i> {{ t("Lab Orders") }}</h1>
     </div>
 
     <div class="details-card">
@@ -13,7 +13,7 @@
             <div class="searchable-select" data-searchable-select>
                 <input type="text"
                        class="toolbar-search-input searchable-select-input"
-                       placeholder="All doctors"
+                       placeholder="{{ t('All doctors') }}"
                        autocomplete="off"
                        value="{% for doctor in doctors %}{% if selected_doctor_id == doctor.id %}{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}{% endif %}{% endfor %}">
                 <input type="hidden"
@@ -30,7 +30,7 @@
                         </button>
                     {% endfor %}
                     <div class="searchable-select-empty">
-                        No doctors found.
+                        {{ t("No doctors found.") }}
                     </div>
                 </div>
             </div>
@@ -38,7 +38,7 @@
             <div class="searchable-select" data-searchable-select>
                 <input type="text"
                        class="toolbar-search-input searchable-select-input"
-                       placeholder="All patients"
+                       placeholder="{{ t('All patients') }}"
                        autocomplete="off"
                        value="{% for patient in patients %}{% if selected_patient_id == patient.id %}{{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}{% endif %}{% endfor %}">
                 <input type="hidden"
@@ -55,30 +55,30 @@
                         </button>
                     {% endfor %}
                     <div class="searchable-select-empty">
-                        No patients found.
+                        {{ t("No patients found.") }}
                     </div>
                 </div>
             </div>
 
             <select name="status" class="toolbar-search-input">
-                <option value="">All statuses</option>
-                <option value="draft" {% if selected_status == 'draft' %}selected{% endif %}>Draft</option>
-                <option value="ordered" {% if selected_status == 'ordered' %}selected{% endif %}>Ordered</option>
-                <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Completed</option>
-                <option value="cancelled" {% if selected_status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                <option value="">{{ t("All statuses") }}</option>
+                <option value="draft" {% if selected_status == 'draft' %}selected{% endif %}>{{ t("Draft") }}</option>
+                <option value="ordered" {% if selected_status == 'ordered' %}selected{% endif %}>{{ t("Ordered") }}</option>
+                <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>{{ t("Completed") }}</option>
+                <option value="cancelled" {% if selected_status == 'cancelled' %}selected{% endif %}>{{ t("Cancelled") }}</option>
             </select>
 
-            <button type="submit" class="toolbar-btn search-btn" title="Search">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
-            <a href="{{ url_for('lab_order') }}" class="toolbar-btn clear-btn" title="Clear">
+            <a href="{{ url_for('lab_order') }}" class="toolbar-btn clear-btn" title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </a>
 
             <a href="{{ url_for('new_lab_order', doctor_id=selected_doctor_id) }}"
                class="toolbar-btn add-btn"
-               title="Add Lab Order">
+               title="{{ t('Add Lab Order') }}">
                 <i class="fas fa-plus"></i>
             </a>
         </form>
@@ -88,13 +88,13 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>Order</th>
-                    <th>Date</th>
-                    <th>Patient</th>
-                    <th>Doctor</th>
-                    <th>Tests</th>
-                    <th>Status</th>
-                    <th class="actions-header">Actions</th>
+                    <th>{{ t("Order") }}</th>
+                    <th>{{ t("Date") }}</th>
+                    <th>{{ t("Patient") }}</th>
+                    <th>{{ t("Doctor") }}</th>
+                    <th>{{ t("Tests") }}</th>
+                    <th>{{ t("Status") }}</th>
+                    <th class="actions-header">{{ t("Actions") }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -113,13 +113,13 @@
                     </td>
                     <td>
                         <span class="status-badge status-{{ order.order_status }}">
-                            {{ order.order_status }}
+                            {{ t(order.order_status) }}
                         </span>
                     </td>
                     <td class="action-cell">
                         <button type="button"
                                 class="table-action view-action"
-                                title="View"
+                                title="{{ t('View') }}"
                                 data-view-lab-order
                                 data-url="{{ url_for('view_lab_order_group', order_key=order.order_key) }}">
                             <i class="fas fa-eye"></i>
@@ -127,7 +127,7 @@
 
                         <button type="button"
                                 class="table-action view-action"
-                                title="Print"
+                                title="{{ t('Print') }}"
                                 data-print-lab-order
                                 data-status="{{ order.order_status }}"
                                 data-with-results-url="{{ url_for('print_lab_order_group', order_key=order.order_key, print_mode='with_results') }}"
@@ -138,17 +138,17 @@
                         {% if order.order_status == 'draft' %}
                             <a href="{{ url_for('update_lab_order_group', order_key=order.order_key) }}"
                                class="table-action edit-action"
-                               title="Edit">
+                               title="{{ t('Edit') }}">
                                 <i class="fas fa-pen"></i>
                             </a>
 
                             <form method="POST"
                                   action="{{ url_for('delete_lab_order_group', order_key=order.order_key) }}"
                                   class="inline-delete-form"
-                                  onsubmit="return confirm('Delete this draft lab order?');">
+                                  onsubmit="return confirm({{ t('Delete this draft lab order?')|tojson }});">
                                 <button type="submit"
                                         class="table-action delete-action"
-                                        title="Delete">
+                                        title="{{ t('Delete') }}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>
@@ -156,21 +156,21 @@
                             <form method="POST"
                                   action="{{ url_for('cancel_lab_order_group', order_key=order.order_key) }}"
                                   class="inline-delete-form"
-                                  onsubmit="return confirm('Cancel this lab order?');">
+                                  onsubmit="return confirm({{ t('Cancel this lab order?')|tojson }});">
                                 <button type="submit"
                                         class="table-action delete-action"
-                                        title="Cancel">
+                                        title="{{ t('Cancel') }}">
                                     <i class="fas fa-ban"></i>
                                 </button>
                             </form>
                         {% else %}
-                            <span class="locked-label">Locked</span>
+                            <span class="locked-label">{{ t("Locked") }}</span>
                         {% endif %}
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="7" class="empty-row">No lab orders found.</td>
+                    <td colspan="7" class="empty-row">{{ t("No lab orders found.") }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -182,7 +182,7 @@
 <div id="labOrderViewModal" class="modal">
     <div class="modal-content large-modal">
         <div class="modal-header">
-            <h2><i class="fas fa-eye"></i> Lab Order Details</h2>
+            <h2><i class="fas fa-eye"></i> {{ t("Lab Order Details") }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeLabOrderViewModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -191,23 +191,23 @@
         <div class="modal-form">
             <div class="lab-order-view-summary">
                 <div>
-                    <span>Order</span>
+                    <span>{{ t("Order") }}</span>
                     <strong id="viewOrderId"></strong>
                 </div>
                 <div>
-                    <span>Date</span>
+                    <span>{{ t("Date") }}</span>
                     <strong id="viewOrderDate"></strong>
                 </div>
                 <div>
-                    <span>Patient</span>
+                    <span>{{ t("Patient") }}</span>
                     <strong id="viewOrderPatient"></strong>
                 </div>
                 <div>
-                    <span>Doctor</span>
+                    <span>{{ t("Doctor") }}</span>
                     <strong id="viewOrderDoctor"></strong>
                 </div>
                 <div>
-                    <span>Status</span>
+                    <span>{{ t("Status") }}</span>
                     <strong id="viewOrderStatus"></strong>
                 </div>
             </div>
@@ -216,17 +216,17 @@
                 <table class="app-table">
                     <thead>
                         <tr>
-                            <th>Test</th>
-                            <th>Category</th>
-                            <th>Unit</th>
-                            <th>Result</th>
-                            <th>Status</th>
-                            <th>Notes</th>
+                            <th>{{ t("Test") }}</th>
+                            <th>{{ t("Category") }}</th>
+                            <th>{{ t("Unit") }}</th>
+                            <th>{{ t("Result") }}</th>
+                            <th>{{ t("Status") }}</th>
+                            <th>{{ t("Notes") }}</th>
                         </tr>
                     </thead>
                     <tbody id="viewOrderTestsBody">
                         <tr>
-                            <td colspan="6" class="empty-row">No tests found.</td>
+                            <td colspan="6" class="empty-row">{{ t("No tests found.") }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -236,7 +236,7 @@
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeLabOrderViewModal()">
-                    <i class="fas fa-ban"></i> Close
+                    <i class="fas fa-ban"></i> {{ t("Close") }}
                 </button>
             </div>
         </div>
@@ -278,6 +278,18 @@
 </style>
 
 <script>
+const labOrderListText = {
+    noTestsFound: {{ t("No tests found.")|tojson }},
+    couldNotLoadDetails: {{ t("Could not load lab order details.")|tojson }},
+    printingUnavailable: {{ t("Printing is available only for completed or ordered lab orders.")|tojson }}
+};
+const labOrderStatuses = {
+    draft: {{ t("draft")|tojson }},
+    ordered: {{ t("ordered")|tojson }},
+    completed: {{ t("completed")|tojson }},
+    cancelled: {{ t("cancelled")|tojson }}
+};
+
 document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
     const input = selectBox.querySelector(".searchable-select-input");
     const valueInput = selectBox.querySelector(".searchable-select-value");
@@ -340,12 +352,16 @@ function setLabOrderViewText(id, value) {
     document.getElementById(id).textContent = value || "";
 }
 
+function translateLabOrderStatus(value) {
+    return labOrderStatuses[value] || value || "";
+}
+
 function renderLabOrderTests(tests) {
     const body = document.getElementById("viewOrderTestsBody");
     body.innerHTML = "";
 
     if (!tests || tests.length === 0) {
-        body.innerHTML = '<tr><td colspan="6" class="empty-row">No tests found.</td></tr>';
+        body.innerHTML = '<tr><td colspan="6" class="empty-row">' + labOrderListText.noTestsFound + '</td></tr>';
         return;
     }
 
@@ -356,7 +372,7 @@ function renderLabOrderTests(tests) {
             test.category,
             test.unit,
             test.result_value,
-            test.status,
+            translateLabOrderStatus(test.status),
             test.notes
         ];
 
@@ -374,7 +390,7 @@ function openLabOrderViewModal(url) {
     fetch(url)
         .then(function(response){
             if (!response.ok) {
-                throw new Error("Could not load lab order details.");
+                throw new Error(labOrderListText.couldNotLoadDetails);
             }
             return response.json();
         })
@@ -385,13 +401,13 @@ function openLabOrderViewModal(url) {
             setLabOrderViewText("viewOrderDate", order.result_date);
             setLabOrderViewText("viewOrderPatient", order.patient);
             setLabOrderViewText("viewOrderDoctor", order.doctor);
-            setLabOrderViewText("viewOrderStatus", order.status);
+            setLabOrderViewText("viewOrderStatus", translateLabOrderStatus(order.status));
             renderLabOrderTests(data.tests || []);
 
             document.getElementById("labOrderViewModal").style.display = "block";
         })
         .catch(function(error){
-            alert(error.message || "Could not load lab order details.");
+            alert(error.message || labOrderListText.couldNotLoadDetails);
         });
 }
 
@@ -412,7 +428,7 @@ document.querySelectorAll("[data-print-lab-order]").forEach(function(button){
         } else if (button.dataset.status === "ordered") {
             window.open(button.dataset.withoutResultsUrl, "_blank");
         } else {
-            alert("Printing is available only for completed or ordered lab orders.");
+            alert(labOrderListText.printingUnavailable);
         }
     });
 });

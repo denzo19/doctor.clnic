@@ -7,7 +7,7 @@
     <div class="page-header">
         <h1>
             <i class="fas fa-users"></i>
-            Manage Users
+            {{ t('Manage Users') }}
         </h1>
     </div>
     <div class="details-card">
@@ -16,30 +16,30 @@
             <input type="text"
                    name="username"
                    class="toolbar-search-input"
-                   placeholder="Username"
+                   placeholder="{{ t('Username') }}"
                    required>
 
             <input type="email"
                    name="email"
                    class="toolbar-search-input"
-                   placeholder="Email">
+                   placeholder="{{ t('Email') }}">
 
             <input type="text"
                    name="full_name"
                    class="toolbar-search-input"
-                   placeholder="Full name"
+                   placeholder="{{ t('Full name') }}"
                    required>
 
             <input type="text"
                    name="password_hash"
                    class="toolbar-search-input"
-                   placeholder="Password hash"
+                   placeholder="{{ t('Password hash') }}"
                    required>
 
             <select name="group_id"
                     class="toolbar-search-input"
                     required>
-                <option value="">Group</option>
+                <option value="">{{ t('Group') }}</option>
                 {% for group in groups %}
                     <option value="{{ group.id }}">
                         {{ group.group_name }}
@@ -49,7 +49,7 @@
 
             <button type="submit"
                     class="toolbar-btn add-btn"
-                    title="Add User">
+                    title="{{ t('Add User') }}">
                 <i class="fas fa-plus"></i>
             </button>
 
@@ -60,13 +60,13 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Full Name</th>
-                    <th>Group</th>
-                    <th>Active</th>
-                    <th class="actions-header">Actions</th>
+                    <th>{{ t('ID') }}</th>
+                    <th>{{ t('Username') }}</th>
+                    <th>{{ t('Email') }}</th>
+                    <th>{{ t('Full Name') }}</th>
+                    <th>{{ t('Group') }}</th>
+                    <th>{{ t('Active') }}</th>
+                    <th class="actions-header">{{ t('Actions') }}</th>
                 </tr>
             </thead>
 
@@ -114,15 +114,15 @@
 
                         <td>
                             <select name="is_active" class="table-input">
-                                <option value="1" {% if user.is_active %}selected{% endif %}>Yes</option>
-                                <option value="0" {% if not user.is_active %}selected{% endif %}>No</option>
+                                <option value="1" {% if user.is_active %}selected{% endif %}>{{ t('Yes') }}</option>
+                                <option value="0" {% if not user.is_active %}selected{% endif %}>{{ t('No') }}</option>
                             </select>
                         </td>
 
                         <td class="action-cell">
                             <button type="submit"
                                     class="table-action edit-action"
-                                    title="Update">
+                                    title="{{ t('Update') }}">
                                 <i class="fas fa-save"></i>
                             </button>
                     </form>
@@ -131,15 +131,15 @@
                                 <form method="POST"
                                       action="{{ url_for('stop_user', user_id=user.id) }}"
                                       class="inline-delete-form"
-                                      onsubmit="return confirm('Stop this user?');">
+                                      onsubmit="return confirm({{ t('Stop this user?')|tojson }});">
                                     <button type="submit"
                                             class="table-action delete-action"
-                                            title="Stop User">
+                                            title="{{ t('Stop User') }}">
                                         <i class="fas fa-ban"></i>
                                     </button>
                                 </form>
                             {% else %}
-                                <span class="locked-label" title="Inactive user">
+                                <span class="locked-label" title="{{ t('Inactive user') }}">
                                     <i class="fas fa-lock"></i>
                                 </span>
                             {% endif %}
@@ -148,7 +148,7 @@
                 {% else %}
                 <tr>
                     <td colspan="7" class="empty-row">
-                        No users found.
+                        {{ t('No users found.') }}
                     </td>
                 </tr>
                 {% endfor %}

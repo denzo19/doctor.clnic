@@ -5,7 +5,7 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-id-badge"></i> Manage Employees</h1>
+        <h1><i class="fas fa-id-badge"></i> {{ t('Manage Employees') }}</h1>
     </div>
     <div class="details-card">
         <form method="GET" action="{{ url_for('manage_employees') }}" class="toolbar-form">
@@ -15,19 +15,19 @@
                    name="search"
                    value="{{ search or '' }}"
                    class="toolbar-search-input"
-                   placeholder="Search employee">
+                   placeholder="{{ t('Search employee') }}">
 
-            <button type="submit" class="toolbar-btn search-btn" title="Search">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
-            <a href="{{ url_for('manage_employees') }}" class="toolbar-btn clear-btn" title="Clear">
+            <a href="{{ url_for('manage_employees') }}" class="toolbar-btn clear-btn" title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </a>
 
             <button type="button"
                     class="toolbar-btn add-btn"
-                    title="Add Employee"
+                    title="{{ t('Add Employee') }}"
                     onclick="openAddEmployeeModal()">
                 <i class="fas fa-plus"></i>
             </button>
@@ -35,7 +35,7 @@
             <button type="button"
                     id="employeeReportBtn"
                     class="toolbar-btn search-btn"
-                    title="Employees Report">
+                    title="{{ t('Employees Report') }}">
                 <i class="fas fa-file-pdf"></i>
             </button>
 
@@ -46,14 +46,14 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>Code</th>
-                    <th>Full Name</th>
-                    <th>Job Title</th>
-                    <th>Specialty</th>
-                    <th>Phone</th>
-                    <th>Group</th>
-                    <th>Active</th>
-                    <th class="actions-header">Actions</th>
+                    <th>{{ t('Code') }}</th>
+                    <th>{{ t('Full Name') }}</th>
+                    <th>{{ t('Job Title') }}</th>
+                    <th>{{ t('Specialty') }}</th>
+                    <th>{{ t('Phone') }}</th>
+                    <th>{{ t('Group') }}</th>
+                    <th>{{ t('Active') }}</th>
+                    <th class="actions-header">{{ t('Actions') }}</th>
                 </tr>
             </thead>
 
@@ -78,13 +78,13 @@
                     <td>{{ emp.specialty or '' }}</td>
                     <td>{{ emp.phone_number or '' }}</td>
                     <td>{{ emp.group_name }}</td>
-                    <td>{{ 'Yes' if emp.is_active else 'No' }}</td>
+                    <td>{{ t('Yes') if emp.is_active else t('No') }}</td>
 
                     <td class="action-cell" onclick="event.stopPropagation();">
 
                         <button type="button"
                                 class="table-action edit-action"
-                                title="Edit"
+                                title="{{ t('Edit') }}"
                                 onclick="openEmployeeModal(
                                     '{{ emp.id }}',
                                     '{{ emp.employee_code }}',
@@ -103,15 +103,15 @@
                             <form method="POST"
                                   action="{{ url_for('stop_employee', employee_id=emp.id) }}"
                                   class="inline-delete-form"
-                                  onsubmit="return confirm('Stop this employee and related user account?');">
+                                  onsubmit="return confirm({{ t('Stop this employee and related user account?')|tojson }});">
                                 <button type="submit"
                                         class="table-action delete-action"
-                                        title="Stop Employee">
+                                        title="{{ t('Stop Employee') }}">
                                     <i class="fas fa-ban"></i>
                                 </button>
                             </form>
                         {% else %}
-                            <span class="locked-label" title="Inactive employee">
+                            <span class="locked-label" title="{{ t('Inactive employee') }}">
                                 <i class="fas fa-lock"></i>
                             </span>
                         {% endif %}
@@ -120,7 +120,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="8" class="empty-row">No employees found.</td>
+                    <td colspan="8" class="empty-row">{{ t('No employees found.') }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -135,7 +135,7 @@
     <div class="modal-content">
 
         <div class="modal-header">
-            <h2><i class="fas fa-pen"></i> Employee Information</h2>
+            <h2><i class="fas fa-pen"></i> {{ t('Employee Information') }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeEmployeeModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -146,34 +146,34 @@
             <div class="form-grid two-column-grid">
 
                 <div class="form-group">
-                    <label>Employee Code</label>
+                    <label>{{ t('Employee Code') }}</label>
                     <input type="text" id="modal_employee_code" name="employee_code" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Full Name</label>
+                    <label>{{ t('Full Name') }}</label>
                     <input type="text" id="modal_full_name" name="full_name" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Email</label>
+                    <label>{{ t('Email') }}</label>
                     <input type="email" id="modal_email" name="email" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Phone</label>
+                    <label>{{ t('Phone') }}</label>
                     <input type="text" id="modal_phone_number" name="phone_number" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Job Title</label>
+                    <label>{{ t('Job Title') }}</label>
                     <input type="text" id="modal_job_title" name="job_title" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Specialty</label>
+                    <label>{{ t('Specialty') }}</label>
                     <select id="modal_specialty" name="specialty">
-                        <option value="">Choose speciality</option>
+                        <option value="">{{ t('Choose speciality') }}</option>
                         {% for specialty in doctor_specialties %}
                             <option value="{{ specialty.specialty_name }}">
                                 {{ specialty.specialty_name }}
@@ -183,9 +183,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Group</label>
+                    <label>{{ t('Group') }}</label>
                     <select id="modal_group_id" name="group_id" required>
-                        <option value="">Choose group</option>
+                        <option value="">{{ t('Choose group') }}</option>
                         {% for group in groups %}
                             <option value="{{ group.id }}">{{ group.group_name }}</option>
                         {% endfor %}
@@ -193,10 +193,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Active</label>
+                    <label>{{ t('Active') }}</label>
                     <select id="modal_is_active" name="is_active">
-                        <option value="1">Yes</option>
-                        <option value="0">No</option>
+                        <option value="1">{{ t('Yes') }}</option>
+                        <option value="0">{{ t('No') }}</option>
                     </select>
                 </div>
 
@@ -204,13 +204,13 @@
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t('Save') }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeEmployeeModal()">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t('Cancel') }}
                 </button>
             </div>
 
@@ -222,7 +222,7 @@
     <div class="modal-content">
 
         <div class="modal-header">
-            <h2><i class="fas fa-plus"></i> Add Employee</h2>
+            <h2><i class="fas fa-plus"></i> {{ t('Add Employee') }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeAddEmployeeModal(true)">
                 <i class="fas fa-times"></i>
             </button>
@@ -233,34 +233,34 @@
             <div class="form-grid two-column-grid">
 
                 <div class="form-group">
-                    <label>Employee Code</label>
+                    <label>{{ t('Employee Code') }}</label>
                     <input type="text" name="employee_code" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Full Name</label>
+                    <label>{{ t('Full Name') }}</label>
                     <input type="text" name="full_name" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Email</label>
+                    <label>{{ t('Email') }}</label>
                     <input type="email" name="email" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Phone</label>
+                    <label>{{ t('Phone') }}</label>
                     <input type="text" name="phone_number" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Job Title</label>
+                    <label>{{ t('Job Title') }}</label>
                     <input type="text" name="job_title" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Specialty</label>
+                    <label>{{ t('Specialty') }}</label>
                     <select name="specialty">
-                        <option value="">Choose speciality</option>
+                        <option value="">{{ t('Choose speciality') }}</option>
                         {% for specialty in doctor_specialties %}
                             <option value="{{ specialty.specialty_name }}">
                                 {{ specialty.specialty_name }}
@@ -270,9 +270,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Group</label>
+                    <label>{{ t('Group') }}</label>
                     <select name="group_id" required>
-                        <option value="">Choose group</option>
+                        <option value="">{{ t('Choose group') }}</option>
                         {% for group in groups %}
                             <option value="{{ group.id }}">{{ group.group_name }}</option>
                         {% endfor %}
@@ -283,19 +283,19 @@
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t('Save') }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-save-btn"
                         onclick="saveEmployeeAndNext()">
-                    <i class="fas fa-forward"></i> Next
+                    <i class="fas fa-forward"></i> {{ t('Next') }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeAddEmployeeModal(true)">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t('Cancel') }}
                 </button>
             </div>
 
@@ -322,6 +322,9 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 });
 
+const currentLabel = {{ t('current')|tojson }};
+const errorSavingEmployeeMessage = {{ t('Error saving employee.')|tojson }};
+
 function selectEmployeeSpecialty(selectElement, specialty) {
     const specialtyValue = specialty || "";
 
@@ -331,7 +334,7 @@ function selectEmployeeSpecialty(selectElement, specialty) {
         });
 
         if (!existingOption) {
-            const legacyOption = new Option(specialtyValue + " (current)", specialtyValue);
+            const legacyOption = new Option(specialtyValue + " (" + currentLabel + ")", specialtyValue);
             selectElement.add(legacyOption);
         }
     }
@@ -392,11 +395,11 @@ function saveEmployeeAndNext() {
             form.reset();
             form.querySelector("input[name='employee_code']").focus();
         } else {
-            alert(data.message || "Error saving employee.");
+            alert(data.message || errorSavingEmployeeMessage);
         }
     })
     .catch(error => {
-        alert("Error saving employee.");
+        alert(errorSavingEmployeeMessage);
         console.error(error);
     });
 }

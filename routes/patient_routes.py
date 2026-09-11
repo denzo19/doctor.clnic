@@ -1,9 +1,10 @@
 from datetime import datetime
 
-from flask import Response, flash, redirect, render_template, request, url_for
+from flask import Response, flash, redirect, render_template, request, session, url_for
 
 from auth import login_required, permission_required
 from database import execute_query
+from i18n import translate
 from pdf_utils import (
     add_standard_pdf_image_objects,
     escape_pdf_text,
@@ -15,6 +16,9 @@ from pdf_utils import (
 
 
 def register_patient_routes(app):
+    def flash_t(message, category="success"):
+        flash(translate(message, session.get("language", "en")), category)
+
     @app.route("/patients/add", methods=["POST"])
     def add_patient():
         patient_code = request.form.get("patient_code")
@@ -44,7 +48,7 @@ def register_patient_routes(app):
             )
         )
 
-        flash("Patient added successfully.", "success")
+        flash_t("Patient added successfully.", "success")
         return redirect(url_for("patients"))
 
     @app.route("/patients", methods=["GET", "POST"])
@@ -143,7 +147,7 @@ def register_patient_routes(app):
                 )
             )
 
-            flash("Patient added successfully.", "success")
+            flash_t("Patient added successfully.", "success")
 
             return redirect(
                 url_for("patients")
@@ -470,7 +474,7 @@ def register_patient_routes(app):
             )
         )
 
-        flash("Patient updated successfully.", "success")
+        flash_t("Patient updated successfully.", "success")
         return redirect(url_for("patients"))
 
 
@@ -488,7 +492,7 @@ def register_patient_routes(app):
             (patient_id,)
         )
 
-        flash("Patient stopped successfully.", "success")
+        flash_t("Patient stopped successfully.", "success")
         return redirect(url_for("patients"))
 
     @app.route("/patients/add_ajax", methods=["POST"])

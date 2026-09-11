@@ -5,7 +5,7 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-prescription-bottle-alt"></i> Manage Prescriptions</h1>
+        <h1><i class="fas fa-prescription-bottle-alt"></i> {{ t("Manage Prescriptions") }}</h1>
     </div>
 
     <div class="details-card">
@@ -13,7 +13,7 @@
             <div class="searchable-select" data-searchable-select>
                 <input type="text"
                        class="toolbar-search-input searchable-select-input"
-                       placeholder="All doctors"
+                       placeholder="{{ t('All doctors') }}"
                        autocomplete="off"
                        value="{% for doctor in doctors %}{% if selected_doctor_id == doctor.id %}{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}{% endif %}{% endfor %}">
                 <input type="hidden"
@@ -29,14 +29,14 @@
                             {{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}
                         </button>
                     {% endfor %}
-                    <div class="searchable-select-empty">No doctors found.</div>
+                    <div class="searchable-select-empty">{{ t("No doctors found.") }}</div>
                 </div>
             </div>
 
             <div class="searchable-select" data-searchable-select>
                 <input type="text"
                        class="toolbar-search-input searchable-select-input"
-                       placeholder="All patients"
+                       placeholder="{{ t('All patients') }}"
                        autocomplete="off"
                        value="{% for patient in patients %}{% if selected_patient_id == patient.id %}{{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}{% endif %}{% endfor %}">
                 <input type="hidden"
@@ -52,28 +52,28 @@
                             {{ patient.patient_code }} - {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}
                         </button>
                     {% endfor %}
-                    <div class="searchable-select-empty">No patients found.</div>
+                    <div class="searchable-select-empty">{{ t("No patients found.") }}</div>
                 </div>
             </div>
 
             <select name="status" class="toolbar-search-input">
-                <option value="">All statuses</option>
-                <option value="draft" {% if selected_status == 'draft' %}selected{% endif %}>Draft</option>
-                <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
-                <option value="stopped" {% if selected_status == 'stopped' %}selected{% endif %}>Stopped</option>
+                <option value="">{{ t("All statuses") }}</option>
+                <option value="draft" {% if selected_status == 'draft' %}selected{% endif %}>{{ t("Draft") }}</option>
+                <option value="active" {% if selected_status == 'active' %}selected{% endif %}>{{ t("Active") }}</option>
+                <option value="stopped" {% if selected_status == 'stopped' %}selected{% endif %}>{{ t("Stopped") }}</option>
             </select>
 
-            <button type="submit" class="toolbar-btn search-btn" title="Search">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
-            <a href="{{ url_for('manage_prescriptions') }}" class="toolbar-btn clear-btn" title="Clear">
+            <a href="{{ url_for('manage_prescriptions') }}" class="toolbar-btn clear-btn" title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </a>
 
             <a href="{{ url_for('new_managed_prescription', doctor_id=selected_doctor_id) }}"
                class="toolbar-btn add-btn"
-               title="Add Prescription">
+               title="{{ t('Add Prescription') }}">
                 <i class="fas fa-plus"></i>
             </a>
         </form>
@@ -83,13 +83,13 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>Prescription</th>
-                    <th>Start Date</th>
-                    <th>Patient</th>
-                    <th>Doctor</th>
-                    <th>Medications</th>
-                    <th>Status</th>
-                    <th class="actions-header">Actions</th>
+                    <th>{{ t("Prescription") }}</th>
+                    <th>{{ t("Start Date") }}</th>
+                    <th>{{ t("Patient") }}</th>
+                    <th>{{ t("Doctor") }}</th>
+                    <th>{{ t("Medications") }}</th>
+                    <th>{{ t("Status") }}</th>
+                    <th class="actions-header">{{ t("Actions") }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -108,13 +108,13 @@
                     </td>
                     <td>
                         <span class="status-badge status-{{ prescription.prescription_status }}">
-                            {{ prescription.prescription_status }}
+                            {{ t(prescription.prescription_status) }}
                         </span>
                     </td>
                     <td class="action-cell">
                         <button type="button"
                                 class="table-action view-action"
-                                title="View"
+                                title="{{ t('View') }}"
                                 data-view-prescription
                                 data-url="{{ url_for('view_managed_prescription', order_key=prescription.order_key) }}">
                             <i class="fas fa-eye"></i>
@@ -122,7 +122,7 @@
 
                         <a href="{{ url_for('print_managed_prescription', order_key=prescription.order_key) }}"
                            class="table-action view-action"
-                           title="Print"
+                           title="{{ t('Print') }}"
                            target="_blank">
                             <i class="fas fa-print"></i>
                         </a>
@@ -130,17 +130,17 @@
                         {% if prescription.prescription_status == 'draft' %}
                             <a href="{{ url_for('update_managed_prescription', order_key=prescription.order_key) }}"
                                class="table-action edit-action"
-                               title="Edit">
+                               title="{{ t('Edit') }}">
                                 <i class="fas fa-pen"></i>
                             </a>
 
                             <form method="POST"
                                   action="{{ url_for('delete_managed_prescription', order_key=prescription.order_key) }}"
                                   class="inline-delete-form"
-                                  onsubmit="return confirm('Delete this draft prescription?');">
+                                  onsubmit="return confirm({{ t('Delete this draft prescription?')|tojson }});">
                                 <button type="submit"
                                         class="table-action delete-action"
-                                        title="Delete">
+                                        title="{{ t('Delete') }}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>
@@ -148,21 +148,21 @@
                             <form method="POST"
                                   action="{{ url_for('stop_managed_prescription', order_key=prescription.order_key) }}"
                                   class="inline-delete-form"
-                                  onsubmit="return confirm('Stop this prescription?');">
+                                  onsubmit="return confirm({{ t('Stop this prescription?')|tojson }});">
                                 <button type="submit"
                                         class="table-action delete-action"
-                                        title="Stop">
+                                        title="{{ t('Stop') }}">
                                     <i class="fas fa-ban"></i>
                                 </button>
                             </form>
                         {% else %}
-                            <span class="locked-label">Locked</span>
+                            <span class="locked-label">{{ t("Locked") }}</span>
                         {% endif %}
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="7" class="empty-row">No prescriptions found.</td>
+                    <td colspan="7" class="empty-row">{{ t("No prescriptions found.") }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -174,7 +174,7 @@
 <div id="prescriptionViewModal" class="modal">
     <div class="modal-content large-modal">
         <div class="modal-header">
-            <h2><i class="fas fa-eye"></i> Prescription Details</h2>
+            <h2><i class="fas fa-eye"></i> {{ t("Prescription Details") }}</h2>
             <button type="button" class="modal-close-btn" onclick="closePrescriptionViewModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -183,23 +183,23 @@
         <div class="modal-form">
             <div class="prescription-view-summary">
                 <div>
-                    <span>Prescription</span>
+                    <span>{{ t("Prescription") }}</span>
                     <strong id="viewPrescriptionId"></strong>
                 </div>
                 <div>
-                    <span>Start Date</span>
+                    <span>{{ t("Start Date") }}</span>
                     <strong id="viewPrescriptionDate"></strong>
                 </div>
                 <div>
-                    <span>Patient</span>
+                    <span>{{ t("Patient") }}</span>
                     <strong id="viewPrescriptionPatient"></strong>
                 </div>
                 <div>
-                    <span>Doctor</span>
+                    <span>{{ t("Doctor") }}</span>
                     <strong id="viewPrescriptionDoctor"></strong>
                 </div>
                 <div>
-                    <span>Status</span>
+                    <span>{{ t("Status") }}</span>
                     <strong id="viewPrescriptionStatus"></strong>
                 </div>
             </div>
@@ -208,18 +208,18 @@
                 <table class="app-table">
                     <thead>
                         <tr>
-                            <th>Medication</th>
-                            <th>Dose</th>
-                            <th>Frequency</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Status</th>
-                            <th>Notes</th>
+                            <th>{{ t("Medication") }}</th>
+                            <th>{{ t("Dose") }}</th>
+                            <th>{{ t("Frequency") }}</th>
+                            <th>{{ t("Start Date") }}</th>
+                            <th>{{ t("End Date") }}</th>
+                            <th>{{ t("Status") }}</th>
+                            <th>{{ t("Notes") }}</th>
                         </tr>
                     </thead>
                     <tbody id="viewPrescriptionMedicationsBody">
                         <tr>
-                            <td colspan="7" class="empty-row">No medications found.</td>
+                            <td colspan="7" class="empty-row">{{ t("No medications found.") }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -229,7 +229,7 @@
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closePrescriptionViewModal()">
-                    <i class="fas fa-ban"></i> Close
+                    <i class="fas fa-ban"></i> {{ t("Close") }}
                 </button>
             </div>
         </div>
@@ -271,6 +271,16 @@
 </style>
 
 <script>
+const managePrescriptionText = {
+    noMedicationsFound: {{ t("No medications found.")|tojson }},
+    couldNotLoadDetails: {{ t("Could not load prescription details.")|tojson }}
+};
+const managePrescriptionStatuses = {
+    draft: {{ t("draft")|tojson }},
+    active: {{ t("active")|tojson }},
+    stopped: {{ t("stopped")|tojson }}
+};
+
 document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
     const input = selectBox.querySelector(".searchable-select-input");
     const valueInput = selectBox.querySelector(".searchable-select-value");
@@ -313,12 +323,16 @@ function setPrescriptionViewText(id, value) {
     document.getElementById(id).textContent = value || "";
 }
 
+function translatePrescriptionStatus(value) {
+    return managePrescriptionStatuses[value] || value || "";
+}
+
 function renderPrescriptionMedications(medications) {
     const body = document.getElementById("viewPrescriptionMedicationsBody");
     body.innerHTML = "";
 
     if (!medications || medications.length === 0) {
-        body.innerHTML = '<tr><td colspan="7" class="empty-row">No medications found.</td></tr>';
+        body.innerHTML = '<tr><td colspan="7" class="empty-row">' + managePrescriptionText.noMedicationsFound + '</td></tr>';
         return;
     }
 
@@ -330,7 +344,7 @@ function renderPrescriptionMedications(medications) {
             medication.frequency,
             medication.start_date,
             medication.end_date,
-            medication.status,
+            translatePrescriptionStatus(medication.status),
             medication.notes
         ];
 
@@ -348,7 +362,7 @@ function openPrescriptionViewModal(url) {
     fetch(url)
         .then(function(response){
             if (!response.ok) {
-                throw new Error("Could not load prescription details.");
+                throw new Error(managePrescriptionText.couldNotLoadDetails);
             }
             return response.json();
         })
@@ -359,13 +373,13 @@ function openPrescriptionViewModal(url) {
             setPrescriptionViewText("viewPrescriptionDate", prescription.start_date);
             setPrescriptionViewText("viewPrescriptionPatient", prescription.patient);
             setPrescriptionViewText("viewPrescriptionDoctor", prescription.doctor);
-            setPrescriptionViewText("viewPrescriptionStatus", prescription.status);
+            setPrescriptionViewText("viewPrescriptionStatus", translatePrescriptionStatus(prescription.status));
             renderPrescriptionMedications(data.medications || []);
 
             document.getElementById("prescriptionViewModal").style.display = "block";
         })
         .catch(function(error){
-            alert(error.message || "Could not load prescription details.");
+            alert(error.message || managePrescriptionText.couldNotLoadDetails);
         });
 }
 

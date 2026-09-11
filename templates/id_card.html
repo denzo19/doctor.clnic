@@ -5,7 +5,7 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-file-image"></i> Image Text Reader</h1>
+        <h1><i class="fas fa-file-image"></i> {{ t('Image Text Reader') }}</h1>
     </div>
 
     <div class="details-card">
@@ -17,23 +17,23 @@
                    required>
 
             <button type="submit" class="standard-btn primary-btn">
-                <i class="fas fa-wand-magic-sparkles"></i> Read Text
+                <i class="fas fa-wand-magic-sparkles"></i> {{ t('Read Text') }}
             </button>
         </form>
     </div>
 
     <div class="details-card">
-        <h2><i class="fas fa-align-left"></i> Extracted Text</h2>
+        <h2><i class="fas fa-align-left"></i> {{ t('Extracted Text') }}</h2>
 
         {% if image_path %}
             <div class="id-card-preview">
-                <img src="{{ url_for('static', filename=image_path) }}" alt="Uploaded image">
+                <img src="{{ url_for('static', filename=image_path) }}" alt="{{ t('Uploaded image') }}">
             </div>
         {% endif %}
 
         <div class="form-grid">
             <div class="form-group form-group-wide">
-                <label>Displayed Text</label>
+                <label>{{ t('Displayed Text') }}</label>
                 <textarea readonly rows="14">{{ extracted_text }}</textarea>
             </div>
         </div>

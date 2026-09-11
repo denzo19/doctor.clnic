@@ -1,9 +1,10 @@
 from datetime import datetime
 
-from flask import Response, flash, redirect, render_template, request, url_for
+from flask import Response, flash, redirect, render_template, request, session, url_for
 
 from auth import login_required, permission_required
 from database import execute_query
+from i18n import translate
 from pdf_utils import (
     add_standard_pdf_image_objects,
     escape_pdf_text,
@@ -15,6 +16,12 @@ from pdf_utils import (
 
 
 def register_medication_routes(app, get_logged_doctor_id):
+    def flash_t(message, category="success"):
+        flash(translate(message, session.get("language", "en")), category)
+
+    def translate_message(message):
+        return translate(message, session.get("language", "en"))
+
     def medication_exists(medication_name, strength, dosage_form, exclude_id=None):
         params = [medication_name, strength or "", dosage_form or ""]
         exclude_clause = ""
@@ -49,11 +56,11 @@ def register_medication_routes(app, get_logged_doctor_id):
             notes = request.form.get("notes", "").strip()
 
             if not medication_name:
-                flash("Medication name is required.", "error")
+                flash_t("Medication name is required.", "error")
                 return redirect(url_for("medications"))
 
             if medication_exists(medication_name, strength, dosage_form):
-                flash("Medication already exists.", "error")
+                flash_t("Medication already exists.", "error")
                 return redirect(url_for("medications"))
 
             execute_query(
@@ -71,7 +78,7 @@ def register_medication_routes(app, get_logged_doctor_id):
                 )
             )
 
-            flash("Medication added successfully.", "success")
+            flash_t("Medication added successfully.", "success")
             return redirect(url_for("medications"))
 
         search = request.args.get("search", "").strip()
@@ -265,11 +272,11 @@ def register_medication_routes(app, get_logged_doctor_id):
         notes = request.form.get("notes", "").strip()
 
         if not medication_name:
-            flash("Medication name is required.", "error")
+            flash_t("Medication name is required.", "error")
             return redirect(url_for("medications"))
 
         if medication_exists(medication_name, strength, dosage_form, medication_id):
-            flash("Medication already exists.", "error")
+            flash_t("Medication already exists.", "error")
             return redirect(url_for("medications"))
 
         execute_query(
@@ -293,7 +300,7 @@ def register_medication_routes(app, get_logged_doctor_id):
             )
         )
 
-        flash("Medication updated successfully.", "success")
+        flash_t("Medication updated successfully.", "success")
         return redirect(url_for("medications"))
 
     @app.route("/medications/stop/<int:medication_id>", methods=["POST"])
@@ -310,7 +317,7 @@ def register_medication_routes(app, get_logged_doctor_id):
             (medication_id,)
         )
 
-        flash("Medication stopped successfully.", "success")
+        flash_t("Medication stopped successfully.", "success")
         return redirect(url_for("medications"))
 
     @app.route("/medications/add_ajax", methods=["POST"])
@@ -323,10 +330,10 @@ def register_medication_routes(app, get_logged_doctor_id):
         notes = request.form.get("notes", "").strip()
 
         if not medication_name:
-            return {"success": False, "message": "Medication name is required."}
+            return {"success": False, "message": translate_message("Medication name is required.")}
 
         if medication_exists(medication_name, strength, dosage_form):
-            return {"success": False, "message": "Medication already exists."}
+            return {"success": False, "message": translate_message("Medication already exists.")}
 
         execute_query(
             """
@@ -352,7 +359,7 @@ def register_medication_routes(app, get_logged_doctor_id):
         doctor_id = get_logged_doctor_id() or request.args.get("doctor_id", type=int)
 
         if not doctor_id:
-            flash("Doctor profile not found for this user.", "error")
+            flash_t("Doctor profile not found for this user.", "error")
             return redirect(url_for("home"))
 
         doctor = execute_query(
@@ -366,7 +373,7 @@ def register_medication_routes(app, get_logged_doctor_id):
         )
 
         if not doctor:
-            flash("Doctor profile not found.", "error")
+            flash_t("Doctor profile not found.", "error")
             return redirect(url_for("home"))
 
         favorite_search = request.args.get("favorite_search", "").strip()
@@ -442,7 +449,7 @@ def register_medication_routes(app, get_logged_doctor_id):
         ]
 
         if not doctor_id:
-            flash("Doctor profile not found for this user.", "error")
+            flash_t("Doctor profile not found for this user.", "error")
             return redirect(url_for("home"))
 
         if selected_medication_ids:
@@ -483,7 +490,7 @@ def register_medication_routes(app, get_logged_doctor_id):
                 (doctor_id,)
             )
 
-        flash("Favorite medication selection saved.", "success")
+        flash_t("Favorite medication selection saved.", "success")
         return redirect(url_for("doctor_favorite_medications", doctor_id=doctor_id))
 
     @app.route("/doctor/favorite_medications/add", methods=["POST"])
@@ -503,7 +510,7 @@ def register_medication_routes(app, get_logged_doctor_id):
             redirect_args["favorite_search"] = favorite_search
 
         if not doctor_id or not medication_id:
-            flash("Choose a medication to add.", "error")
+            flash_t("Choose a medication to add.", "error")
             return redirect(url_for("doctor_favorite_medications", **redirect_args))
 
         execute_query(
@@ -520,7 +527,7 @@ def register_medication_routes(app, get_logged_doctor_id):
             (doctor_id, medication_id, notes or None)
         )
 
-        flash("Medication added to favorites.", "success")
+        flash_t("Medication added to favorites.", "success")
         return redirect(url_for("doctor_favorite_medications", **redirect_args))
 
     @app.route("/doctor/favorite_medications/update/<int:favorite_id>", methods=["POST"])
@@ -541,7 +548,7 @@ def register_medication_routes(app, get_logged_doctor_id):
             (notes or None, favorite_id, doctor_id)
         )
 
-        flash("Favorite medication updated.", "success")
+        flash_t("Favorite medication updated.", "success")
         return redirect(url_for("doctor_favorite_medications", doctor_id=doctor_id))
 
     @app.route("/doctor/favorite_medications/remove/<int:favorite_id>", methods=["POST"])
@@ -561,5 +568,5 @@ def register_medication_routes(app, get_logged_doctor_id):
             (favorite_id, doctor_id)
         )
 
-        flash("Medication removed from favorites.", "success")
+        flash_t("Medication removed from favorites.", "success")
         return redirect(url_for("doctor_favorite_medications", doctor_id=doctor_id))

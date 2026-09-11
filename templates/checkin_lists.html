@@ -7,27 +7,27 @@
     <div class="page-header">
         <h1>
             <i class="fas fa-clipboard-list"></i>
-            Doctor Check-in Lists
+            {{ t("Doctor Check-in Lists") }}
         </h1>
     </div>
 
     <div class="details-section">
         <h2>
             <i class="fas fa-list"></i>
-            Today’s Check-in Lists
+            {{ t("Today's Check-in Lists") }}
         </h2>
 
         <div class="table-container">
             <table class="app-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Doctor</th>
-                        <th>Specialty</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Created At</th>
-                        <th class="actions-header">Actions</th>
+                        <th>{{ t("ID") }}</th>
+                        <th>{{ t("Doctor") }}</th>
+                        <th>{{ t("Specialty") }}</th>
+                        <th>{{ t("Date") }}</th>
+                        <th>{{ t("Status") }}</th>
+                        <th>{{ t("Created At") }}</th>
+                        <th class="actions-header">{{ t("Actions") }}</th>
                     </tr>
                 </thead>
 
@@ -40,14 +40,14 @@
                         <td>{{ item.list_date }}</td>
                         <td>
                             <span class="status-badge status-{{ item.status }}">
-                                {{ item.status }}
+                                {{ t(item.status) }}
                             </span>
                         </td>
                         <td>{{ item.created_at }}</td>
                         <td class="action-cell">
                             <button type="button"
                                     class="table-action view-action"
-                                    title="View Checked-in Patients"
+                                    title="{{ t('View Checked-in Patients') }}"
                                     onclick="openCheckinListModal({{ item.id }})">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -56,7 +56,7 @@
                     {% else %}
                     <tr>
                         <td colspan="7" class="empty-row">
-                            No check-in lists started today.
+                            {{ t("No check-in lists started today.") }}
                         </td>
                     </tr>
                     {% endfor %}
@@ -70,7 +70,7 @@
 <div id="checkinListModal" class="modal">
     <div class="modal-content checkin-list-modal-content">
         <div class="modal-header">
-            <h2><i class="fas fa-eye"></i> Checked-in Patients</h2>
+            <h2><i class="fas fa-eye"></i> {{ t("Checked-in Patients") }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeCheckinListModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -85,19 +85,19 @@
             <table class="app-table">
                 <thead>
                     <tr>
-                        <th>Code</th>
-                        <th>Patient</th>
-                        <th>DOB</th>
-                        <th>Phone</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                        <th>Check-in Time</th>
-                        <th>Notes</th>
+                        <th>{{ t("Code") }}</th>
+                        <th>{{ t("Patient") }}</th>
+                        <th>{{ t("DOB") }}</th>
+                        <th>{{ t("Phone") }}</th>
+                        <th>{{ t("Type") }}</th>
+                        <th>{{ t("Status") }}</th>
+                        <th>{{ t("Check-in Time") }}</th>
+                        <th>{{ t("Notes") }}</th>
                     </tr>
                 </thead>
                 <tbody id="checkinListPatientsBody">
                     <tr>
-                        <td colspan="8" class="empty-row">Loading...</td>
+                        <td colspan="8" class="empty-row">{{ t("Loading...") }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -120,6 +120,25 @@
 </style>
 
 <script>
+const checkinListText = {
+    loading: {{ t("Loading...")|tojson }},
+    unable: {{ t("Unable to load checked-in patients.")|tojson }},
+    empty: {{ t("No patients checked in for this list.")|tojson }},
+    date: {{ t("Date:")|tojson }},
+    status: {{ t("Status:")|tojson }},
+    active: {{ t("active")|tojson }},
+    waiting: {{ t("waiting")|tojson }},
+    in_visit: {{ t("in_visit")|tojson }},
+    completed: {{ t("completed")|tojson }},
+    appointment: {{ t("appointment")|tojson }},
+    walk_in: {{ t("walk-in")|tojson }}
+};
+
+function translateCheckinValue(value) {
+    const cleanValue = emptyCheckinValue(value);
+    return checkinListText[cleanValue] || cleanValue;
+}
+
 function emptyCheckinValue(value) {
     return value === null || value === undefined ? "" : value;
 }
@@ -149,7 +168,7 @@ function appendCheckinListPatient(patient) {
         ].filter(Boolean).join(" "),
         patient.date_of_birth,
         patient.phone_number,
-        patient.check_in_type,
+        translateCheckinValue(patient.check_in_type),
         patient.status,
         patient.check_in_time,
         patient.notes
@@ -161,7 +180,7 @@ function appendCheckinListPatient(patient) {
         if (index === 5) {
             const badge = document.createElement("span");
             badge.className = "status-badge status-" + emptyCheckinValue(value);
-            badge.textContent = emptyCheckinValue(value);
+            badge.textContent = translateCheckinValue(value);
             cell.appendChild(badge);
         } else {
             cell.textContent = emptyCheckinValue(value);
@@ -180,7 +199,7 @@ function openCheckinListModal(listId) {
     modal.style.display = "block";
     document.getElementById("checkinListDoctor").textContent = "";
     document.getElementById("checkinListMeta").textContent = "";
-    setCheckinListEmpty("Loading...");
+    setCheckinListEmpty(checkinListText.loading);
 
     fetch("/secretary/checkin_lists/" + listId + "/patients")
         .then(function(response) {
@@ -188,7 +207,7 @@ function openCheckinListModal(listId) {
         })
         .then(function(data) {
             if (!data.success) {
-                setCheckinListEmpty(data.message || "Unable to load checked-in patients.");
+                setCheckinListEmpty(data.message || checkinListText.unable);
                 return;
             }
 
@@ -196,20 +215,20 @@ function openCheckinListModal(listId) {
                 emptyCheckinValue(data.list.doctor_name) +
                 (data.list.specialty ? " - " + data.list.specialty : "");
             document.getElementById("checkinListMeta").textContent =
-                "Date: " + emptyCheckinValue(data.list.list_date) +
-                " | Status: " + emptyCheckinValue(data.list.status);
+                checkinListText.date + " " + emptyCheckinValue(data.list.list_date) +
+                " | " + checkinListText.status + " " + translateCheckinValue(data.list.status);
 
             body.innerHTML = "";
 
             if (!data.patients.length) {
-                setCheckinListEmpty("No patients checked in for this list.");
+                setCheckinListEmpty(checkinListText.empty);
                 return;
             }
 
             data.patients.forEach(appendCheckinListPatient);
         })
         .catch(function() {
-            setCheckinListEmpty("Unable to load checked-in patients.");
+            setCheckinListEmpty(checkinListText.unable);
         });
 }
 

@@ -10,6 +10,7 @@ import uuid
 import re
 from auth import login_required, permission_required
 from menu_helpers import build_user_menu
+from i18n import language_direction, normalize_language, translate
 from routes.lab_routes import register_lab_routes
 from routes.prescription_routes import register_prescription_routes
 from routes.admin_routes import register_admin_routes
@@ -124,6 +125,10 @@ def clean_icd_display_name(name):
         "",
         str(name)
     ).strip()
+
+
+def flash_t(message, category="success"):
+    flash(translate(message, session.get("language", "en")), category)
 
 
 def get_visit_diagnosis_choices(doctor_id):
@@ -390,14 +395,26 @@ def inject_user():
 @app.context_processor
 def inject_menu():
     group_id = session.get("group_id")
+    language = normalize_language(session.get("language", "en"))
 
-    user_menu = build_user_menu(group_id) if group_id else []
+    user_menu = build_user_menu(group_id, language) if group_id else []
 
     return dict(user_menu=user_menu)
 
+
+@app.context_processor
+def inject_language():
+    language = normalize_language(session.get("language", "en"))
+
+    return dict(
+        current_language=language,
+        current_direction=language_direction(language),
+        t=lambda text: translate(text, language)
+    )
+
 @app.before_request
 def bootstrap_runtime_menu_options():
-    if request.endpoint in ("login", "logout", "static"):
+    if request.endpoint in ("login", "logout", "static", "set_language"):
         return
 
     if "user_id" in session:
@@ -434,13 +451,25 @@ def login():
 
             return redirect(url_for("home"))
 
-        flash("Invalid username or password.", "error")
+        flash(translate(
+            "Invalid username or password.",
+            session.get("language", "en")
+        ), "error")
 
     return render_template("login.html")
 
+
+@app.route("/set_language/<language>")
+def set_language(language):
+    session["language"] = normalize_language(language)
+    return redirect(request.referrer or url_for("home"))
+
+
 @app.route("/logout")
 def logout():
+    selected_language = session.get("language", "en")
     session.clear()
+    session["language"] = normalize_language(selected_language)
     return redirect(url_for("login"))
 
 @app.route("/change_password", methods=["GET", "POST"])
@@ -463,15 +492,24 @@ def change_password():
         )
 
         if not user:
-            flash("User not found or inactive.", "error")
+            flash(translate(
+                "User not found or inactive.",
+                session.get("language", "en")
+            ), "error")
             return redirect(url_for("change_password"))
 
         if not bcrypt.check_password_hash(user["password_hash"], current_password):
-            flash("Current password is incorrect.", "error")
+            flash(translate(
+                "Current password is incorrect.",
+                session.get("language", "en")
+            ), "error")
             return redirect(url_for("change_password"))
 
         if new_password != confirm_password:
-            flash("New passwords do not match.", "error")
+            flash(translate(
+                "New passwords do not match.",
+                session.get("language", "en")
+            ), "error")
             return redirect(url_for("change_password"))
 
         new_hash = bcrypt.generate_password_hash(new_password).decode("utf-8")
@@ -481,7 +519,10 @@ def change_password():
             (new_hash, user["id"])
         )
 
-        flash("Password changed successfully. Please login.", "success")
+        flash(translate(
+            "Password changed successfully. Please login.",
+            session.get("language", "en")
+        ), "success")
         return redirect(url_for("login"))
 
     return render_template("change_password.html")
@@ -828,7 +869,7 @@ def start_visit(patient_id):
                 (check_in_item_id,)
             )
 
-        flash("Visit saved successfully.", "success")
+        flash_t("Visit saved successfully.", "success")
         doctor_id = request.form.get("doctor_id", type=int)
 
         return redirect(url_for(
@@ -895,7 +936,7 @@ def edit_visit(visit_id):
     )
 
     if not visit:
-        flash("Visit not found.", "error")
+        flash_t("Visit not found.", "error")
         return redirect(url_for("checked_in_patients"))
 
     if not doctor_id:
@@ -915,7 +956,7 @@ def edit_visit(visit_id):
         doctor_id = doctor["doctor_id"] if doctor else None
 
     if visit["visit_status"] == "final":
-        flash("This visit is finalized and cannot be modified.", "error")
+        flash_t("This visit is finalized and cannot be modified.", "error")
         return redirect(url_for(
             "patient_details",
             patient_id=visit["patient_id"],
@@ -1008,7 +1049,7 @@ def delete_visit(visit_id):
     )
 
     if visit["visit_status"] == "final":
-        flash("Finalized visits cannot be deleted.", "error")
+        flash_t("Finalized visits cannot be deleted.", "error")
         return redirect(url_for(
                 "patient_details",
                 patient_id=visit["patient_id"],
@@ -1020,7 +1061,7 @@ def delete_visit(visit_id):
         (visit_id,)
     )
 
-    flash("Draft visit deleted successfully.", "success")
+    flash_t("Draft visit deleted successfully.", "success")
     return redirect(url_for(
             "patient_details",
             patient_id=visit["patient_id"],
@@ -1083,7 +1124,13 @@ def checkin_list_patients(list_id):
     )
 
     if not checkin_list:
-        return {"success": False, "message": "Check-in list not found."}
+        return {
+            "success": False,
+            "message": translate(
+                "Check-in list not found.",
+                session.get("language", "en")
+            )
+        }
 
     patients = execute_query(
         """
@@ -1282,7 +1329,7 @@ def checkin_appointment_patient(appointment_id):
     redirect_args["appointment_date"] = selected_date
 
     if selected_date != today_date:
-        flash("Only today's appointments can be checked in.", "error")
+        flash_t("Only today's appointments can be checked in.", "error")
         return redirect(url_for("appointment_checkin", **redirect_args))
 
     appointment = execute_query(
@@ -1306,7 +1353,7 @@ def checkin_appointment_patient(appointment_id):
     )
 
     if not appointment:
-        flash("Appointment not found for today's booked appointments.", "error")
+        flash_t("Appointment not found for today's booked appointments.", "error")
         return redirect(url_for("appointment_checkin", **redirect_args))
 
     check_list = get_or_create_checkin_list(
@@ -1345,7 +1392,7 @@ def checkin_appointment_patient(appointment_id):
         )
     )
 
-    flash("Appointment patient checked in successfully.", "success")
+    flash_t("Appointment patient checked in successfully.", "success")
     return redirect(url_for("appointment_checkin", **redirect_args))
 
 @app.route("/secretary/checkin", methods=["GET", "POST"])
@@ -1486,7 +1533,7 @@ def checkin_patient():
             )
         )
 
-        flash("Patient checked in successfully.", "success")
+        flash_t("Patient checked in successfully.", "success")
 
         return redirect(
             url_for(
@@ -1559,7 +1606,7 @@ def open_checked_in_patient(check_in_item_id):
     )
 
     if not item:
-        flash("Check-in item not found.", "error")
+        flash_t("Check-in item not found.", "error")
         return redirect(url_for("checked_in_patients"))
 
     execute_query(
@@ -1590,7 +1637,7 @@ def complete_checked_in_patient(check_in_item_id):
         (check_in_item_id,)
     )
 
-    flash("Patient visit marked as completed.", "success")
+    flash_t("Patient visit marked as completed.", "success")
     return redirect(url_for("checked_in_patients"))
 
 @app.route("/secretary/checkin_lists/clear/<int:doctor_id>", methods=["POST"])
@@ -1630,7 +1677,7 @@ def order_test(patient_id):
         )
     )
 
-    flash("Lab test order saved successfully.", "success")
+    flash_t("Lab test order saved successfully.", "success")
     return redirect(url_for("checked_in_patients", doctor_id=doctor_id))
 
 register_appointment_routes(app)

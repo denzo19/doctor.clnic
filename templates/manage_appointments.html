@@ -2,12 +2,12 @@
 
 {% block content %}
 
-<section class="app-page">
+<section class="app-page manage-appointments-page">
 
     <div class="page-header">
         <h1>
             <i class="fas fa-calendar-alt"></i>
-            Manage Appointment
+            {{ t('Manage Appointment') }}
         </h1>
     </div>
 
@@ -18,13 +18,13 @@
 
             <div class="searchable-select"
                  data-searchable-select
-                 data-required-message="Please choose a patient from the list.">
+                 data-required-message="{{ t('Please choose a patient from the list.') }}">
                 <input type="text"
                        class="toolbar-search-input searchable-select-input"
-                       placeholder="Choose patient"
+                       placeholder="{{ t('Choose patient') }}"
                        autocomplete="off"
                        required
-                       value="{% for item in patients %}{% if selected_patient_id|string == item.id|string %}{{ item.patient_code }} - {{ item.first_name }} {{ item.middle_name or '' }} {{ item.last_name }}{% if item.phone_number %} - {{ item.phone_number }}{% endif %}{% endif %}{% endfor %}">
+                       value="{% for item in patients %}{% if selected_patient_id|string == item.id|string %}{{ item.patient_code }} - {{ item.first_name }}{% if item.middle_name %} {{ item.middle_name }}{% endif %} {{ item.last_name }}{% if item.phone_number %} - {{ item.phone_number }}{% endif %}{% endif %}{% endfor %}">
                 <input type="hidden"
                        name="patient_id"
                        class="searchable-select-value"
@@ -32,9 +32,7 @@
                 <div class="searchable-select-options">
                     {% for item in patients %}
                         {% set patient_label %}
-                            {{ item.patient_code }} -
-                            {{ item.first_name }} {{ item.middle_name or '' }} {{ item.last_name }}
-                            {% if item.phone_number %} - {{ item.phone_number }}{% endif %}
+                            {{ item.patient_code }} - {{ item.first_name }}{% if item.middle_name %} {{ item.middle_name }}{% endif %} {{ item.last_name }}{% if item.phone_number %} - {{ item.phone_number }}{% endif %}
                         {% endset %}
                         <button type="button"
                                 class="searchable-select-option"
@@ -44,33 +42,33 @@
                         </button>
                     {% endfor %}
                     <div class="searchable-select-empty">
-                        No patients found.
+                        {{ t('No patients found.') }}
                     </div>
                 </div>
             </div>
 
             <button type="submit"
                     class="toolbar-btn search-btn"
-                    title="Search">
+                    title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
             <a href="{{ url_for('manage_appointments') }}"
                class="toolbar-btn clear-btn"
-               title="Clear">
+               title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </a>
 
             <a href="{{ url_for('search_book_appointment') }}"
                class="standard-btn form-save-btn"
-               title="Book Appointment">
+               title="{{ t('Book Appointment') }}">
                 <i class="fas fa-calendar-check"></i>
-                Book Appointment
+                {{ t('Book Appointment') }}
             </a>
 
             <a href="{{ url_for('manage_appointments_report', patient_id=selected_patient_id) }}"
                class="toolbar-btn search-btn"
-               title="Appointments Report"
+               title="{{ t('Appointments Report') }}"
                target="_blank">
                 <i class="fas fa-file-pdf"></i>
             </a>
@@ -87,7 +85,7 @@
                 {{ patient.middle_name or '' }}
                 {{ patient.last_name }}
             {% else %}
-                Patient Appointments
+                {{ t('Patient Appointments') }}
             {% endif %}
         </h2>
 
@@ -95,14 +93,14 @@
             <table class="app-table">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Start</th>
-                        <th>End</th>
-                        <th>Doctor</th>
-                        <th>Medical Center</th>
-                        <th>Status</th>
-                        <th>Notes</th>
-                        <th class="actions-header">Actions</th>
+                        <th>{{ t('Date') }}</th>
+                        <th>{{ t('Start') }}</th>
+                        <th>{{ t('End') }}</th>
+                        <th>{{ t('Doctor') }}</th>
+                        <th>{{ t('Medical Center') }}</th>
+                        <th>{{ t('Status') }}</th>
+                        <th>{{ t('Notes') }}</th>
+                        <th class="actions-header">{{ t('Actions') }}</th>
                     </tr>
                 </thead>
 
@@ -117,7 +115,7 @@
                             <td>{{ appt.center_name }}</td>
                             <td>
                                 <span class="status-badge status-{{ appt.appointment_status }}">
-                                    {{ appt.appointment_status }}
+                                    {{ t(appt.appointment_status) }}
                                 </span>
                             </td>
                             <td>{{ appt.notes or '' }}</td>
@@ -125,7 +123,7 @@
                                 {% if appt.appointment_status == 'booked' %}
                                     <a href="{{ url_for('edit_managed_appointment', appointment_id=appt.id) }}"
                                        class="table-action edit-action"
-                                       title="Edit appointment">
+                                       title="{{ t('Edit appointment') }}">
                                         <i class="fas fa-pen"></i>
                                     </a>
                                 {% endif %}
@@ -133,13 +131,13 @@
                                 <form method="POST"
                                       action="{{ url_for('delete_managed_appointment', appointment_id=appt.id) }}"
                                       class="inline-delete-form"
-                                      onsubmit="return confirm('Delete this appointment?');">
+                                      onsubmit="return confirm({{ t('Delete this appointment?')|tojson }});">
                                     <input type="hidden"
                                            name="patient_id"
                                            value="{{ selected_patient_id }}">
                                     <button type="submit"
                                             class="table-action delete-action"
-                                            title="Delete appointment">
+                                            title="{{ t('Delete appointment') }}">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
@@ -148,14 +146,14 @@
                         {% else %}
                         <tr>
                             <td colspan="8" class="empty-row">
-                                No appointments found for this patient.
+                                {{ t('No appointments found for this patient.') }}
                             </td>
                         </tr>
                         {% endfor %}
                     {% else %}
                     <tr>
                         <td colspan="8" class="empty-row">
-                            Choose a patient to display appointments.
+                            {{ t('Choose a patient to display appointments.') }}
                         </td>
                     </tr>
                     {% endif %}

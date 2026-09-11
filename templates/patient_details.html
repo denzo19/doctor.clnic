@@ -11,19 +11,19 @@
     <div class="page-header">
         <h1>
             <i class="fas fa-user-injured"></i>
-            Patient Profile
+            {{ t("Patient Profile") }}
         </h1>
     </div>
 
     <div class="details-card">
         <h2>
             <i class="fas fa-id-card"></i>
-            Basic Information
+            {{ t("Basic Information") }}
         </h2>
 
         <div class="patient-profile-grid">
             <div class="patient-profile-item">
-                <span>Full Name</span>
+                <span>{{ t("Full Name") }}</span>
                 <strong>
                     {{ patient.first_name }}
                     {{ patient.middle_name or '' }}
@@ -31,35 +31,35 @@
                 </strong>
             </div>
             <div class="patient-profile-item">
-                <span>Date of Birth</span>
+                <span>{{ t("Date of Birth") }}</span>
                 <strong>{{ patient.date_of_birth }}</strong>
             </div>
             <div class="patient-profile-item">
-                <span>Gender</span>
-                <strong>{{ patient.gender }}</strong>
+                <span>{{ t("Gender") }}</span>
+                <strong>{{ t(patient.gender) }}</strong>
             </div>
             <div class="patient-profile-item">
-                <span>Phone</span>
+                <span>{{ t("Phone") }}</span>
                 <strong>{{ patient.phone_number }}</strong>
             </div>
             <div class="patient-profile-item">
-                <span>Address</span>
+                <span>{{ t("Address") }}</span>
                 <strong>{{ patient.address }}</strong>
             </div>
         </div>
     </div>
 
     <div class="details-section">
-        <h2><i class="fas fa-heartbeat"></i> Vital Signs</h2>
+        <h2><i class="fas fa-heartbeat"></i> {{ t("Vital Signs") }}</h2>
 
         <div class="toolbar-form patient-vital-history-toolbar">
             <select id="vitalHistoryMetric" class="toolbar-search-input">
-                <option value="blood_pressure">Blood Pressure</option>
-                <option value="heart_rate">Heart Rate</option>
-                <option value="respiratory_rate">Respiratory</option>
-                <option value="body_temperature">Temperature</option>
-                <option value="oxygen_saturation">Oxygen Saturation</option>
-                <option value="weight">Weight</option>
+                <option value="blood_pressure">{{ t("Blood Pressure") }}</option>
+                <option value="heart_rate">{{ t("Heart Rate") }}</option>
+                <option value="respiratory_rate">{{ t("Respiratory") }}</option>
+                <option value="body_temperature">{{ t("Temperature") }}</option>
+                <option value="oxygen_saturation">{{ t("Oxygen Saturation") }}</option>
+                <option value="weight">{{ t("Weight") }}</option>
             </select>
 
             <button type="button"
@@ -67,7 +67,7 @@
                     id="vitalHistoryButton"
                     {% if not vital_signs %}disabled{% endif %}
                     onclick="openVitalHistoryModal()">
-                <i class="fas fa-chart-line"></i> Historic
+                <i class="fas fa-chart-line"></i> {{ t("Historic") }}
             </button>
         </div>
 
@@ -75,14 +75,14 @@
             <table class="app-table details-table">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Blood Pressure</th>
-                        <th>Heart Rate</th>
-                        <th>Respiratory</th>
-                        <th>Temperature</th>
-                        <th>Oxygen Saturation</th>
-                        <th>Weight</th>
-                        <th>Height</th>
+                        <th>{{ t("Date") }}</th>
+                        <th>{{ t("Blood Pressure") }}</th>
+                        <th>{{ t("Heart Rate") }}</th>
+                        <th>{{ t("Respiratory") }}</th>
+                        <th>{{ t("Temperature") }}</th>
+                        <th>{{ t("Oxygen Saturation") }}</th>
+                        <th>{{ t("Weight") }}</th>
+                        <th>{{ t("Height") }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -99,7 +99,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="8" class="empty-row">No vital signs recorded.</td>
+                        <td colspan="8" class="empty-row">{{ t("No vital signs recorded.") }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -112,7 +112,7 @@
             <div class="modal-header">
                 <h2>
                     <i class="fas fa-chart-line"></i>
-                    Historic
+                    {{ t("Historic") }}
                 </h2>
                 <button type="button" class="modal-close-btn" onclick="closeVitalHistoryModal()">
                     <i class="fas fa-times"></i>
@@ -124,25 +124,25 @@
                      class="lab-history-chart"
                      viewBox="0 0 760 520"
                      role="img"
-                     aria-label="Vital signs history chart"></svg>
+                     aria-label="{{ t('Vital signs history chart') }}"></svg>
                 <div id="vitalHistoryEmpty" class="empty-row" hidden>
-                    Not enough numeric records to display a graph.
+                    {{ t("Not enough numeric records to display a graph.") }}
                 </div>
             </div>
         </div>
     </div>
 
     <div class="details-section">
-        <h2><i class="fas fa-notes-medical"></i> Diseases</h2>
+        <h2><i class="fas fa-notes-medical"></i> {{ t("Diseases") }}</h2>
 
         <table class="app-table details-table">
             <thead>
                 <tr>
-                    <th>Disease</th>
-                    <th>Category</th>
-                    <th>Diagnosis Date</th>
-                    <th>Status</th>
-                    <th>Notes</th>
+                    <th>{{ t("Disease") }}</th>
+                    <th>{{ t("Category") }}</th>
+                    <th>{{ t("Diagnosis Date") }}</th>
+                    <th>{{ t("Status") }}</th>
+                    <th>{{ t("Notes") }}</th>
 
                 </tr>
             </thead>
@@ -154,14 +154,14 @@
                     <td>{{ disease.diagnosis_date }}</td>
                     <td>
                         <span class="status-badge status-{{ disease.status }}">
-                            {{ disease.status }}
+                            {{ t(disease.status) }}
                         </span>
                     </td>
                     <td>{{ disease.notes }}</td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="7" class="empty-row">No diseases recorded.</td>
+                        <td colspan="7" class="empty-row">{{ t("No diseases recorded.") }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -169,20 +169,20 @@
     </div>
 
     <div class="details-section">
-        <h2><i class="fas fa-pills"></i> Medications</h2>
+        <h2><i class="fas fa-pills"></i> {{ t("Medications") }}</h2>
 
         <div class="table-container patient-medications-table-wrap">
             <table class="app-table details-table">
                 <thead>
                     <tr>
-                        <th>Medication</th>
-                        <th>Strength</th>
-                        <th>Form</th>
-                        <th>Dose</th>
-                        <th>Frequency</th>
-                        <th>Start</th>
-                        <th>End</th>
-                        <th>Notes</th>
+                        <th>{{ t("Medication") }}</th>
+                        <th>{{ t("Strength") }}</th>
+                        <th>{{ t("Form") }}</th>
+                        <th>{{ t("Dose") }}</th>
+                        <th>{{ t("Frequency") }}</th>
+                        <th>{{ t("Start") }}</th>
+                        <th>{{ t("End") }}</th>
+                        <th>{{ t("Notes") }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -194,12 +194,12 @@
                         <td>{{ med.dose }}</td>
                         <td>{{ med.frequency }}</td>
                         <td>{{ med.start_date }}</td>
-                        <td>{{ med.end_date or 'Current' }}</td>
+                        <td>{{ med.end_date or t("Current") }}</td>
                         <td>{{ med.notes }}</td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="8" class="empty-row">No active medications recorded.</td>
+                        <td colspan="8" class="empty-row">{{ t("No active medications recorded.") }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -208,7 +208,7 @@
     </div>
 
     <div class="details-section" id="lab-results-section">
-        <h2><i class="fas fa-vial"></i> Lab Results</h2>
+        <h2><i class="fas fa-vial"></i> {{ t("Lab Results") }}</h2>
 
         <form method="GET"
               action="{{ url_for('patient_details', patient_id=patient.id) }}#lab-results-section"
@@ -217,12 +217,12 @@
                 <input type="hidden" name="doctor_id" value="{{ doctor_id }}">
             {% endif %}
 
-            <label class="toolbar-filter-label" for="patient_lab_test_filter">Test</label>
+            <label class="toolbar-filter-label" for="patient_lab_test_filter">{{ t("Test") }}</label>
             <div class="searchable-select" data-searchable-select>
                 <input type="text"
                        id="patient_lab_test_filter"
                        class="toolbar-search-input searchable-select-input"
-                       placeholder="All completed tests"
+                       placeholder="{{ t('All completed tests') }}"
                        autocomplete="off"
                        value="{% for test in lab_test_options %}{% if selected_lab_test_id == test.id %}{{ test.test_name }}{% if test.category %} - {{ test.category }}{% endif %}{% endif %}{% endfor %}">
                 <input type="hidden"
@@ -239,18 +239,18 @@
                         </button>
                     {% endfor %}
                     <div class="searchable-select-empty">
-                        No completed tests found.
+                        {{ t("No completed tests found.") }}
                     </div>
                 </div>
             </div>
 
-            <button type="submit" class="toolbar-btn search-btn" title="Search">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
             <a href="{% if doctor_id %}{{ url_for('patient_details', patient_id=patient.id, doctor_id=doctor_id) }}{% else %}{{ url_for('patient_details', patient_id=patient.id) }}{% endif %}#lab-results-section"
                class="toolbar-btn clear-btn"
-               title="Clear">
+               title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </a>
 
@@ -259,7 +259,7 @@
                     id="labHistoryButton"
                     {% if not selected_lab_test_id %}disabled{% endif %}
                     onclick="openLabHistoryModal()">
-                <i class="fas fa-chart-line"></i> Historic
+                <i class="fas fa-chart-line"></i> {{ t("Historic") }}
             </button>
         </form>
 
@@ -267,14 +267,14 @@
             <table class="app-table details-table">
                 <thead>
                     <tr>
-                        <th>Test</th>
-                        <th>Category</th>
-                        <th>Result</th>
+                        <th>{{ t("Test") }}</th>
+                        <th>{{ t("Category") }}</th>
+                        <th>{{ t("Result") }}</th>
                         <th></th>
-                        <th>Unit</th>
-                        <th>Normal Range</th>
-                        <th>Date</th>
-                        <th>Notes</th>
+                        <th>{{ t("Unit") }}</th>
+                        <th>{{ t("Normal Range") }}</th>
+                        <th>{{ t("Date") }}</th>
+                        <th>{{ t("Notes") }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -285,7 +285,7 @@
                         <td>{{ lab.result_value }}</td>
                         <td>
                             {% if lab.result_level %}
-                                <span class="lab-result-level-alert">{{ lab.result_level }}</span>
+                                <span class="lab-result-level-alert">{{ t(lab.result_level) }}</span>
                             {% endif %}
                         </td>
                         <td>{{ lab.unit }}</td>
@@ -295,7 +295,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="8" class="empty-row">No lab results recorded.</td>
+                        <td colspan="8" class="empty-row">{{ t("No lab results recorded.") }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -308,7 +308,7 @@
             <div class="modal-header">
                 <h2>
                     <i class="fas fa-chart-line"></i>
-                    Historic
+                    {{ t("Historic") }}
                 </h2>
                 <button type="button" class="modal-close-btn" onclick="closeLabHistoryModal()">
                     <i class="fas fa-times"></i>
@@ -320,27 +320,27 @@
                      class="lab-history-chart"
                      viewBox="0 0 760 520"
                      role="img"
-                     aria-label="Lab result history chart"></svg>
+                     aria-label="{{ t('Lab result history chart') }}"></svg>
                 <div id="labHistoryEmpty" class="empty-row" hidden>
-                    Not enough numeric results to display a graph.
+                    {{ t("Not enough numeric results to display a graph.") }}
                 </div>
             </div>
         </div>
     </div>
 
     <div class="details-section">
-        <h2><i class="fas fa-file-medical-alt"></i> Visit Reports</h2>
+        <h2><i class="fas fa-file-medical-alt"></i> {{ t("Visit Reports") }}</h2>
 
         <table class="app-table details-table">
             <thead>
                 <tr>
-                    <th>Visit Date</th>
-                    <th>Chief Complaint</th>
-                    <th>Diagnosis</th>
-                    <th>Treatment Plan</th>
-                    <th>Doctor Notes</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th>{{ t("Visit Date") }}</th>
+                    <th>{{ t("Chief Complaint") }}</th>
+                    <th>{{ t("Diagnosis") }}</th>
+                    <th>{{ t("Treatment Plan") }}</th>
+                    <th>{{ t("Doctor Notes") }}</th>
+                    <th>{{ t("Status") }}</th>
+                    <th>{{ t("Actions") }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -365,7 +365,7 @@
                     </td>
                      <td>
                         <span class="status-badge status-{{ visit.visit_status }}">
-                            {{ visit.visit_status }}
+                            {{ t(visit.visit_status) }}
                         </span>
                     </td>
                     <td>
@@ -373,18 +373,18 @@
 
                         <a href="{{ url_for('edit_visit', visit_id=visit.id, doctor_id=doctor_id) }}"
                         class="table-action edit-action"
-                        title="Edit">
+                        title="{{ t('Edit') }}">
                             <i class="fas fa-pen"></i>
                         </a>
 
                         <form method="POST"
                             action="{{ url_for('delete_visit', visit_id=visit.id, doctor_id=doctor_id) }}"
                             class="inline-delete-form"
-                            onsubmit="return confirm('Delete this visit?');">
+                            onsubmit="return confirm({{ t('Delete this visit?')|tojson }});">
 
                             <button class="table-action delete-action"
                                     type="submit"
-                                    title="Delete">
+                                    title="{{ t('Delete') }}">
                                 <i class="fas fa-trash"></i>
                             </button>
 
@@ -393,7 +393,7 @@
                     {% else %}
 
                         <span class="locked-label">
-                            <i class="fas fa-lock"></i> Final
+                            <i class="fas fa-lock"></i> {{ t("Final") }}
                         </span>
 
                     {% endif %}
@@ -403,7 +403,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" class="empty-row">No visit reports recorded.</td>
+                    <td colspan="7" class="empty-row">{{ t("No visit reports recorded.") }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -423,7 +423,7 @@
                 ) }}"
             class="action-btn primary-btn">
                 <i class="fas fa-stethoscope"></i>
-                New Visit
+                {{ t("New Visit") }}
             </a>
         {% else %}
             <a href="{{ url_for(
@@ -433,7 +433,7 @@
                 ) }}"
             class="action-btn primary-btn">
                 <i class="fas fa-stethoscope"></i>
-                New Visit
+                {{ t("New Visit") }}
             </a>
         {% endif %}
 
@@ -445,7 +445,7 @@
             ) }}"
            class="action-btn primary-btn">
             <i class="fas fa-prescription-bottle-alt"></i>
-            New Subscription
+            {{ t("New Subscription") }}
         </a>
 
         <a href="{{ url_for(
@@ -456,20 +456,20 @@
             ) }}"
            class="action-btn primary-btn">
             <i class="fa fa-vial"></i>
-            New Lab Order
+            {{ t("New Lab Order") }}
         </a>
 
         {% if request.endpoint == 'patient_history_details' %}
             <a href="{{ url_for('home') }}"
                class="action-btn secondary-btn">
                 <i class="fas fa-arrow-left"></i>
-                Back
+                {{ t("Back") }}
             </a>
         {% else %}
             <a href="{{ url_for('checked_in_patients', doctor_id=doctor_id) }}"
             class="action-btn secondary-btn">
                 <i class="fas fa-arrow-left"></i>
-                Back to Checked-in Patients
+                {{ t("Back to Checked-in Patients") }}
             </a>
         {% endif %}
 
@@ -478,9 +478,9 @@
     {% else %}
 
     <div class="patient-details-container">
-        <h1>Patient not found</h1>
+        <h1>{{ t("Patient not found") }}</h1>
         <a href="{{ url_for('patients') }}" class="back-btn">
-            Back to Patients
+            {{ t("Back to Patients") }}
         </a>
     </div>
 
@@ -548,12 +548,17 @@ document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox
 const vitalHistoryRows = {{ vital_signs|tojson }};
 const labHistoryRows = {{ lab_results|tojson }};
 const vitalHistoryMetricLabels = {
-    blood_pressure: "Blood Pressure",
-    heart_rate: "Heart Rate",
-    respiratory_rate: "Respiratory",
-    body_temperature: "Temperature",
-    oxygen_saturation: "Oxygen Saturation",
-    weight: "Weight"
+    blood_pressure: {{ t("Blood Pressure")|tojson }},
+    heart_rate: {{ t("Heart Rate")|tojson }},
+    respiratory_rate: {{ t("Respiratory")|tojson }},
+    body_temperature: {{ t("Temperature")|tojson }},
+    oxygen_saturation: {{ t("Oxygen Saturation")|tojson }},
+    weight: {{ t("Weight")|tojson }}
+};
+const patientDetailsText = {
+    vitalSign: {{ t("Vital Sign")|tojson }},
+    date: {{ t("Date")|tojson }},
+    resultValue: {{ t("Result Value")|tojson }}
 };
 
 function parseLabResultValue(value) {
@@ -593,7 +598,7 @@ function parseVitalHistoryValue(row, metric) {
 function renderVitalHistoryChart() {
     const metricSelect = document.getElementById("vitalHistoryMetric");
     const metric = metricSelect ? metricSelect.value : "blood_pressure";
-    const metricLabel = vitalHistoryMetricLabels[metric] || "Vital Sign";
+    const metricLabel = vitalHistoryMetricLabels[metric] || patientDetailsText.vitalSign;
     const svg = document.getElementById("vitalHistoryChart");
     const emptyState = document.getElementById("vitalHistoryEmpty");
     const points = vitalHistoryRows
@@ -754,7 +759,7 @@ function renderVitalHistoryChart() {
         "font-weight": "700",
         "text-anchor": "middle"
     });
-    xAxisLabel.textContent = "Date";
+    xAxisLabel.textContent = patientDetailsText.date;
     svg.appendChild(xAxisLabel);
 }
 
@@ -815,7 +820,7 @@ function renderLabHistoryChart() {
             return {
                 date: row.result_date || "",
                 displayDate: displayDate,
-                testName: row.test_name || "Result Value",
+                testName: row.test_name || patientDetailsText.resultValue,
                 value: parseLabResultValue(row.result_value),
                 unit: row.unit || "",
                 normalLow: row.normal_low,
@@ -966,7 +971,7 @@ function renderLabHistoryChart() {
         transform: "rotate(-90 18 " + (margin.top + chartHeight / 2) + ")",
         "text-anchor": "middle"
     });
-    yAxisLabel.textContent = points[0].testName || "Result Value";
+    yAxisLabel.textContent = points[0].testName || patientDetailsText.resultValue;
     svg.appendChild(yAxisLabel);
 
     const xAxisLabel = createSvgElement("text", {
@@ -977,7 +982,7 @@ function renderLabHistoryChart() {
         "font-weight": "700",
         "text-anchor": "middle"
     });
-    xAxisLabel.textContent = "Date";
+    xAxisLabel.textContent = patientDetailsText.date;
     svg.appendChild(xAxisLabel);
 }
 

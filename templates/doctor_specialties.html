@@ -5,7 +5,7 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-user-md"></i> Doctor Speciality</h1>
+        <h1><i class="fas fa-user-md"></i> {{ t('Doctor Speciality') }}</h1>
     </div>
 
     <div class="details-card">
@@ -18,21 +18,21 @@
                    name="search"
                    value="{{ search or '' }}"
                    class="toolbar-search-input"
-                   placeholder="Search speciality">
+                   placeholder="{{ t('Search speciality') }}">
 
-            <button type="submit" class="toolbar-btn search-btn" title="Search">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
             <a href="{{ url_for('doctor_specialties') }}"
                class="toolbar-btn clear-btn"
-               title="Clear">
+               title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </a>
 
             <button type="button"
                     class="toolbar-btn add-btn"
-                    title="Add Doctor Speciality"
+                    title="{{ t('Add Doctor Speciality') }}"
                     onclick="openAddSpecialtyModal()">
                 <i class="fas fa-plus"></i>
             </button>
@@ -44,12 +44,12 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>Code</th>
-                    <th>Speciality</th>
-                    <th>Group</th>
-                    <th>Classification</th>
-                    <th>Active</th>
-                    <th class="actions-header">Actions</th>
+                    <th>{{ t('Code') }}</th>
+                    <th>{{ t('Speciality') }}</th>
+                    <th>{{ t('Group') }}</th>
+                    <th>{{ t('Classification') }}</th>
+                    <th>{{ t('Active') }}</th>
+                    <th class="actions-header">{{ t('Actions') }}</th>
                 </tr>
             </thead>
 
@@ -62,12 +62,12 @@
                     <td>{{ specialty.specialty_name }}</td>
                     <td>{{ specialty.specialty_group or '' }}</td>
                     <td>{{ specialty.classification_system }}</td>
-                    <td>{{ 'Yes' if specialty.is_active else 'No' }}</td>
+                    <td>{{ t('Yes') if specialty.is_active else t('No') }}</td>
 
                     <td class="action-cell" onclick="event.stopPropagation();">
                         <button type="button"
                                 class="table-action edit-action"
-                                title="Edit"
+                                title="{{ t('Edit') }}"
                                 onclick='openSpecialtyModal({{ specialty|tojson }})'>
                             <i class="fas fa-pen"></i>
                         </button>
@@ -76,15 +76,15 @@
                             <form method="POST"
                                   action="{{ url_for('stop_doctor_specialty', specialty_id=specialty.id) }}"
                                   class="inline-delete-form"
-                                  onsubmit="return confirm('Deactivate this doctor speciality?');">
+                                  onsubmit="return confirm({{ t('Deactivate this doctor speciality?')|tojson }});">
                                 <button type="submit"
                                         class="table-action delete-action"
-                                        title="Deactivate">
+                                        title="{{ t('Deactivate') }}">
                                     <i class="fas fa-ban"></i>
                                 </button>
                             </form>
                         {% else %}
-                            <span class="locked-label" title="Inactive speciality">
+                            <span class="locked-label" title="{{ t('Inactive speciality') }}">
                                 <i class="fas fa-lock"></i>
                             </span>
                         {% endif %}
@@ -92,7 +92,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" class="empty-row">No doctor specialities found.</td>
+                    <td colspan="6" class="empty-row">{{ t('No doctor specialities found.') }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -119,7 +119,7 @@
     <div class="modal-content">
 
         <div class="modal-header">
-            <h2><i class="fas fa-pen"></i> Doctor Speciality Information</h2>
+            <h2><i class="fas fa-pen"></i> {{ t('Doctor Speciality Information') }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeSpecialtyModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -130,17 +130,17 @@
             <div class="form-grid two-column-grid">
 
                 <div class="form-group">
-                    <label>Code</label>
+                    <label>{{ t('Code') }}</label>
                     <input type="text" id="modal_specialty_code" name="specialty_code" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Speciality</label>
+                    <label>{{ t('Speciality') }}</label>
                     <input type="text" id="modal_specialty_name" name="specialty_name" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Group</label>
+                    <label>{{ t('Group') }}</label>
                     <input type="text"
                            id="modal_specialty_group"
                            name="specialty_group"
@@ -148,7 +148,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Classification</label>
+                    <label>{{ t('Classification') }}</label>
                     <input type="text"
                            id="modal_classification_system"
                            name="classification_system"
@@ -157,15 +157,15 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Active</label>
+                    <label>{{ t('Active') }}</label>
                     <select id="modal_is_active" name="is_active">
-                        <option value="1">Yes</option>
-                        <option value="0">No</option>
+                        <option value="1">{{ t('Yes') }}</option>
+                        <option value="0">{{ t('No') }}</option>
                     </select>
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Description</label>
+                    <label>{{ t('Description') }}</label>
                     <textarea id="modal_description" name="description" rows="3"></textarea>
                 </div>
 
@@ -173,13 +173,13 @@
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t('Save') }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeSpecialtyModal()">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t('Cancel') }}
                 </button>
             </div>
 
@@ -191,7 +191,7 @@
     <div class="modal-content">
 
         <div class="modal-header">
-            <h2><i class="fas fa-plus"></i> Add Doctor Speciality</h2>
+            <h2><i class="fas fa-plus"></i> {{ t('Add Doctor Speciality') }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeAddSpecialtyModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -205,22 +205,22 @@
             <div class="form-grid two-column-grid">
 
                 <div class="form-group">
-                    <label>Code</label>
+                    <label>{{ t('Code') }}</label>
                     <input type="text" name="specialty_code" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Speciality</label>
+                    <label>{{ t('Speciality') }}</label>
                     <input type="text" name="specialty_name" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Group</label>
+                    <label>{{ t('Group') }}</label>
                     <input type="text" name="specialty_group" list="specialtyGroups">
                 </div>
 
                 <div class="form-group">
-                    <label>Classification</label>
+                    <label>{{ t('Classification') }}</label>
                     <input type="text"
                            name="classification_system"
                            value="ABMS/ACGME"
@@ -229,7 +229,7 @@
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Description</label>
+                    <label>{{ t('Description') }}</label>
                     <textarea name="description" rows="3"></textarea>
                 </div>
 
@@ -237,13 +237,13 @@
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t('Save') }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeAddSpecialtyModal()">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t('Cancel') }}
                 </button>
             </div>
 

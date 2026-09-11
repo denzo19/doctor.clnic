@@ -4,12 +4,24 @@ from database import execute_query
 _home_menu_bootstrapped = False
 
 
-def build_user_menu(group_id):
+def build_user_menu(group_id, language="en"):
+    option_label = (
+        "COALESCE(NULLIF(mo.option_name_ar, ''), mo.option_name)"
+        if language == "ar" else
+        "mo.option_name"
+    )
+    parent_label = (
+        "COALESCE(NULLIF(parent.option_name_ar, ''), parent.option_name)"
+        if language == "ar" else
+        "parent.option_name"
+    )
+
     rows = execute_query(
-        """
+        f"""
         SELECT 
             mo.id AS option_id,
             mo.option_name,
+            {option_label} AS option_label,
             mo.endpoint_name,
             mo.url,
             mo.icon_class,
@@ -17,6 +29,7 @@ def build_user_menu(group_id):
             mo.display_order,
             parent.id AS parent_id,
             parent.option_name AS parent_name,
+            {parent_label} AS parent_label,
             parent.icon_class AS parent_icon,
             parent.display_order AS parent_display_order
         FROM group_menu_permissions gmp
@@ -41,7 +54,7 @@ def build_user_menu(group_id):
 
         if parent_id not in menu:
             menu[parent_id] = {
-                "name": row["parent_name"] or row["option_name"],
+                "name": row["parent_label"] or row["option_label"],
                 "icon": row["parent_icon"] or row["icon_class"],
                 "url": row["url"] if row["parent_id"] is None else None,
                 "children": []
@@ -49,7 +62,7 @@ def build_user_menu(group_id):
 
         if row["parent_id"] is not None:
             menu[parent_id]["children"].append({
-                "name": row["option_name"],
+                "name": row["option_label"],
                 "endpoint": row["endpoint_name"],
                 "url": row["url"],
                 "icon": row["icon_class"]

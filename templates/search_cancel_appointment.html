@@ -8,7 +8,7 @@
 
         <h1>
             <i class="fas fa-calendar-times"></i>
-            Search & Cancel Appointment
+            {{ t("Search & Cancel Appointment") }}
         </h1>
 
     </div>
@@ -21,13 +21,13 @@
 
                 <div class="toolbar-field">
 
-                    <label>Search Patient</label>
+                    <label>{{ t("Search Patient") }}</label>
 
                     <input type="text"
                            name="search"
                            id="searchInput"
                            value="{{ search or '' }}"
-                           placeholder="Patient name or phone">
+                           placeholder="{{ t('Patient name or phone') }}">
 
                 </div>
 
@@ -71,13 +71,13 @@
 
                 <tr>
 
-                    <th>Patient</th>
-                    <th>Phone</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Doctor</th>
-                    <th>Medical Center</th>
-                    <th>Cancel</th>
+                    <th>{{ t("Patient") }}</th>
+                    <th>{{ t("Phone") }}</th>
+                    <th>{{ t("Date") }}</th>
+                    <th>{{ t("Time") }}</th>
+                    <th>{{ t("Doctor") }}</th>
+                    <th>{{ t("Medical Center") }}</th>
+                    <th>{{ t("Cancel") }}</th>
 
                 </tr>
 
@@ -130,7 +130,7 @@
 
                         <form method="POST"
                               action="{{ url_for('cancel_appointment', appointment_id=appt.id) }}"
-                              onsubmit="return confirm('Cancel this appointment?');">
+                              onsubmit="return confirm({{ t('Cancel this appointment?')|tojson }});">
 
                             <input type="hidden"
                                    name="search"
@@ -156,7 +156,7 @@
                     <td colspan="7"
                         class="empty-row">
 
-                        No appointments found.
+                        {{ t("No appointments found.") }}
 
                     </td>
 

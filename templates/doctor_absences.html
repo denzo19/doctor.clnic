@@ -5,7 +5,7 @@
 <section class="app-page">
 
     <div class="page-header">
-        <h1><i class="fas fa-user-clock"></i> Manage Doctor Absences</h1>
+        <h1><i class="fas fa-user-clock"></i> {{ t('Manage Doctor Absences') }}</h1>
     </div>
     <div class="details-card">
         <form method="GET"
@@ -17,21 +17,21 @@
                    name="search"
                    value="{{ search or '' }}"
                    class="toolbar-search-input"
-                   placeholder="Search absence">
+                   placeholder="{{ t('Search absence') }}">
 
-            <button type="submit" class="toolbar-btn search-btn" title="Search">
+            <button type="submit" class="toolbar-btn search-btn" title="{{ t('Search') }}">
                 <i class="fas fa-search"></i>
             </button>
 
             <a href="{{ url_for('manage_doctor_absences') }}"
                class="toolbar-btn clear-btn"
-               title="Clear">
+               title="{{ t('Clear') }}">
                 <i class="fas fa-times"></i>
             </a>
 
             <button type="button"
                     class="toolbar-btn add-btn"
-                    title="Add Absence"
+                    title="{{ t('Add Absence') }}"
                     onclick="openAddAbsenceModal()">
                 <i class="fas fa-plus"></i>
             </button>
@@ -39,7 +39,7 @@
             <button type="button"
                     id="doctorAbsenceReportBtn"
                     class="toolbar-btn search-btn"
-                    title="Doctor Absences Report">
+                    title="{{ t('Doctor Absences Report') }}">
                 <i class="fas fa-file-pdf"></i>
             </button>
 
@@ -50,16 +50,16 @@
         <table class="app-table">
             <thead>
                 <tr>
-                    <th>Doctor</th>
-                    <th>Center</th>
-                    <th>Type</th>
-                    <th>From Date</th>
-                    <th>To Date</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Reason</th>
-                    <th>Active</th>
-                    <th class="actions-header">Actions</th>
+                    <th>{{ t('Doctor') }}</th>
+                    <th>{{ t('Center') }}</th>
+                    <th>{{ t('Type') }}</th>
+                    <th>{{ t('From Date') }}</th>
+                    <th>{{ t('To Date') }}</th>
+                    <th>{{ t('Start') }}</th>
+                    <th>{{ t('End') }}</th>
+                    <th>{{ t('Reason') }}</th>
+                    <th>{{ t('Active') }}</th>
+                    <th class="actions-header">{{ t('Actions') }}</th>
                 </tr>
             </thead>
 
@@ -80,25 +80,25 @@
                     )">
 
                     <td>{{ a.doctor_name }}</td>
-                    <td>{{ a.center_name or 'All centers' }}</td>
+                    <td>{{ a.center_name or t('All centers') }}</td>
                     <td>
-                        {% if a.absence_type == 'date_range' %}Date range
-                        {% elif a.absence_type == 'full_day' %}Full day
-                        {% else %}Hours
+                        {% if a.absence_type == 'date_range' %}{{ t('Date range') }}
+                        {% elif a.absence_type == 'full_day' %}{{ t('Full day') }}
+                        {% else %}{{ t('Hours') }}
                         {% endif %}
                     </td>
                     <td>{{ a.absence_date }}</td>
                     <td>{{ a.end_date or a.absence_date }}</td>
-                    <td>{% if a.absence_type == 'hours' %}{{ a.start_time }}{% else %}Full day{% endif %}</td>
-                    <td>{% if a.absence_type == 'hours' %}{{ a.end_time }}{% else %}Full day{% endif %}</td>
+                    <td>{% if a.absence_type == 'hours' %}{{ a.start_time }}{% else %}{{ t('Full day') }}{% endif %}</td>
+                    <td>{% if a.absence_type == 'hours' %}{{ a.end_time }}{% else %}{{ t('Full day') }}{% endif %}</td>
                     <td>{{ a.reason or '' }}</td>
-                    <td>{{ 'Yes' if a.is_active else 'No' }}</td>
+                    <td>{{ t('Yes') if a.is_active else t('No') }}</td>
 
                     <td class="action-cell" onclick="event.stopPropagation();">
 
                         <button type="button"
                                 class="table-action edit-action"
-                                title="Edit"
+                                title="{{ t('Edit') }}"
                                 onclick="openAbsenceModal(
                                     '{{ a.id }}',
                                     '{{ a.doctor_id }}',
@@ -118,15 +118,15 @@
                             <form method="POST"
                                   action="{{ url_for('stop_doctor_absence', absence_id=a.id) }}"
                                   class="inline-delete-form"
-                                  onsubmit="return confirm('Stop this doctor absence?');">
+                                  onsubmit="return confirm({{ t('Stop this doctor absence?')|tojson }});">
                                 <button type="submit"
                                         class="table-action delete-action"
-                                        title="Stop Absence">
+                                        title="{{ t('Stop Absence') }}">
                                     <i class="fas fa-ban"></i>
                                 </button>
                             </form>
                         {% else %}
-                            <span class="locked-label" title="Inactive absence">
+                            <span class="locked-label" title="{{ t('Inactive absence') }}">
                                 <i class="fas fa-lock"></i>
                             </span>
                         {% endif %}
@@ -136,7 +136,7 @@
                 {% else %}
                 <tr>
                     <td colspan="10" class="empty-row">
-                        No doctor absences found.
+                        {{ t('No doctor absences found.') }}
                     </td>
                 </tr>
                 {% endfor %}
@@ -150,7 +150,7 @@
     <div class="modal-content">
 
         <div class="modal-header">
-            <h2><i class="fas fa-pen"></i> Doctor Absence Information</h2>
+            <h2><i class="fas fa-pen"></i> {{ t('Doctor Absence Information') }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeAbsenceModal()">
                 <i class="fas fa-times"></i>
             </button>
@@ -161,9 +161,9 @@
             <div class="form-grid two-column-grid">
 
                 <div class="form-group">
-                    <label>Doctor</label>
+                    <label>{{ t('Doctor') }}</label>
                     <select id="modal_doctor_id" name="doctor_id" required>
-                        <option value="">Choose doctor</option>
+                        <option value="">{{ t('Choose doctor') }}</option>
                         {% for doctor in doctors %}
                             <option value="{{ doctor.id }}">
                                 {{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}
@@ -173,9 +173,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Medical Center</label>
+                    <label>{{ t('Medical Center') }}</label>
                     <select id="modal_center_id" name="center_id">
-                        <option value="">All centers</option>
+                        <option value="">{{ t('All centers') }}</option>
                         {% for center in centers %}
                             <option value="{{ center.id }}">{{ center.center_name }}</option>
                         {% endfor %}
@@ -183,29 +183,29 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Absence Type</label>
+                    <label>{{ t('Absence Type') }}</label>
                     <select id="modal_absence_type"
                             name="absence_type"
                             data-absence-type
                             required>
-                        <option value="full_day">Full day</option>
-                        <option value="date_range">Number of days</option>
-                        <option value="hours">Hours during a day</option>
+                        <option value="full_day">{{ t('Full day') }}</option>
+                        <option value="date_range">{{ t('Number of days') }}</option>
+                        <option value="hours">{{ t('Hours during a day') }}</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Absence Date</label>
+                    <label>{{ t('Absence Date') }}</label>
                     <input type="date" id="modal_absence_date" name="absence_date" required>
                 </div>
 
                 <div class="form-group absence-end-date-field">
-                    <label>End Date</label>
+                    <label>{{ t('End Date') }}</label>
                     <input type="date" id="modal_end_date" name="end_date">
                 </div>
 
                 <div class="form-group absence-time-field">
-                    <label>Start Time</label>
+                    <label>{{ t('Start Time') }}</label>
                     <input type="time"
                            id="modal_start_time"
                            name="start_time"
@@ -213,7 +213,7 @@
                 </div>
 
                 <div class="form-group absence-time-field">
-                    <label>End Time</label>
+                    <label>{{ t('End Time') }}</label>
                     <input type="time"
                            id="modal_end_time"
                            name="end_time"
@@ -221,15 +221,15 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Active</label>
+                    <label>{{ t('Active') }}</label>
                     <select id="modal_is_active" name="is_active">
-                        <option value="1">Yes</option>
-                        <option value="0">No</option>
+                        <option value="1">{{ t('Yes') }}</option>
+                        <option value="0">{{ t('No') }}</option>
                     </select>
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Reason</label>
+                    <label>{{ t('Reason') }}</label>
                     <input type="text" id="modal_reason" name="reason">
                 </div>
 
@@ -237,13 +237,13 @@
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t('Save') }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeAbsenceModal()">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t('Cancel') }}
                 </button>
             </div>
 
@@ -255,7 +255,7 @@
     <div class="modal-content">
 
         <div class="modal-header">
-            <h2><i class="fas fa-plus"></i> Add Doctor Absence</h2>
+            <h2><i class="fas fa-plus"></i> {{ t('Add Doctor Absence') }}</h2>
             <button type="button" class="modal-close-btn" onclick="closeAddAbsenceModal(true)">
                 <i class="fas fa-times"></i>
             </button>
@@ -269,9 +269,9 @@
             <div class="form-grid two-column-grid">
 
                 <div class="form-group">
-                    <label>Doctor</label>
+                    <label>{{ t('Doctor') }}</label>
                     <select name="doctor_id" required>
-                        <option value="">Choose doctor</option>
+                        <option value="">{{ t('Choose doctor') }}</option>
                         {% for doctor in doctors %}
                             <option value="{{ doctor.id }}">
                                 {{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}
@@ -281,9 +281,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Medical Center</label>
+                    <label>{{ t('Medical Center') }}</label>
                     <select name="center_id">
-                        <option value="">All centers</option>
+                        <option value="">{{ t('All centers') }}</option>
                         {% for center in centers %}
                             <option value="{{ center.id }}">{{ center.center_name }}</option>
                         {% endfor %}
@@ -291,42 +291,42 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Absence Type</label>
+                    <label>{{ t('Absence Type') }}</label>
                     <select name="absence_type"
                             data-absence-type
                             required>
-                        <option value="full_day">Full day</option>
-                        <option value="date_range">Number of days</option>
-                        <option value="hours">Hours during a day</option>
+                        <option value="full_day">{{ t('Full day') }}</option>
+                        <option value="date_range">{{ t('Number of days') }}</option>
+                        <option value="hours">{{ t('Hours during a day') }}</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Absence Date</label>
+                    <label>{{ t('Absence Date') }}</label>
                     <input type="date" name="absence_date" required>
                 </div>
 
                 <div class="form-group absence-end-date-field">
-                    <label>End Date</label>
+                    <label>{{ t('End Date') }}</label>
                     <input type="date" name="end_date">
                 </div>
 
                 <div class="form-group absence-time-field">
-                    <label>Start Time</label>
+                    <label>{{ t('Start Time') }}</label>
                     <input type="time"
                            name="start_time"
                            value="00:00">
                 </div>
 
                 <div class="form-group absence-time-field">
-                    <label>End Time</label>
+                    <label>{{ t('End Time') }}</label>
                     <input type="time"
                            name="end_time"
                            value="23:59">
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Reason</label>
+                    <label>{{ t('Reason') }}</label>
                     <input type="text" name="reason">
                 </div>
 
@@ -334,19 +334,19 @@
 
             <div class="modal-actions">
                 <button type="submit" class="standard-btn form-save-btn">
-                    <i class="fas fa-save"></i> Save
+                    <i class="fas fa-save"></i> {{ t('Save') }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-save-btn"
                         onclick="saveAbsenceAndNext()">
-                    <i class="fas fa-forward"></i> Next
+                    <i class="fas fa-forward"></i> {{ t('Next') }}
                 </button>
 
                 <button type="button"
                         class="standard-btn form-cancel-btn"
                         onclick="closeAddAbsenceModal(true)">
-                    <i class="fas fa-ban"></i> Cancel
+                    <i class="fas fa-ban"></i> {{ t('Cancel') }}
                 </button>
             </div>
 
@@ -357,6 +357,7 @@
 <script>
 const DEFAULT_ABSENCE_START_TIME = "00:00";
 const DEFAULT_ABSENCE_END_TIME = "23:59";
+const errorSavingAbsenceMessage = {{ t('Error saving absence.')|tojson }};
 
 function normalizeAbsenceTimeValue(timeValue, fallbackValue) {
     if (!timeValue) {
@@ -486,7 +487,7 @@ function saveAbsenceAndNext() {
         const data = result.data;
 
         if (!result.ok || !data.success) {
-            alert(data.message || "Error saving absence.");
+            alert(data.message || errorSavingAbsenceMessage);
             return;
         }
 
@@ -498,7 +499,7 @@ function saveAbsenceAndNext() {
         form.querySelector("select[name='doctor_id']").focus();
     })
     .catch(error => {
-        alert("Error saving absence.");
+        alert(errorSavingAbsenceMessage);
         console.error(error);
     });
 }

@@ -9,7 +9,7 @@
         <div class="modal-header">
             <h2>
                 <i class="fas fa-pills"></i>
-                Edit Prescription
+                {{ t("Edit Prescription") }}
             </h2>
 
             <a href="{{ url_for('patient_details', patient_id=prescription.patient_id, doctor_id=doctor_id) }}"
@@ -23,7 +23,7 @@
             <div class="form-grid">
 
                 <div class="form-group">
-                    <label>Medication</label>
+                    <label>{{ t("Medication") }}</label>
                     <select name="medication_id" required>
                         {% for med in medications %}
                             <option value="{{ med.id }}"
@@ -35,22 +35,22 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Dose</label>
+                    <label>{{ t("Dose") }}</label>
                     <input type="text" name="dose" value="{{ prescription.dose }}" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Frequency</label>
+                    <label>{{ t("Frequency") }}</label>
                     <input type="text" name="frequency" value="{{ prescription.frequency }}" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Start Date</label>
+                    <label>{{ t("Start Date") }}</label>
                     <input type="date" name="start_date" value="{{ prescription.start_date }}" required>
                 </div>
 
                 <div class="form-group form-group-wide">
-                    <label>Notes</label>
+                    <label>{{ t("Notes") }}</label>
                     <textarea name="notes">{{ prescription.notes }}</textarea>
                 </div>
 
@@ -63,7 +63,7 @@
                         value="draft"
                         class="standard-btn form-save-btn">
                     <i class="fas fa-save"></i>
-                    Save Draft
+                    {{ t("Save Draft") }}
                 </button>
 
                 <button type="submit"
@@ -71,13 +71,13 @@
                         value="final"
                         class="standard-btn primary-btn">
                     <i class="fas fa-lock"></i>
-                    Final Save
+                    {{ t("Final Save") }}
                 </button>
 
                 <a href="{{ url_for('patient_details', patient_id=prescription.patient_id, doctor_id=doctor_id) }}"
                    class="standard-btn form-cancel-btn">
                     <i class="fas fa-ban"></i>
-                    Cancel
+                    {{ t("Cancel") }}
                 </a>
 
             </div>

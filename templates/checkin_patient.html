@@ -2,12 +2,12 @@
 
 {% block content %}
 
-<section class="app-page">
+<section class="app-page checkin-patient-page">
 
     <div class="page-header">
         <h1>
             <i class="fas fa-user-check"></i>
-            Check-in Walk-in
+            {{ t("Check-in Walk-in") }}
         </h1>
     </div>
     <div class="details-card">
@@ -18,16 +18,16 @@
 
                 <div class="form-group">
 
-                    <label>Doctor</label>
+                    <label>{{ t("Doctor") }}</label>
 
                     <div class="searchable-select"
                          data-searchable-select
                          data-reload-on-select="true"
-                         data-required-message="Please choose a doctor from the list.">
+                         data-required-message="{{ t('Please choose a doctor from the list.') }}">
                         <input type="text"
                                id="doctorSearch"
                                class="searchable-select-input"
-                               placeholder="Choose doctor"
+                               placeholder="{{ t('Choose doctor') }}"
                                autocomplete="off"
                                required
                                value="{% for doctor in doctors %}{% if selected_doctor_id|string == doctor.id|string %}{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}{% endif %}{% endfor %}">
@@ -46,7 +46,7 @@
                                 </button>
                             {% endfor %}
                             <div class="searchable-select-empty">
-                                No doctors found.
+                                {{ t("No doctors found.") }}
                             </div>
                         </div>
                     </div>
@@ -54,15 +54,15 @@
                 </div>
                 <div class="form-group">
 
-                    <label>Patient</label>
+                    <label>{{ t("Patient") }}</label>
 
                     <div class="searchable-select"
                          data-searchable-select
-                         data-required-message="Please choose a patient from the list.">
+                         data-required-message="{{ t('Please choose a patient from the list.') }}">
                         <input type="text"
                                id="patientSearch"
                                class="searchable-select-input"
-                               placeholder="Choose patient"
+                               placeholder="{{ t('Choose patient') }}"
                                autocomplete="off"
                                required>
                         <input type="hidden"
@@ -72,10 +72,7 @@
                         <div class="searchable-select-options">
                             {% for patient in patients %}
                                 {% set patient_label %}
-                                    {% if patient.start_time %}{{ patient.start_time }} - {% endif %}
-                                    {{ patient.patient_code }} -
-                                    {{ patient.first_name }} {{ patient.middle_name or '' }} {{ patient.last_name }}
-                                    {% if patient.center_name %} - {{ patient.center_name }}{% endif %}
+                                    {% if patient.start_time %}{{ patient.start_time }} - {% endif %}{{ patient.patient_code }} - {{ patient.first_name }}{% if patient.middle_name %} {{ patient.middle_name }}{% endif %} {{ patient.last_name }}{% if patient.phone_number %} - {{ patient.phone_number }}{% endif %}{% if patient.center_name %} - {{ patient.center_name }}{% endif %}
                                 {% endset %}
                                 <button type="button"
                                         class="searchable-select-option"
@@ -85,34 +82,34 @@
                                 </button>
                             {% endfor %}
                             <div class="searchable-select-empty">
-                                No patients found.
+                                {{ t("No patients found.") }}
                             </div>
                         </div>
                     </div>
 
                 </div>
                 <div class="form-group checkin-notes-field">
-                    <label>Notes</label>
+                    <label>{{ t("Notes") }}</label>
                     <textarea name="notes" rows="1"></textarea>
                 </div>
 
                 <div class="checkin-actions">
                     <button type="submit" class="standard-btn form-save-btn">
                         <i class="fas fa-user-check"></i>
-                        Check-in Walk-in
+                        {{ t("Check-in Walk-in") }}
                     </button>
 
                     <button type="button"
                             class="standard-btn form-cancel-btn"
                             onclick="clearCheckinFields()">
                         <i class="fas fa-times"></i>
-                        Clear
+                        {{ t("Clear") }}
                     </button>
 
                     <a href="{{ url_for('checkin_lists') }}"
                        class="standard-btn form-cancel-btn">
                         <i class="fas fa-ban"></i>
-                        Cancel
+                        {{ t("Cancel") }}
                     </a>
                 </div>
 
@@ -124,22 +121,22 @@
     <div class="details-section">
         <h2>
             <i class="fas fa-list"></i>
-            Today's Checked-in Patients
+            {{ t("Today's Checked-in Patients") }}
         </h2>
 
         <div class="table-container">
             <table class="app-table">
                 <thead>
                     <tr>
-                        <th>Doctor</th>
-                        <th>Patient Code</th>
-                        <th>Patient Name</th>
-                        <th>Date of Birth</th>
-                        <th>Phone</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                        <th>Check-in Time</th>
-                        <th>Notes</th>
+                        <th>{{ t("Doctor") }}</th>
+                        <th>{{ t("Patient Code") }}</th>
+                        <th>{{ t("Patient Name") }}</th>
+                        <th>{{ t("Date of Birth") }}</th>
+                        <th>{{ t("Phone") }}</th>
+                        <th>{{ t("Type") }}</th>
+                        <th>{{ t("Status") }}</th>
+                        <th>{{ t("Check-in Time") }}</th>
+                        <th>{{ t("Notes") }}</th>
                     </tr>
                 </thead>
 
@@ -155,10 +152,10 @@
                         </td>
                         <td>{{ item.date_of_birth }}</td>
                         <td>{{ item.phone_number }}</td>
-                        <td>{{ item.check_in_type }}</td>
+                        <td>{{ t(item.check_in_type) }}</td>
                         <td>
                             <span class="status-badge status-{{ item.status }}">
-                                {{ item.status }}
+                                {{ t(item.status) }}
                             </span>
                         </td>
                         <td>{{ item.check_in_time }}</td>
@@ -167,7 +164,7 @@
                     {% else %}
                     <tr>
                         <td colspan="9" class="empty-row">
-                            No patients checked in today.
+                            {{ t("No patients checked in today.") }}
                         </td>
                     </tr>
                     {% endfor %}

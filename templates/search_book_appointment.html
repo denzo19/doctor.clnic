@@ -7,7 +7,7 @@
     <div class="page-header">
         <h1>
             <i class="fas fa-calendar-check"></i>
-            Book Appointment
+            {{ t("Book Appointment") }}
         </h1>
     </div>
     <div class="details-card">
@@ -20,15 +20,15 @@
 
                 <div class="toolbar-field">
 
-                    <label>Doctor</label>
+                    <label>{{ t("Doctor") }}</label>
 
                     <div class="searchable-select"
                          data-searchable-select
-                         data-required-message="Please choose a doctor from the list.">
+                         data-required-message="{{ t('Please choose a doctor from the list.') }}">
                         <input type="text"
                                id="doctorSearch"
                                class="searchable-select-input"
-                               placeholder="Choose doctor"
+                               placeholder="{{ t('Choose doctor') }}"
                                autocomplete="off"
                                required
                                value="{% for doctor in doctors %}{% if selected_doctor|string == doctor.id|string %}{{ doctor.full_name }}{% if doctor.specialty %} - {{ doctor.specialty }}{% endif %}{% endif %}{% endfor %}">
@@ -46,7 +46,7 @@
                                 </button>
                             {% endfor %}
                             <div class="searchable-select-empty">
-                                No doctors found.
+                                {{ t("No doctors found.") }}
                             </div>
                         </div>
                     </div>
@@ -55,18 +55,18 @@
 
                 <div class="toolbar-field">
 
-                    <label>Medical Center</label>
+                    <label>{{ t("Medical Center") }}</label>
 
                     <div class="searchable-select"
                          data-searchable-select
-                         data-required-message="Please choose a medical center from the list.">
+                         data-required-message="{{ t('Please choose a medical center from the list.') }}">
                         <input type="text"
                                id="centerSearch"
                                class="searchable-select-input"
-                               placeholder="Choose medical center"
+                               placeholder="{{ t('Choose medical center') }}"
                                autocomplete="off"
                                required
-                               value="{% if selected_center == 'all' %}All{% else %}{% for center in medical_centers %}{% if selected_center|string == center.id|string %}{{ center.center_name }}{% endif %}{% endfor %}{% endif %}">
+                               value="{% if selected_center == 'all' %}{{ t('All') }}{% else %}{% for center in medical_centers %}{% if selected_center|string == center.id|string %}{{ center.center_name }}{% endif %}{% endfor %}{% endif %}">
                         <input type="hidden"
                                name="center_id"
                                class="searchable-select-value"
@@ -75,8 +75,8 @@
                             <button type="button"
                                     class="searchable-select-option"
                                     data-value="all"
-                                    data-label="All">
-                                All
+                                    data-label="{{ t('All') }}">
+                                {{ t("All") }}
                             </button>
                             {% for center in medical_centers %}
                                 <button type="button"
@@ -87,7 +87,7 @@
                                 </button>
                             {% endfor %}
                             <div class="searchable-select-empty">
-                                No medical centers found.
+                                {{ t("No medical centers found.") }}
                             </div>
                         </div>
                     </div>
@@ -96,19 +96,19 @@
 
                 <div class="toolbar-field">
 
-                    <label>Notes</label>
+                    <label>{{ t("Notes") }}</label>
 
                     <input type="text"
                            id="appointmentNotes"
                            name="notes"
                            value="{{ selected_notes or '' }}"
-                           placeholder="Appointment notes">
+                           placeholder="{{ t('Appointment notes') }}">
 
                 </div>
 
                 <div class="toolbar-field">
 
-                    <label>Search Mode</label>
+                    <label>{{ t("Search Mode") }}</label>
 
                     <select name="search_mode"
                             onchange="toggleDateField(this.value)">
@@ -118,7 +118,7 @@
                                 selected
                             {% endif %}
                         >
-                            Earliest
+                            {{ t("Earliest") }}
                         </option>
 
                         <option value="date"
@@ -126,7 +126,7 @@
                                 selected
                             {% endif %}
                         >
-                            Specific Date
+                            {{ t("Specific Date") }}
                         </option>
 
                     </select>
@@ -141,7 +141,7 @@
                     {% endif %}
                 >
 
-                    <label>Date</label>
+                    <label>{{ t("Date") }}</label>
 
                     <input type="date"
                         name="slot_date"
@@ -197,7 +197,7 @@
     <div class="details-section">
         <h2>
             <i class="fas fa-clock"></i>
-            Available Times
+            {{ t("Available Times") }}
             {% if selected_doctor_name %}
                 - {{ selected_doctor_name }}
             {% endif %}
@@ -211,10 +211,10 @@
 
                 <tr>
 
-                    <th>Date</th>
-                    <th>Start</th>
-                    <th>Center</th>
-                    <th>Book</th>
+                    <th>{{ t("Date") }}</th>
+                    <th>{{ t("Start") }}</th>
+                    <th>{{ t("Center") }}</th>
+                    <th>{{ t("Book") }}</th>
 
                 </tr>
 
@@ -257,7 +257,7 @@
                     <td colspan="4"
                         class="empty-row">
 
-                        No available slots found.
+                        {{ t("No available slots found.") }}
 
                     </td>
 
@@ -283,7 +283,7 @@
 
             <h2>
                 <i class="fas fa-user-injured"></i>
-                Select Patient
+                {{ t("Select Patient") }}
             </h2>
 
             <button type="button"
@@ -302,11 +302,11 @@
 
                 <div class="toolbar-field">
 
-                    <label>Search Patient</label>
+                    <label>{{ t("Search Patient") }}</label>
 
                     <input type="text"
                         id="patientSearchInput"
-                        placeholder="Name or phone"
+                        placeholder="{{ t('Name or phone') }}"
                         onkeypress="handlePatientSearchKey(event)">
 
                 </div>
@@ -349,9 +349,9 @@
 
                         <tr>
 
-                            <th>Select</th>
-                            <th>Patient</th>
-                            <th>Phone</th>
+                            <th>{{ t("Select") }}</th>
+                            <th>{{ t("Patient") }}</th>
+                            <th>{{ t("Phone") }}</th>
 
                         </tr>
 
@@ -401,7 +401,7 @@
                         onclick="confirmBooking()">
 
                     <i class="fas fa-save"></i>
-                    Save
+                    {{ t("Save") }}
 
                 </button>
 
@@ -410,7 +410,7 @@
                         onclick="closePatientModal()">
 
                     <i class="fas fa-ban"></i>
-                    Cancel
+                    {{ t("Cancel") }}
 
                 </button>
 
@@ -437,6 +437,10 @@
 </form>
 
 <script>
+const bookAppointmentText = {
+    pleaseSelectPatient: {{ t("Please select a patient.")|tojson }},
+    bookThisAppointment: {{ t("Book this appointment?")|tojson }}
+};
 
 document.querySelectorAll("[data-searchable-select]").forEach(function(selectBox){
     const input = selectBox.querySelector(".searchable-select-input");
@@ -594,12 +598,12 @@ function confirmBooking() {
 
     if (!selected) {
 
-        alert("Please select a patient.");
+        alert(bookAppointmentText.pleaseSelectPatient);
 
         return;
     }
 
-    if (!confirm("Book this appointment?")) {
+    if (!confirm(bookAppointmentText.bookThisAppointment)) {
         return;
     }
 
